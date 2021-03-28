@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="针对GDB总结的操作命令。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GDB调试">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/08/13/GDB%E8%B0%83%E8%AF%95/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="针对GDB总结的操作命令。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-08-13T08:01:14.000Z">
+<meta property="article:modified_time" content="2021-03-26T11:25:06.928Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="gdb">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/08/13/GDB%E8%B0%83%E8%AF%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>GDB调试 | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/08/13/GDB%E8%B0%83%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GDB调试
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-08-13 16:01:14" itemprop="dateCreated datePublished" datetime="2017-08-13T16:01:14+08:00">2017-08-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-26 19:25:06" itemprop="dateModified" datetime="2021-03-26T19:25:06+08:00">2021-03-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/gdb/" itemprop="url" rel="index">
+                    <span itemprop="name">gdb</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>针对GDB总结的操作命令。</p>
+<span id="more"></span>
+
+<p>最好的学习方法是查看GDB的说明文档，采用命令<code>man gdb</code>查看启动项和参数。<br>进入gdb，采用命令<code>help</code>查看。<br>    List of classes of commands:</p>
+<pre><code>aliases -- Aliases of other commands
+breakpoints -- Making program stop at certain points
+data -- Examining data
+files -- Specifying and examining files
+internals -- Maintenance commands
+obscure -- Obscure features
+running -- Running the program
+status -- Status inquiries
+support -- Support facilities
+tracepoints -- Tracing of program execution without stopping the program
+user-defined -- User-defined commands
+
+Type &quot;help&quot; followed by a class name for a list of commands in that class.
+Type &quot;help all&quot; for the list of all commands.
+Type &quot;help&quot; followed by command name for full documentation.
+Type &quot;apropos word&quot; to search for commands related to &quot;word&quot;.
+Command name abbreviations are allowed if unambiguous.
+</code></pre>
+<p>gdb命令很多，这是gdb按照类别列出的命令。help命令只是例出gdb的命令种类，如果要看种类中的命令，可以使用<code>help</code>命令，如：<code>help breakpoints</code>，查看设置断点的所有命令。也可以直接<code>help</code>来查看命令的帮助。 </p>
+<p>对C/C++程序的调试，需要在编译前就加上 <code>-g</code> 选项:  </p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$g</span>++ -g hello.cpp -o hello</span><br></pre></td></tr></table></figure>
+
+<h1 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h1><h2 id="break"><a href="#break" class="headerlink" title="break"></a>break</h2><p>缩写为<code>b</code>。可以使用’行号‘、‘函数名称’、‘执行地址’等方式指定断点位置。<br>其中在函数名称前面加<code>*</code>符号表示将断点设置在‘由编译器生成的prolog代码处’。</p>
+<pre><code>b &lt;行号&gt;
+b &lt;函数名称&gt;
+b *&lt;函数名称&gt;
+b *&lt;代码地址&gt;
+d [编号]
+d: Delete breakpoint的简写，删除指定编号的某个断点，或删除所有断点。断点编号从1开始递增。
+</code></pre>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(gdb) b 8</span><br><span class="line">(gdb) b main</span><br><span class="line">(gdb) b *main</span><br><span class="line">(gdb) b *0x804835c</span><br><span class="line">(gdb) d</span><br><span class="line">(gdb) disable b 1 #禁止第一个断点</span><br><span class="line">(gdb) enable b 1 # 允许使用第一个断点</span><br></pre></td></tr></table></figure>
+
+<h2 id="程序运行参数"><a href="#程序运行参数" class="headerlink" title="程序运行参数"></a>程序运行参数</h2><p><code>set args </code>可指定运行时参数。（如：set args 10 20 30 40 50）<br><code>show args </code>命令可以查看设置好的运行参数。 </p>
+<h2 id="run"><a href="#run" class="headerlink" title="run"></a>run</h2><p>运行调试的程序，缩写为<code>r</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) r</span><br></pre></td></tr></table></figure>
+
+<h2 id="step-amp-next"><a href="#step-amp-next" class="headerlink" title="step &amp; next"></a>step &amp; next</h2><p><code>step</code>: 执行一行源程序代码，如果此行代码中有函数调用，则进入该函数，相当于其它调试器中的<code>Step Into</code>(单步跟踪进入)，缩写为<code>s</code>；<br><code>next</code>: 执行一行源程序代码，此行代码中的函数调用也一并执行，相当于其它调试器中的<code>Step Over</code>(单步跟踪)，缩写为<code>n</code>。<br>这两个命令必须在有源代码调试信息的情况下才可以使用（GCC编译时使用“-g”参数）。</p>
+<h2 id="stepi-amp-nexti"><a href="#stepi-amp-nexti" class="headerlink" title="stepi &amp; nexti"></a>stepi &amp; nexti</h2><p><code>stepi</code>，<code>nexti</code>与<code>step</code>,<code>next</code>功能相近，只不过是执行的是汇编指令。</p>
+<h2 id="finish"><a href="#finish" class="headerlink" title="finish"></a>finish</h2><p><code>finish</code>继续执行程序，直到当前被调用的函数结束，如果该函数有返回值，把返回值也打印到控制台</p>
+<h2 id="info"><a href="#info" class="headerlink" title="info"></a>info</h2><p><code>i</code>是<code>info</code>的简写，用于显示各类信息，详情请查阅<code>help i</code>。</p>
+<ol>
+<li><code>i r</code>命令显示寄存器中的当前值———<code>i r</code>即<code>Infomation Register</code>。</li>
+</ol>
+<p>显示任意一个指定的寄存器值：<code>i r eax</code></p>
+<ol start="2">
+<li><code>info b</code></li>
+</ol>
+<p>列出所有的断点。</p>
+<h2 id="list"><a href="#list" class="headerlink" title="list"></a>list</h2><p><code>list</code> 用于查看源代码，简记为 <code>l</code> ，默认每次显示10行。  </p>
+<ul>
+<li><code>list 行号</code>：将显示当前文件以“行号”为中心的前后10行代码，如：<code>list 12</code>  </li>
+<li><code>list 函数名</code>：将显示“函数名”所在函数的源代码，如：<code>list main</code></li>
+<li><code>list</code> ：不带参数，将接着上一次 list 命令的，输出下边的内容。</li>
+</ul>
+<h2 id="print"><a href="#print" class="headerlink" title="print"></a>print</h2><p>打印给定表达式的值，除了程序中的变量外，还可以是程序函数的调用，数据结构和其他它复杂对象，历史纪录的值（<code>$</code>是最后一个历史纪录变量，<code>$num</code>是倒数第num个历史纪录变量）。</p>
+<p>语法：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">print [Expression]</span><br><span class="line">print $[Previous value number]</span><br><span class="line">print &#123;[Type]&#125;[Address]</span><br><span class="line">print [First element]@[Element count]</span><br><span class="line">print &#x2F;[Format] [Expression]</span><br></pre></td></tr></table></figure>
+
+<h3 id="格式化输出"><a href="#格式化输出" class="headerlink" title="格式化输出"></a>格式化输出</h3><pre><code>print /[Format] [Expression]
+    o - octal
+    x - hexadecimal
+    u - unsigned decimal
+    t - binary
+    f - floating point
+    a - address
+    c - char
+    s - string
+</code></pre>
+<p>比如：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print argv[i]</span><br><span class="line">$2 &#x3D; 0xbffff204 &quot;&#x2F;home&#x2F;bazis&#x2F;test&quot;</span><br><span class="line">(gdb) print &#x2F;a argv[i]</span><br><span class="line">$3 &#x3D; 0xbffff204</span><br><span class="line">(gdb) print &#x2F;s argv[i]</span><br><span class="line">$4 &#x3D; 0xbffff204 &quot;&#x2F;home&#x2F;bazis&#x2F;test&quot;</span><br><span class="line">(gdb) print &#x2F;c argv[i]</span><br><span class="line">$5 &#x3D; 4 &#39;\004&#39;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.roe.ac.uk/~ert/stacpolly/idb_manual/common/idb_the_print_command.htm">The print Command</a>  </li>
+<li><a target="_blank" rel="noopener" href="https://visualgdb.com/gdbreference/commands/print">print command</a>  </li>
+</ul>
+<h2 id="examine"><a href="#examine" class="headerlink" title="examine"></a>examine</h2><p>简写<code>x</code>，用于查看内存地址的值<code>examine memory</code>。 <code>x</code>命令的语法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x&#x2F;FMT ADDRESS</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>ADDRESS</code>是内存地址的表达式，比如0xff340112</li>
+<li><code>FMT</code>由3个可选参数组成 <code>&lt;count/format/size&gt;</code>。分别为内存长度<code>count</code>,显示格式<code>format</code>,字节大小<code>size</code>。<ul>
+<li><code>format</code>: <ul>
+<li><code>o</code>表示8进制，</li>
+<li><code>x</code>表示16进制</li>
+<li><code>d</code>表示10进制</li>
+<li><code>u</code>表示无符号16进制</li>
+<li><code>t</code>二进制</li>
+<li><code>f</code>浮点数</li>
+<li><code>c</code>字符</li>
+<li><code>i</code>指令</li>
+<li><code>a</code>地址</li>
+<li><code>s</code>字符串</li>
+<li><code>z</code>16进制，左侧补0对齐。</li>
+</ul>
+</li>
+<li><code>size</code>：<ul>
+<li><code>b</code>字节</li>
+<li><code>h</code>半字</li>
+<li><code>w</code>字</li>
+<li><code>g</code>8字节。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>比如：命令：<code>x/3xh 0x54320</code> 表示，从内存地址0x54320读取内容，h表示以双字节为一个单位，3表示三个单位，x表示按十六进制显示。 </p>
+<p><code>x</code> 可以查看数组或指针指向的内存数据。  </p>
+<h2 id="backtrace"><a href="#backtrace" class="headerlink" title="backtrace"></a>backtrace</h2><p>显示程序的调用栈信息，可以用<code>bt</code>缩写</p>
+<h2 id="quit"><a href="#quit" class="headerlink" title="quit"></a>quit</h2><p>退出GDB，缩写为<code>q</code>。</p>
+<h2 id="attach"><a href="#attach" class="headerlink" title="attach"></a>attach</h2><p><code>attach process-id</code>: 在GDB状态下，开始调试一个正在运行的进程，其进程ID为process-id</p>
+<h2 id="set"><a href="#set" class="headerlink" title="set"></a>set</h2><p><code>set variable</code>将值赋予变量</p>
+<h2 id="whatis-amp-ptype"><a href="#whatis-amp-ptype" class="headerlink" title="whatis &amp; ptype"></a>whatis &amp; ptype</h2><p>识别数组或数据的类型，<code>ptype</code>比<code>whatis</code>功能更强，它可以提供一个结构的定义。</p>
+<h1 id="参考网站"><a href="#参考网站" class="headerlink" title="参考网站"></a>参考网站</h1><p>[1] <a target="_blank" rel="noopener" href="http://blog.csdn.net/liigo/article/details/582231">GDB十分钟教程</a><br>[2] <a target="_blank" rel="noopener" href="https://www.exploit-db.com/papers/13205/">Using GDB to Develop Exploits - A Basic Run Through</a><br>[3] <a target="_blank" rel="noopener" href="http://blog.csdn.net/dadalan/article/details/3758025">比较全面的gdb调试命令</a><br>[4] <a target="_blank" rel="noopener" href="https://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/gdb.html">1.gdb 调试利器</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+              <a href="/tags/gdb/" rel="tag"># gdb</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/08/13/pwnable-kr%E7%AC%94%E8%AE%B0/" rel="prev" title="pwnable.kr笔记">
+      <i class="fa fa-chevron-left"></i> pwnable.kr笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/08/14/unlink/" rel="next" title="unlink">
+      unlink <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">1.</span> <span class="nav-text">常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#break"><span class="nav-number">1.1.</span> <span class="nav-text">break</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E8%BF%90%E8%A1%8C%E5%8F%82%E6%95%B0"><span class="nav-number">1.2.</span> <span class="nav-text">程序运行参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#run"><span class="nav-number">1.3.</span> <span class="nav-text">run</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#step-amp-next"><span class="nav-number">1.4.</span> <span class="nav-text">step &amp; next</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stepi-amp-nexti"><span class="nav-number">1.5.</span> <span class="nav-text">stepi &amp; nexti</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#finish"><span class="nav-number">1.6.</span> <span class="nav-text">finish</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#info"><span class="nav-number">1.7.</span> <span class="nav-text">info</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#list"><span class="nav-number">1.8.</span> <span class="nav-text">list</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#print"><span class="nav-number">1.9.</span> <span class="nav-text">print</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E8%BE%93%E5%87%BA"><span class="nav-number">1.9.1.</span> <span class="nav-text">格式化输出</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#examine"><span class="nav-number">1.10.</span> <span class="nav-text">examine</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#backtrace"><span class="nav-number">1.11.</span> <span class="nav-text">backtrace</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#quit"><span class="nav-number">1.12.</span> <span class="nav-text">quit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#attach"><span class="nav-number">1.13.</span> <span class="nav-text">attach</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#set"><span class="nav-number">1.14.</span> <span class="nav-text">set</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#whatis-amp-ptype"><span class="nav-number">1.15.</span> <span class="nav-text">whatis &amp; ptype</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E7%BD%91%E7%AB%99"><span class="nav-number">2.</span> <span class="nav-text">参考网站</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

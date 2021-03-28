@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="搞安全怎么能离开密码学。武功再高，也怕菜刀。骐骥一跃，不能十步。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="密码学EXM?">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/08/06/crypto-docs/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="搞安全怎么能离开密码学。武功再高，也怕菜刀。骐骥一跃，不能十步。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/crypto-docs/exm.jpg">
+<meta property="og:image" content="http://juniorprincewang.github.io/2017/08/06/%E5%AF%86%E7%A0%81%E5%AD%A6EXM/Diffie-Hellman-Schl%C3%BCsselaustausch.svg">
+<meta property="article:published_time" content="2017-08-06T02:41:42.000Z">
+<meta property="article:modified_time" content="2021-03-28T08:27:47.680Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="cryptography">
+<meta property="article:tag" content="国产密码">
+<meta property="article:tag" content="ECDSA">
+<meta property="article:tag" content="SM">
+<meta property="article:tag" content="RSA">
+<meta property="article:tag" content="AES">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://juniorprincewang.github.io/img/crypto-docs/exm.jpg">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/08/06/crypto-docs/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>密码学EXM? | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/08/06/crypto-docs/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          密码学EXM?
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-08-06 10:41:42" itemprop="dateCreated datePublished" datetime="2017-08-06T10:41:42+08:00">2017-08-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-28 16:27:47" itemprop="dateModified" datetime="2021-03-28T16:27:47+08:00">2021-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/security/" itemprop="url" rel="index">
+                    <span itemprop="name">security</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/security/crypto/" itemprop="url" rel="index">
+                    <span itemprop="name">crypto</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>搞安全怎么能离开密码学。武功再高，也怕菜刀。<br>骐骥一跃，不能十步。</p>
+<span id="more"></span>
+
+<p><img src="/img/crypto-docs/exm.jpg"></p>
+<h1 id="tutorials"><a href="#tutorials" class="headerlink" title="tutorials"></a>tutorials</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://cryptobook.nakov.com/">Practical Cryptography for Developers</a><br>本书算是实用密码学实战，以python开发，涉及了 <strong>hashes</strong> (like SHA-3 and BLAKE2), <strong>MAC codes</strong> (like HMAC and GMAC), <strong>key derivation functions</strong> (like Scrypt, Argon2), <strong>key agreement protocols</strong> (like DHKE, ECDH), <strong>symmetric ciphers</strong> (like AES and ChaCha20, cipher block modes, authenticated encryption, AEAD, AES-GCM, ChaCha20-Poly1305), <strong>asymmetric ciphers and public-key cryptosystems</strong> (RSA, ECC, ECIES), <strong>elliptic curve cryptography</strong> (ECC, secp256k1, curve25519), <strong>digital signatures</strong> (ECDSA and EdDSA), <strong>secure random numbers</strong> (PRNG, CSRNG) and <strong>quantum-safe cryptography</strong> 。  </li>
+</ul>
+<h1 id="凯撒和栅栏密码"><a href="#凯撒和栅栏密码" class="headerlink" title="凯撒和栅栏密码"></a>凯撒和栅栏密码</h1><p><code>Cipher Block</code> ： 分组密码<br><code>nonce</code> : <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cryptographic_nonce">Nonce</a> 是一个在加密通信只能使用一次的数字。在认证协议中，它往往是一个随机或伪随机数，以避免重放攻击。<br>Nonce也用于 <em>流密码</em> 以确保安全。如果需要使用相同的密钥加密一个以上的消息，就需要Nonce来确保不同的消息与该密钥加密的密钥流不同。</p>
+<h1 id="base64-32-16编码"><a href="#base64-32-16编码" class="headerlink" title="base64/32/16编码"></a>base64/32/16编码</h1><p>原来仅仅听过base64，后来还听到了base32, base16。其实原理都一样，base64、base32、base16可以分别编码转化8位字节为6位、5位、4位。这里重点介绍base64。<br>Base64常用于在通常处理文本数据的场合，表示、传输、存储一些二进制数据。包括MIME的email，email via MIME,在XML中存储复杂数据。</p>
+<p>编码原理：Base64编码要求把3个8位字节转化为4个6位的字节，之后在6位的前面补两个0，形成8位一个字节的形式，6位2进制能表示的最大数是2的6次方是64，这也是为什么是64个字符(A-Z,a-z，0-9，+，/这64个编码字符，=号不属于编码字符，而是填充字符)的原因，这样就需要一张映射表。</p>
+<p>python的base64模块用于base64/32/16编码和解码。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import base64</span><br><span class="line">s&#x3D;&quot;test&quot;</span><br><span class="line">t &#x3D; base64.b64encode(s)</span><br><span class="line">print t</span><br><span class="line">print base64.b64decode(t)</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="stream-cipher"><a href="#stream-cipher" class="headerlink" title="stream cipher"></a>stream cipher</h1><h2 id="RC4-arch4"><a href="#RC4-arch4" class="headerlink" title="RC4 (arch4)"></a>RC4 (arch4)</h2><p>不安全的流密码算法，已经被TLS弃用。 <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc7465">rfc7465 Prohibiting RC4 Cipher Suites</a>  </p>
+<h2 id="Salsa20"><a href="#Salsa20" class="headerlink" title="Salsa20"></a>Salsa20</h2><p>一种新的流加密算法，由 Dan Bernstein 设计。根据内部轮数分为  Salsa20/12 和 Salsa20/8 。<br>基于 add-rotate-xor（ARX）操作。</p>
+<p>优势：</p>
+<p>用户可以在恒定时间内寻求输出流中的任何位置。它可以在现代x86处理器中提供约每4–14次循环周期一字节的速度，并具有合理的硬件性能。可以抵御侧信道攻击。</p>
+<h2 id="ChaCha"><a href="#ChaCha" class="headerlink" title="ChaCha"></a>ChaCha</h2><p>也是由Dan Bernstein 设计的新型的流加密算法。 根据轮数不同分为：ChaCha8,ChaCha12,ChaCha20。</p>
+<p><a target="_blank" rel="noopener" href="https://cr.yp.to/snuffle.html">Snuffle 2005: the Salsa20 encryption function</a></p>
+<h1 id="KDF"><a href="#KDF" class="headerlink" title="KDF"></a>KDF</h1><h1 id="填充模式"><a href="#填充模式" class="headerlink" title="填充模式"></a>填充模式</h1><h2 id="分组密码工作模式-mode-of-operation"><a href="#分组密码工作模式-mode-of-operation" class="headerlink" title="分组密码工作模式 mode of operation"></a>分组密码工作模式 mode of operation</h2><p>分组（block）密码的工作模式（mode of operation）允许使用同一个分组密码密钥对多于一块的数据进行加密，并保证其安全性。<br>常用模式有以下几块：</p>
+<h3 id="电子密码本（Electronic-codebook，ECB）"><a href="#电子密码本（Electronic-codebook，ECB）" class="headerlink" title="电子密码本（Electronic codebook，ECB）"></a>电子密码本（Electronic codebook，ECB）</h3><p>讲消息分成组，每组单独加密。</p>
+<p><strong>缺点</strong>  </p>
+<ul>
+<li>Visual inspection of an encrypted stream  </li>
+</ul>
+<p>本方法的缺点在于同样的明文块会被加密成相同的密文块；因此，它不能很好的隐藏数据模式。在某些场合，这种方法不能提供严格的数据保密性，因此并不推荐用于密码协议中。</p>
+<ul>
+<li>Encryption oracle attack<br>加密预言攻击，oracle是用于计算用的黑盒子，称为“预言机”。<br>比如对于 <code>C = ECB(k, m|S)</code> ，敌手就可以选择m长度为 len(block)-1 大小，那么整个块为 m|s0，敌手可以遍历最终匹配到s0，以此类推获得整个密文对应的明文。  </li>
+</ul>
+<h3 id="密码块链接（CBC，Cipher-block-chaining）"><a href="#密码块链接（CBC，Cipher-block-chaining）" class="headerlink" title="密码块链接（CBC，Cipher-block chaining）"></a>密码块链接（CBC，Cipher-block chaining）</h3><h3 id="计数器模式（CTR，Counter-Mode）"><a href="#计数器模式（CTR，Counter-Mode）" class="headerlink" title="计数器模式（CTR，Counter Mode）"></a>计数器模式（CTR，Counter Mode）</h3><h3 id="填充密码块链接-（PCBC，Propagating-cipher-block-chaining）"><a href="#填充密码块链接-（PCBC，Propagating-cipher-block-chaining）" class="headerlink" title="填充密码块链接 （PCBC，Propagating cipher-block chaining）"></a>填充密码块链接 （PCBC，Propagating cipher-block chaining）</h3><p>填充密码块链接 （PCBC，Propagating cipher-block chaining）或称为明文密码块链接（Plaintext cipher-block chaining）。</p>
+<h3 id="密文反馈（CFB，Cipher-feedback）"><a href="#密文反馈（CFB，Cipher-feedback）" class="headerlink" title="密文反馈（CFB，Cipher feedback）"></a>密文反馈（CFB，Cipher feedback）</h3><h3 id="输出反馈模式（Output-feedback-OFB）"><a href="#输出反馈模式（Output-feedback-OFB）" class="headerlink" title="输出反馈模式（Output feedback, OFB）"></a>输出反馈模式（Output feedback, OFB）</h3><h3 id="GCM"><a href="#GCM" class="headerlink" title="GCM"></a>GCM</h3><p><a target="_blank" rel="noopener" href="https://csrc.nist.gov/publications/detail/sp/800-38d/final">SP 800-38D:Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC</a>  </p>
+<h2 id="padding"><a href="#padding" class="headerlink" title="padding"></a>padding</h2><h3 id="PKCS-5-PKCS-7-padding"><a href="#PKCS-5-PKCS-7-padding" class="headerlink" title="PKCS#5/PKCS#7 padding"></a>PKCS#5/PKCS#7 padding</h3><p>PKCS是 Public Key Cryptography Standards 的简称。  </p>
+<p>PKCS#5 是基于口令的加密标准，目前版本是 2.1。<br>它将输入按照BlockSize=8字节进行分组，最后一组要填充成8字节。<br>加入口令长度为 $x$，则填充数据是 $8-(x%8)$，每个padding的字节值是 $8-(x%8)$；若口令长度恰好为8的整数倍，仍需要在后面增添一组，每个元素为0x08。  </p>
+<p>这么做的目的：在解密时，根据密文的最后一位来确定填充字节数。因此如果原明文是8的整数倍，仍在末尾填充一组。    </p>
+<p><a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc8018">rfc8018 - PKCS #5: Password-Based Cryptography Specification Version 2.1</a></p>
+<h2 id="Message-Authentication-Code-MAC"><a href="#Message-Authentication-Code-MAC" class="headerlink" title="Message Authentication Code(MAC)"></a>Message Authentication Code(MAC)</h2><h3 id="Hash-based-Message-Authentication-Code-HMAC"><a href="#Hash-based-Message-Authentication-Code-HMAC" class="headerlink" title="Hash-based Message Authentication Code(HMAC)"></a>Hash-based Message Authentication Code(HMAC)</h3><p><a target="_blank" rel="noopener" href="https://www.ietf.org/rfc/rfc4418.txt">rfc4418 UMAC: Message Authentication Code using Universal Hashing</a>  </p>
+<h3 id="AEAD-Authenticated-Encryption-with-Associated-Data"><a href="#AEAD-Authenticated-Encryption-with-Associated-Data" class="headerlink" title="AEAD(Authenticated Encryption with Associated Data)"></a>AEAD(Authenticated Encryption with Associated Data)</h3><h1 id="Block-ciphers"><a href="#Block-ciphers" class="headerlink" title="Block ciphers"></a>Block ciphers</h1><p>分组密码算法</p>
+<h2 id="AES"><a href="#AES" class="headerlink" title="AES"></a>AES</h2><p>AES作为DES的升级版本，是当今主流的对称加密算法。<br>AES选取的分组长度为128比特，保持不变，而密钥长度可改变为128比特、192比特和256比特。<br>AES包括加解密(encrypt/decrypt)和轮密钥生成(key shedule)。<br>加解密涉及四个操作：SubBytes(字节替换)、ShiftRows(行移位)、MixColumns(列混淆)、AddRoundKey(轮密钥加)。在最后一轮不进行MixColumns。</p>
+<p>可以参考 <a target="_blank" rel="noopener" href="https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf">FIPS 197，AES</a>。里面有详实的标准介绍。</p>
+<h3 id="AES-加密"><a href="#AES-加密" class="headerlink" title="AES 加密"></a>AES 加密</h3><p>加密算法流程为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Cipher(byte in[4*Nb], byte out[4*Nb], word w[Nb*(Nr+1)])</span><br><span class="line">begin</span><br><span class="line">	byte state[4,Nb]</span><br><span class="line">	state &#x3D; in</span><br><span class="line">	AddRoundKey(state, w[0, Nb-1]) &#x2F;&#x2F; See Sec. 5.1.4</span><br><span class="line">	for round &#x3D; 1 step 1 to Nr–1</span><br><span class="line">		SubBytes(state) &#x2F;&#x2F; See Sec. 5.1.1</span><br><span class="line">		ShiftRows(state) &#x2F;&#x2F; See Sec. 5.1.2</span><br><span class="line">		MixColumns(state) &#x2F;&#x2F; See Sec. 5.1.3</span><br><span class="line">		AddRoundKey(state, w[round*Nb, (round+1)*Nb-1])</span><br><span class="line">	end for</span><br><span class="line">	SubBytes(state)</span><br><span class="line">	ShiftRows(state)</span><br><span class="line">	AddRoundKey(state, w[Nr*Nb, (Nr+1)*Nb-1])</span><br><span class="line">	out &#x3D; state</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>State</code> 一个4行的矩阵，每行包括Nb个字节。用于行移位和列混淆。</li>
+<li><code>Nb</code> 组成 <code>State</code> 的列（一列4个字节，共32位）数量。这里取4。</li>
+<li><code>Nk</code> 表示密钥长度，32位字节的数量。对于128，192，256长度的密钥来说，Nk分别取4, 6, 8。</li>
+<li><code>Nr</code> 轮数量，对于128，192，256长度的密钥来说，Nr分别取10, 12, 14。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>密钥算法</th>
+<th>密钥长度Nk字节</th>
+<th>分组长度Nb字节</th>
+<th>轮数Nr</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AES-128</td>
+<td>4</td>
+<td>4</td>
+<td>10</td>
+</tr>
+<tr>
+<td>AES-192</td>
+<td>6</td>
+<td>4</td>
+<td>12</td>
+</tr>
+<tr>
+<td>AES-256</td>
+<td>8</td>
+<td>4</td>
+<td>14</td>
+</tr>
+</tbody></table>
+<h4 id="SubBytes"><a href="#SubBytes" class="headerlink" title="SubBytes"></a>SubBytes</h4><p>SubBytes，将原 State中的每个字符转换成S-Box中对应下标的元素。 即 <code>State[i,j] = s_box[State[i,j]]</code> 。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">uint8_t s_box[256] &#x3D; &#123;</span><br><span class="line">	&#x2F;&#x2F; 0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f</span><br><span class="line">	0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76, &#x2F;&#x2F; 0</span><br><span class="line">	0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0, &#x2F;&#x2F; 1</span><br><span class="line">	0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15, &#x2F;&#x2F; 2</span><br><span class="line">	0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75, &#x2F;&#x2F; 3</span><br><span class="line">	0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84, &#x2F;&#x2F; 4</span><br><span class="line">	0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf, &#x2F;&#x2F; 5</span><br><span class="line">	0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8, &#x2F;&#x2F; 6</span><br><span class="line">	0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5, 0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2, &#x2F;&#x2F; 7</span><br><span class="line">	0xcd, 0x0c, 0x13, 0xec, 0x5f, 0x97, 0x44, 0x17, 0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73, &#x2F;&#x2F; 8</span><br><span class="line">	0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88, 0x46, 0xee, 0xb8, 0x14, 0xde, 0x5e, 0x0b, 0xdb, &#x2F;&#x2F; 9</span><br><span class="line">	0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c, 0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79, &#x2F;&#x2F; a</span><br><span class="line">	0xe7, 0xc8, 0x37, 0x6d, 0x8d, 0xd5, 0x4e, 0xa9, 0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08, &#x2F;&#x2F; b</span><br><span class="line">	0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a, &#x2F;&#x2F; c</span><br><span class="line">	0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e, &#x2F;&#x2F; d</span><br><span class="line">	0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf, &#x2F;&#x2F; e</span><br><span class="line">	0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16&#125;;&#x2F;&#x2F; f</span><br></pre></td></tr></table></figure>
+
+<h4 id="ShiftRows"><a href="#ShiftRows" class="headerlink" title="ShiftRows"></a>ShiftRows</h4><p>ShiftRows，将State数组按照行 依次向左移位0字节，1字节，2字节，3字节。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Row0: s0  s4  s8  s12   &lt;&lt;&lt; 0 byte</span><br><span class="line">Row1: s1  s5  s9  s13   &lt;&lt;&lt; 1 byte</span><br><span class="line">Row2: s2  s6  s10 s14   &lt;&lt;&lt; 2 bytes</span><br><span class="line">Row3: s3  s7  s11 s15   &lt;&lt;&lt; 3 bytes</span><br></pre></td></tr></table></figure>
+<h4 id="MixColumns"><a href="#MixColumns" class="headerlink" title="MixColumns"></a>MixColumns</h4><p>MixColumns: 利用GF(2^8)域上算术特性的一个代替，同样用于提供算法的扩散性。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[02 03 01 01]   [s0  s4  s8  s12]</span><br><span class="line">[01 02 03 01] . [s1  s5  s9  s13]</span><br><span class="line">[01 01 02 03]   [s2  s6  s10 s14]</span><br><span class="line">[03 01 01 02]   [s3  s7  s11 s15]</span><br></pre></td></tr></table></figure>
+<p>而此处的乘法和加法都是定义在GF(2^8)上的, 将某个字节所对应的值乘以2，其结果就是将该值的二进制位左移一位，如果原始值的最高位为1，则还需要将移位后的结果异或00011011。<br>乘法对加法满足分配率。<br>这里计算起来比较麻烦。但是如果用查表的话，速度会提升不少。<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/lisonglisonglisong/article/details/41909813">有限域 GF(2^8) 上的乘法改用查表的方式实现</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">byte Mul_02[256] &#x3D; &#123;</span><br><span class="line">	0x00,0x02,0x04,0x06,0x08,0x0a,0x0c,0x0e,0x10,0x12,0x14,0x16,0x18,0x1a,0x1c,0x1e,</span><br><span class="line">	0x20,0x22,0x24,0x26,0x28,0x2a,0x2c,0x2e,0x30,0x32,0x34,0x36,0x38,0x3a,0x3c,0x3e,</span><br><span class="line">	0x40,0x42,0x44,0x46,0x48,0x4a,0x4c,0x4e,0x50,0x52,0x54,0x56,0x58,0x5a,0x5c,0x5e,</span><br><span class="line">	0x60,0x62,0x64,0x66,0x68,0x6a,0x6c,0x6e,0x70,0x72,0x74,0x76,0x78,0x7a,0x7c,0x7e,</span><br><span class="line">	0x80,0x82,0x84,0x86,0x88,0x8a,0x8c,0x8e,0x90,0x92,0x94,0x96,0x98,0x9a,0x9c,0x9e,</span><br><span class="line">	0xa0,0xa2,0xa4,0xa6,0xa8,0xaa,0xac,0xae,0xb0,0xb2,0xb4,0xb6,0xb8,0xba,0xbc,0xbe,</span><br><span class="line">	0xc0,0xc2,0xc4,0xc6,0xc8,0xca,0xcc,0xce,0xd0,0xd2,0xd4,0xd6,0xd8,0xda,0xdc,0xde,</span><br><span class="line">	0xe0,0xe2,0xe4,0xe6,0xe8,0xea,0xec,0xee,0xf0,0xf2,0xf4,0xf6,0xf8,0xfa,0xfc,0xfe,</span><br><span class="line">	0x1b,0x19,0x1f,0x1d,0x13,0x11,0x17,0x15,0x0b,0x09,0x0f,0x0d,0x03,0x01,0x07,0x05,</span><br><span class="line">	0x3b,0x39,0x3f,0x3d,0x33,0x31,0x37,0x35,0x2b,0x29,0x2f,0x2d,0x23,0x21,0x27,0x25,</span><br><span class="line">	0x5b,0x59,0x5f,0x5d,0x53,0x51,0x57,0x55,0x4b,0x49,0x4f,0x4d,0x43,0x41,0x47,0x45,</span><br><span class="line">	0x7b,0x79,0x7f,0x7d,0x73,0x71,0x77,0x75,0x6b,0x69,0x6f,0x6d,0x63,0x61,0x67,0x65,</span><br><span class="line">	0x9b,0x99,0x9f,0x9d,0x93,0x91,0x97,0x95,0x8b,0x89,0x8f,0x8d,0x83,0x81,0x87,0x85,</span><br><span class="line">	0xbb,0xb9,0xbf,0xbd,0xb3,0xb1,0xb7,0xb5,0xab,0xa9,0xaf,0xad,0xa3,0xa1,0xa7,0xa5,</span><br><span class="line">	0xdb,0xd9,0xdf,0xdd,0xd3,0xd1,0xd7,0xd5,0xcb,0xc9,0xcf,0xcd,0xc3,0xc1,0xc7,0xc5,</span><br><span class="line">	0xfb,0xf9,0xff,0xfd,0xf3,0xf1,0xf7,0xf5,0xeb,0xe9,0xef,0xed,0xe3,0xe1,0xe7,0xe5</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line">byte Mul_03[256] &#x3D; &#123;</span><br><span class="line">	0x00,0x03,0x06,0x05,0x0c,0x0f,0x0a,0x09,0x18,0x1b,0x1e,0x1d,0x14,0x17,0x12,0x11,</span><br><span class="line">	0x30,0x33,0x36,0x35,0x3c,0x3f,0x3a,0x39,0x28,0x2b,0x2e,0x2d,0x24,0x27,0x22,0x21,</span><br><span class="line">	0x60,0x63,0x66,0x65,0x6c,0x6f,0x6a,0x69,0x78,0x7b,0x7e,0x7d,0x74,0x77,0x72,0x71,</span><br><span class="line">	0x50,0x53,0x56,0x55,0x5c,0x5f,0x5a,0x59,0x48,0x4b,0x4e,0x4d,0x44,0x47,0x42,0x41,</span><br><span class="line">	0xc0,0xc3,0xc6,0xc5,0xcc,0xcf,0xca,0xc9,0xd8,0xdb,0xde,0xdd,0xd4,0xd7,0xd2,0xd1,</span><br><span class="line">	0xf0,0xf3,0xf6,0xf5,0xfc,0xff,0xfa,0xf9,0xe8,0xeb,0xee,0xed,0xe4,0xe7,0xe2,0xe1,</span><br><span class="line">	0xa0,0xa3,0xa6,0xa5,0xac,0xaf,0xaa,0xa9,0xb8,0xbb,0xbe,0xbd,0xb4,0xb7,0xb2,0xb1,</span><br><span class="line">	0x90,0x93,0x96,0x95,0x9c,0x9f,0x9a,0x99,0x88,0x8b,0x8e,0x8d,0x84,0x87,0x82,0x81,</span><br><span class="line">	0x9b,0x98,0x9d,0x9e,0x97,0x94,0x91,0x92,0x83,0x80,0x85,0x86,0x8f,0x8c,0x89,0x8a,</span><br><span class="line">	0xab,0xa8,0xad,0xae,0xa7,0xa4,0xa1,0xa2,0xb3,0xb0,0xb5,0xb6,0xbf,0xbc,0xb9,0xba,</span><br><span class="line">	0xfb,0xf8,0xfd,0xfe,0xf7,0xf4,0xf1,0xf2,0xe3,0xe0,0xe5,0xe6,0xef,0xec,0xe9,0xea,</span><br><span class="line">	0xcb,0xc8,0xcd,0xce,0xc7,0xc4,0xc1,0xc2,0xd3,0xd0,0xd5,0xd6,0xdf,0xdc,0xd9,0xda,</span><br><span class="line">	0x5b,0x58,0x5d,0x5e,0x57,0x54,0x51,0x52,0x43,0x40,0x45,0x46,0x4f,0x4c,0x49,0x4a,</span><br><span class="line">	0x6b,0x68,0x6d,0x6e,0x67,0x64,0x61,0x62,0x73,0x70,0x75,0x76,0x7f,0x7c,0x79,0x7a,</span><br><span class="line">	0x3b,0x38,0x3d,0x3e,0x37,0x34,0x31,0x32,0x23,0x20,0x25,0x26,0x2f,0x2c,0x29,0x2a,</span><br><span class="line">	0x0b,0x08,0x0d,0x0e,0x07,0x04,0x01,0x02,0x13,0x10,0x15,0x16,0x1f,0x1c,0x19,0x1a</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="AddRoundKey"><a href="#AddRoundKey" class="headerlink" title="AddRoundKey"></a>AddRoundKey</h4><p>AddRoundKey, 将State和密钥进行XOR。</p>
+<p>轮密钥生成：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">KeyExpansion(byte key[4*Nk], word w[Nb*(Nr+1)], Nk)</span><br><span class="line">begin</span><br><span class="line">	word temp</span><br><span class="line">	i &#x3D; 0</span><br><span class="line">	while (i &lt; Nk)</span><br><span class="line">		w[i] &#x3D; word(key[4*i], key[4*i+1], key[4*i+2], key[4*i+3])</span><br><span class="line">		i &#x3D; i+1</span><br><span class="line">	end while</span><br><span class="line">	i &#x3D; Nk</span><br><span class="line">	while (i &lt; Nb * (Nr+1)]</span><br><span class="line">		temp &#x3D; w[i-1]</span><br><span class="line">		if (i mod Nk &#x3D; 0)</span><br><span class="line">			temp &#x3D; SubWord(RotWord(temp)) xor Rcon[i&#x2F;Nk]</span><br><span class="line">		else if (Nk &gt; 6 and i mod Nk &#x3D; 4)</span><br><span class="line">			temp &#x3D; SubWord(temp)</span><br><span class="line">		end if</span><br><span class="line">		w[i] &#x3D; w[i-Nk] xor temp</span><br><span class="line">		i &#x3D; i + 1</span><br><span class="line">	end while</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<ol>
+<li>将128位种子密钥按照列进行排列，其中<strong>w0</strong>=k0 k1 k2 k3。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>w0</th>
+<th>w1</th>
+<th>w2</th>
+<th>w3</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>k0</td>
+<td>k4</td>
+<td>k8</td>
+<td>k12</td>
+</tr>
+<tr>
+<td>k1</td>
+<td>k5</td>
+<td>k9</td>
+<td>k13</td>
+</tr>
+<tr>
+<td>k2</td>
+<td>k6</td>
+<td>k10</td>
+<td>k14</td>
+</tr>
+<tr>
+<td>k3</td>
+<td>k7</td>
+<td>k11</td>
+<td>k15</td>
+</tr>
+</tbody></table>
+<ol start="2">
+<li>设j是整数并且j属于[4, 43]，若j%4=0,w[j]=w[j-4]⊕g(w[j-1]),否则w[j]=w[j-4]⊕w[j-1]。<br> w[j]是前一列w[j-1]与上一轮w[j-Nb]异或的结果，如果是首列j%4==0，那么需要对它前一列w[j-1]做g(w)处理。</li>
+<li>函数g(w)的操作为<ol>
+<li>将w循环左移8位。（仅对w循环）</li>
+<li>分别对w的4个字节做S盒(S-Box)置换；</li>
+<li>与32比特的常量（RC[j/4],0,0,0）进行异或。Rc={0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36}</li>
+</ol>
+</li>
+</ol>
+<p>AES加密算法的动态演示<br><a target="_blank" rel="noopener" href="https://coolshell.cn/wp-content/uploads/2010/10/rijndael_ingles2004.swf">https://coolshell.cn/wp-content/uploads/2010/10/rijndael_ingles2004.swf</a></p>
+<h3 id="AES-解密"><a href="#AES-解密" class="headerlink" title="AES 解密"></a>AES 解密</h3><p>解密的话也需要四个步骤：InvShiftRows(逆行移位), InvSubBytes(逆字节替换),InvMixColumns(逆列混淆),和 AddRoundKey(轮密钥加)。<br>但是解密的顺序略有不同。 <code>w</code> 为轮密钥。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">InvCipher(byte in[4*Nb], byte out[4*Nb], word w[Nb*(Nr+1)])</span><br><span class="line">begin</span><br><span class="line">	byte state[4,Nb]</span><br><span class="line">	state &#x3D; in</span><br><span class="line">	AddRoundKey(state, w[Nr*Nb, (Nr+1)*Nb-1]) &#x2F;&#x2F; See Sec. 5.1.4</span><br><span class="line">	for round &#x3D; Nr-1 step -1 downto 1</span><br><span class="line">		InvShiftRows(state) &#x2F;&#x2F; See Sec. 5.3.1</span><br><span class="line">		InvSubBytes(state) &#x2F;&#x2F; See Sec. 5.3.2</span><br><span class="line">		AddRoundKey(state, w[round*Nb, (round+1)*Nb-1])</span><br><span class="line">		InvMixColumns(state) &#x2F;&#x2F; See Sec. 5.3.3</span><br><span class="line">	end for</span><br><span class="line">	InvShiftRows(state)</span><br><span class="line">	InvSubBytes(state)</span><br><span class="line">	AddRoundKey(state, w[0, Nb-1])</span><br><span class="line">	out &#x3D; state</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<h4 id="InvShiftRows"><a href="#InvShiftRows" class="headerlink" title="InvShiftRows"></a>InvShiftRows</h4><p>InvShiftRows 只是将 State序列按照 行号， 进行逆向向右依次移动0个字节、1个字节、2个字节、3个字节。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">		state</span><br><span class="line">Row0: s0  s4  s8  s12   &gt;&gt;&gt; 0 byte</span><br><span class="line">Row1: s1  s5  s9  s13   &gt;&gt;&gt; 1 byte</span><br><span class="line">Row2: s2  s6  s10 s14   &gt;&gt;&gt; 2 bytes</span><br><span class="line">Row3: s3  s7  s11 s15   &gt;&gt;&gt; 3 bytes</span><br></pre></td></tr></table></figure>
+
+<h4 id="InvSubBytes"><a href="#InvSubBytes" class="headerlink" title="InvSubBytes"></a>InvSubBytes</h4><p>InvSubBytes 字节替换用到的逆序S-Box为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f</span><br><span class="line">0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb, &#x2F;&#x2F; 0</span><br><span class="line">0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb, &#x2F;&#x2F; 1</span><br><span class="line">0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e, &#x2F;&#x2F; 2</span><br><span class="line">0x08, 0x2e, 0xa1, 0x66, 0x28, 0xd9, 0x24, 0xb2, 0x76, 0x5b, 0xa2, 0x49, 0x6d, 0x8b, 0xd1, 0x25, &#x2F;&#x2F; 3</span><br><span class="line">0x72, 0xf8, 0xf6, 0x64, 0x86, 0x68, 0x98, 0x16, 0xd4, 0xa4, 0x5c, 0xcc, 0x5d, 0x65, 0xb6, 0x92, &#x2F;&#x2F; 4</span><br><span class="line">0x6c, 0x70, 0x48, 0x50, 0xfd, 0xed, 0xb9, 0xda, 0x5e, 0x15, 0x46, 0x57, 0xa7, 0x8d, 0x9d, 0x84, &#x2F;&#x2F; 5</span><br><span class="line">0x90, 0xd8, 0xab, 0x00, 0x8c, 0xbc, 0xd3, 0x0a, 0xf7, 0xe4, 0x58, 0x05, 0xb8, 0xb3, 0x45, 0x06, &#x2F;&#x2F; 6</span><br><span class="line">0xd0, 0x2c, 0x1e, 0x8f, 0xca, 0x3f, 0x0f, 0x02, 0xc1, 0xaf, 0xbd, 0x03, 0x01, 0x13, 0x8a, 0x6b, &#x2F;&#x2F; 7</span><br><span class="line">0x3a, 0x91, 0x11, 0x41, 0x4f, 0x67, 0xdc, 0xea, 0x97, 0xf2, 0xcf, 0xce, 0xf0, 0xb4, 0xe6, 0x73, &#x2F;&#x2F; 8</span><br><span class="line">0x96, 0xac, 0x74, 0x22, 0xe7, 0xad, 0x35, 0x85, 0xe2, 0xf9, 0x37, 0xe8, 0x1c, 0x75, 0xdf, 0x6e, &#x2F;&#x2F; 9</span><br><span class="line">0x47, 0xf1, 0x1a, 0x71, 0x1d, 0x29, 0xc5, 0x89, 0x6f, 0xb7, 0x62, 0x0e, 0xaa, 0x18, 0xbe, 0x1b, &#x2F;&#x2F; a</span><br><span class="line">0xfc, 0x56, 0x3e, 0x4b, 0xc6, 0xd2, 0x79, 0x20, 0x9a, 0xdb, 0xc0, 0xfe, 0x78, 0xcd, 0x5a, 0xf4, &#x2F;&#x2F; b</span><br><span class="line">0x1f, 0xdd, 0xa8, 0x33, 0x88, 0x07, 0xc7, 0x31, 0xb1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xec, 0x5f, &#x2F;&#x2F; c</span><br><span class="line">0x60, 0x51, 0x7f, 0xa9, 0x19, 0xb5, 0x4a, 0x0d, 0x2d, 0xe5, 0x7a, 0x9f, 0x93, 0xc9, 0x9c, 0xef, &#x2F;&#x2F; d</span><br><span class="line">0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61, &#x2F;&#x2F; e</span><br><span class="line">0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d&#125;;&#x2F;&#x2F; f</span><br></pre></td></tr></table></figure>
+
+<h4 id="InvMixColumns"><a href="#InvMixColumns" class="headerlink" title="InvMixColumns"></a>InvMixColumns</h4><p>InvMixColumns 是 MixColumns的逆序，需要用到的矩阵相乘系数为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[0e 0b 0d 09]   [s0  s4  s8  s12]</span><br><span class="line">[09 0e 0b 0d] . [s1  s5  s9  s13]</span><br><span class="line">[0d 09 0e 0b]   [s2  s6  s10 s14]</span><br><span class="line">[0b 0d 09 0e]   [s3  s7  s11 s15]</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/lisonglisonglisong/article/details/41909813">有限域 GF(2^8) 上的乘法改用查表的方式实现</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">byte Mul_09[256] &#x3D; &#123;</span><br><span class="line">	0x00,0x09,0x12,0x1b,0x24,0x2d,0x36,0x3f,0x48,0x41,0x5a,0x53,0x6c,0x65,0x7e,0x77,</span><br><span class="line">	0x90,0x99,0x82,0x8b,0xb4,0xbd,0xa6,0xaf,0xd8,0xd1,0xca,0xc3,0xfc,0xf5,0xee,0xe7,</span><br><span class="line">	0x3b,0x32,0x29,0x20,0x1f,0x16,0x0d,0x04,0x73,0x7a,0x61,0x68,0x57,0x5e,0x45,0x4c,</span><br><span class="line">	0xab,0xa2,0xb9,0xb0,0x8f,0x86,0x9d,0x94,0xe3,0xea,0xf1,0xf8,0xc7,0xce,0xd5,0xdc,</span><br><span class="line">	0x76,0x7f,0x64,0x6d,0x52,0x5b,0x40,0x49,0x3e,0x37,0x2c,0x25,0x1a,0x13,0x08,0x01,</span><br><span class="line">	0xe6,0xef,0xf4,0xfd,0xc2,0xcb,0xd0,0xd9,0xae,0xa7,0xbc,0xb5,0x8a,0x83,0x98,0x91,</span><br><span class="line">	0x4d,0x44,0x5f,0x56,0x69,0x60,0x7b,0x72,0x05,0x0c,0x17,0x1e,0x21,0x28,0x33,0x3a,</span><br><span class="line">	0xdd,0xd4,0xcf,0xc6,0xf9,0xf0,0xeb,0xe2,0x95,0x9c,0x87,0x8e,0xb1,0xb8,0xa3,0xaa,</span><br><span class="line">	0xec,0xe5,0xfe,0xf7,0xc8,0xc1,0xda,0xd3,0xa4,0xad,0xb6,0xbf,0x80,0x89,0x92,0x9b,</span><br><span class="line">	0x7c,0x75,0x6e,0x67,0x58,0x51,0x4a,0x43,0x34,0x3d,0x26,0x2f,0x10,0x19,0x02,0x0b,</span><br><span class="line">	0xd7,0xde,0xc5,0xcc,0xf3,0xfa,0xe1,0xe8,0x9f,0x96,0x8d,0x84,0xbb,0xb2,0xa9,0xa0,</span><br><span class="line">	0x47,0x4e,0x55,0x5c,0x63,0x6a,0x71,0x78,0x0f,0x06,0x1d,0x14,0x2b,0x22,0x39,0x30,</span><br><span class="line">	0x9a,0x93,0x88,0x81,0xbe,0xb7,0xac,0xa5,0xd2,0xdb,0xc0,0xc9,0xf6,0xff,0xe4,0xed,</span><br><span class="line">	0x0a,0x03,0x18,0x11,0x2e,0x27,0x3c,0x35,0x42,0x4b,0x50,0x59,0x66,0x6f,0x74,0x7d,</span><br><span class="line">	0xa1,0xa8,0xb3,0xba,0x85,0x8c,0x97,0x9e,0xe9,0xe0,0xfb,0xf2,0xcd,0xc4,0xdf,0xd6,</span><br><span class="line">	0x31,0x38,0x23,0x2a,0x15,0x1c,0x07,0x0e,0x79,0x70,0x6b,0x62,0x5d,0x54,0x4f,0x46</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line">byte Mul_0b[256] &#x3D; &#123;</span><br><span class="line">	0x00,0x0b,0x16,0x1d,0x2c,0x27,0x3a,0x31,0x58,0x53,0x4e,0x45,0x74,0x7f,0x62,0x69,</span><br><span class="line">	0xb0,0xbb,0xa6,0xad,0x9c,0x97,0x8a,0x81,0xe8,0xe3,0xfe,0xf5,0xc4,0xcf,0xd2,0xd9,</span><br><span class="line">	0x7b,0x70,0x6d,0x66,0x57,0x5c,0x41,0x4a,0x23,0x28,0x35,0x3e,0x0f,0x04,0x19,0x12,</span><br><span class="line">	0xcb,0xc0,0xdd,0xd6,0xe7,0xec,0xf1,0xfa,0x93,0x98,0x85,0x8e,0xbf,0xb4,0xa9,0xa2,</span><br><span class="line">	0xf6,0xfd,0xe0,0xeb,0xda,0xd1,0xcc,0xc7,0xae,0xa5,0xb8,0xb3,0x82,0x89,0x94,0x9f,</span><br><span class="line">	0x46,0x4d,0x50,0x5b,0x6a,0x61,0x7c,0x77,0x1e,0x15,0x08,0x03,0x32,0x39,0x24,0x2f,</span><br><span class="line">	0x8d,0x86,0x9b,0x90,0xa1,0xaa,0xb7,0xbc,0xd5,0xde,0xc3,0xc8,0xf9,0xf2,0xef,0xe4,</span><br><span class="line">	0x3d,0x36,0x2b,0x20,0x11,0x1a,0x07,0x0c,0x65,0x6e,0x73,0x78,0x49,0x42,0x5f,0x54,</span><br><span class="line">	0xf7,0xfc,0xe1,0xea,0xdb,0xd0,0xcd,0xc6,0xaf,0xa4,0xb9,0xb2,0x83,0x88,0x95,0x9e,</span><br><span class="line">	0x47,0x4c,0x51,0x5a,0x6b,0x60,0x7d,0x76,0x1f,0x14,0x09,0x02,0x33,0x38,0x25,0x2e,</span><br><span class="line">	0x8c,0x87,0x9a,0x91,0xa0,0xab,0xb6,0xbd,0xd4,0xdf,0xc2,0xc9,0xf8,0xf3,0xee,0xe5,</span><br><span class="line">	0x3c,0x37,0x2a,0x21,0x10,0x1b,0x06,0x0d,0x64,0x6f,0x72,0x79,0x48,0x43,0x5e,0x55,</span><br><span class="line">	0x01,0x0a,0x17,0x1c,0x2d,0x26,0x3b,0x30,0x59,0x52,0x4f,0x44,0x75,0x7e,0x63,0x68,</span><br><span class="line">	0xb1,0xba,0xa7,0xac,0x9d,0x96,0x8b,0x80,0xe9,0xe2,0xff,0xf4,0xc5,0xce,0xd3,0xd8,</span><br><span class="line">	0x7a,0x71,0x6c,0x67,0x56,0x5d,0x40,0x4b,0x22,0x29,0x34,0x3f,0x0e,0x05,0x18,0x13,</span><br><span class="line">	0xca,0xc1,0xdc,0xd7,0xe6,0xed,0xf0,0xfb,0x92,0x99,0x84,0x8f,0xbe,0xb5,0xa8,0xa3</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line">byte Mul_0d[256] &#x3D; &#123;</span><br><span class="line">	0x00,0x0d,0x1a,0x17,0x34,0x39,0x2e,0x23,0x68,0x65,0x72,0x7f,0x5c,0x51,0x46,0x4b,</span><br><span class="line">	0xd0,0xdd,0xca,0xc7,0xe4,0xe9,0xfe,0xf3,0xb8,0xb5,0xa2,0xaf,0x8c,0x81,0x96,0x9b,</span><br><span class="line">	0xbb,0xb6,0xa1,0xac,0x8f,0x82,0x95,0x98,0xd3,0xde,0xc9,0xc4,0xe7,0xea,0xfd,0xf0,</span><br><span class="line">	0x6b,0x66,0x71,0x7c,0x5f,0x52,0x45,0x48,0x03,0x0e,0x19,0x14,0x37,0x3a,0x2d,0x20,</span><br><span class="line">	0x6d,0x60,0x77,0x7a,0x59,0x54,0x43,0x4e,0x05,0x08,0x1f,0x12,0x31,0x3c,0x2b,0x26,</span><br><span class="line">	0xbd,0xb0,0xa7,0xaa,0x89,0x84,0x93,0x9e,0xd5,0xd8,0xcf,0xc2,0xe1,0xec,0xfb,0xf6,</span><br><span class="line">	0xd6,0xdb,0xcc,0xc1,0xe2,0xef,0xf8,0xf5,0xbe,0xb3,0xa4,0xa9,0x8a,0x87,0x90,0x9d,</span><br><span class="line">	0x06,0x0b,0x1c,0x11,0x32,0x3f,0x28,0x25,0x6e,0x63,0x74,0x79,0x5a,0x57,0x40,0x4d,</span><br><span class="line">	0xda,0xd7,0xc0,0xcd,0xee,0xe3,0xf4,0xf9,0xb2,0xbf,0xa8,0xa5,0x86,0x8b,0x9c,0x91,</span><br><span class="line">	0x0a,0x07,0x10,0x1d,0x3e,0x33,0x24,0x29,0x62,0x6f,0x78,0x75,0x56,0x5b,0x4c,0x41,</span><br><span class="line">	0x61,0x6c,0x7b,0x76,0x55,0x58,0x4f,0x42,0x09,0x04,0x13,0x1e,0x3d,0x30,0x27,0x2a,</span><br><span class="line">	0xb1,0xbc,0xab,0xa6,0x85,0x88,0x9f,0x92,0xd9,0xd4,0xc3,0xce,0xed,0xe0,0xf7,0xfa,</span><br><span class="line">	0xb7,0xba,0xad,0xa0,0x83,0x8e,0x99,0x94,0xdf,0xd2,0xc5,0xc8,0xeb,0xe6,0xf1,0xfc,</span><br><span class="line">	0x67,0x6a,0x7d,0x70,0x53,0x5e,0x49,0x44,0x0f,0x02,0x15,0x18,0x3b,0x36,0x21,0x2c,</span><br><span class="line">	0x0c,0x01,0x16,0x1b,0x38,0x35,0x22,0x2f,0x64,0x69,0x7e,0x73,0x50,0x5d,0x4a,0x47,</span><br><span class="line">	0xdc,0xd1,0xc6,0xcb,0xe8,0xe5,0xf2,0xff,0xb4,0xb9,0xae,0xa3,0x80,0x8d,0x9a,0x97</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line">byte Mul_0e[256] &#x3D; &#123;</span><br><span class="line">	0x00,0x0e,0x1c,0x12,0x38,0x36,0x24,0x2a,0x70,0x7e,0x6c,0x62,0x48,0x46,0x54,0x5a,</span><br><span class="line">	0xe0,0xee,0xfc,0xf2,0xd8,0xd6,0xc4,0xca,0x90,0x9e,0x8c,0x82,0xa8,0xa6,0xb4,0xba,</span><br><span class="line">	0xdb,0xd5,0xc7,0xc9,0xe3,0xed,0xff,0xf1,0xab,0xa5,0xb7,0xb9,0x93,0x9d,0x8f,0x81,</span><br><span class="line">	0x3b,0x35,0x27,0x29,0x03,0x0d,0x1f,0x11,0x4b,0x45,0x57,0x59,0x73,0x7d,0x6f,0x61,</span><br><span class="line">	0xad,0xa3,0xb1,0xbf,0x95,0x9b,0x89,0x87,0xdd,0xd3,0xc1,0xcf,0xe5,0xeb,0xf9,0xf7,</span><br><span class="line">	0x4d,0x43,0x51,0x5f,0x75,0x7b,0x69,0x67,0x3d,0x33,0x21,0x2f,0x05,0x0b,0x19,0x17,</span><br><span class="line">	0x76,0x78,0x6a,0x64,0x4e,0x40,0x52,0x5c,0x06,0x08,0x1a,0x14,0x3e,0x30,0x22,0x2c,</span><br><span class="line">	0x96,0x98,0x8a,0x84,0xae,0xa0,0xb2,0xbc,0xe6,0xe8,0xfa,0xf4,0xde,0xd0,0xc2,0xcc,</span><br><span class="line">	0x41,0x4f,0x5d,0x53,0x79,0x77,0x65,0x6b,0x31,0x3f,0x2d,0x23,0x09,0x07,0x15,0x1b,</span><br><span class="line">	0xa1,0xaf,0xbd,0xb3,0x99,0x97,0x85,0x8b,0xd1,0xdf,0xcd,0xc3,0xe9,0xe7,0xf5,0xfb,</span><br><span class="line">	0x9a,0x94,0x86,0x88,0xa2,0xac,0xbe,0xb0,0xea,0xe4,0xf6,0xf8,0xd2,0xdc,0xce,0xc0,</span><br><span class="line">	0x7a,0x74,0x66,0x68,0x42,0x4c,0x5e,0x50,0x0a,0x04,0x16,0x18,0x32,0x3c,0x2e,0x20,</span><br><span class="line">	0xec,0xe2,0xf0,0xfe,0xd4,0xda,0xc8,0xc6,0x9c,0x92,0x80,0x8e,0xa4,0xaa,0xb8,0xb6,</span><br><span class="line">	0x0c,0x02,0x10,0x1e,0x34,0x3a,0x28,0x26,0x7c,0x72,0x60,0x6e,0x44,0x4a,0x58,0x56,</span><br><span class="line">	0x37,0x39,0x2b,0x25,0x0f,0x01,0x13,0x1d,0x47,0x49,0x5b,0x55,0x7f,0x71,0x63,0x6d,</span><br><span class="line">	0xd7,0xd9,0xcb,0xc5,0xef,0xe1,0xf3,0xfd,0xa7,0xa9,0xbb,0xb5,0x9f,0x91,0x83,0x8d</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>解密的AddRoundKey 与 加密的相同，只是将State和密钥做XOR操作。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a target="_blank" rel="noopener" href="https://github.com/openluopworld/aes_128/blob/master/aes.c">aes算法实现</a><br><a target="_blank" rel="noopener" href="https://github.com/dhuertas/AES/blob/master/aes.c">aes算法实现</a></p>
+<h1 id="RSA"><a href="#RSA" class="headerlink" title="RSA"></a>RSA</h1><p>给定一个正整数m，以及两个整数a,b，如果a-b被m整除，则称a与b模m同余，记作 $ a=b \pmod {m} $，否则称a与b模m不同余，记作 $ a \neq b \pmod {m} $。</p>
+<p><strong>欧拉函数</strong> </p>
+<p>意义是求跟某个数互素，且小于这个数的元素的个数。设数n，那么 $\phi(n)=|Z_n^*|$ 。<br>与n互素且小于n的任意一个数，在计算模n的幂次的时候，等于1的那个最小的幂次。<br>即 $ gcd(a,n)=1 $，那么$ a^{\phi(n)}=1 \pmod {n} $。</p>
+<h2 id="RSA算法流程"><a href="#RSA算法流程" class="headerlink" title="RSA算法流程"></a>RSA算法流程</h2><ol>
+<li>随机生成等二进制长度的两个素数: $p$、$q$；</li>
+<li>计算 $\phi(n)=(p-1)*(q-1)$，$n=p*q$；</li>
+<li>随机取值$e$，使$e$与 $\phi(n)$ 互素；</li>
+<li>计算$e$对 $\phi(n)$ 的模逆，$e*d=1\pmod {\phi(n)}$；</li>
+<li>$(e, n)$为公钥，$(d, n)$为私钥。</li>
+</ol>
+<ul>
+<li>公钥加密</li>
+</ul>
+<p>$$ C = M^e \pmod {n} $$</p>
+<ul>
+<li>私钥解密</li>
+</ul>
+<p>$$ M = C^d \pmod {n} $$</p>
+<ul>
+<li>RSA signatures  </li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://cryptobook.nakov.com/digital-signatures/rsa-signatures">RSA Signatures</a>  </p>
+<ol>
+<li>计算消息的hash: $h=hash(msg)$</li>
+<li>用私钥 $d$ 加密消息hash: $s=h^d \pmod {n}$</li>
+</ol>
+<ul>
+<li>RSA signatures verification  </li>
+</ul>
+<ol>
+<li>计算消息的hash: $h=hash(msg)$</li>
+<li>用公钥 $e$ 解密消息hash: $h’=s^e \pmod {n}$</li>
+<li>比较 $h$ 与 $h’$ 是否相等</li>
+</ol>
+<h2 id="Modular-Exponentiation"><a href="#Modular-Exponentiation" class="headerlink" title="Modular Exponentiation"></a>Modular Exponentiation</h2><p>RSA 的操作主要是模幂运算，这里有 <em>Repeated squaring</em>，<em>Sliding window</em>，<em>Chinese Remainder Theorem (CRT)<em>，</em>Montgomery multiplication</em>，<em>Karatsuba multiplication</em> 等。  </p>
+<h3 id="滑动窗口：sliding-windows"><a href="#滑动窗口：sliding-windows" class="headerlink" title="滑动窗口：sliding windows"></a>滑动窗口：sliding windows</h3><p>Input: $M$; $e$; $n$。<br>Output: $C = M^e \pmod {n}$.</p>
+<ol>
+<li>Compute and store $M^w \pmod {n}$ for all $w = 3, 5, 7, … , 2^d - 1$。</li>
+<li>Decompose $e$ into zero and nonzero windows $F(i)$ of length $L(F(i))$，for $i = 0, 1, 2, … , p - 1$。</li>
+<li>$C := M^{F(p-1)} \pmod {n}$</li>
+<li>for i = p - 2 down to 0<ol>
+<li>$C := C^{2^{L(F(i))}} \pmod {n}$</li>
+<li>if (F(i) != 0), then $C := C * M^{F(i)} \pmod {n}$</li>
+</ol>
+</li>
+<li>return C</li>
+</ol>
+<h3 id="CRT-calculation"><a href="#CRT-calculation" class="headerlink" title="CRT calculation"></a>CRT calculation</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://www.cscjournals.org/manuscript/Journals/IJCSS/Volume10/Issue5/IJCSS-1289.pdf">Implementation of RSA Algorithm with Chinese Remainder Theorem for Modulus N 1024 Bit and 4096 Bit</a></li>
+</ul>
+<p>简介中国剩余定理（Chinese Remainder Theorem，CRT）：  </p>
+<p>p和q是互相独立的大素数，n为p*q，对于任意(m1, m2), (0&lt;=m1&lt; p, 0&lt;=m2&lt; p)<br>必然存在一个唯一的m ,0&lt;=m&lt; n<br>使得<br>$$m1 = m \pmod {p}$$<br>$$m2 = m \pmod {q}$$</p>
+<p>所以换句话说，给定一个(m1,m2)，其满足上述等式的m必定唯一存在。</p>
+<p>通过中国剩余定理计算RSA。<br>需要的参数：  </p>
+<ul>
+<li>Modulus ($n=pq$)</li>
+<li>Public exponent ($e$，通常为3, 17 or 65537)</li>
+<li>Private exponent ($d=e^{−1}\pmod {\phi(n)}$)</li>
+<li>First prime ($p$)</li>
+<li>Second prime ($q$)</li>
+<li>First exponent, used for Chinese remainder theorem ($d_P=d\pmod{p−1}$)</li>
+<li>Second exponent, used for CRT ($d_Q=d\pmod{q−1}$)</li>
+<li>Coefficient, used for CRT ($q_{inv}=q^{−1}\pmod{p}$)</li>
+</ul>
+<p>公钥为 $(e, n)$，私钥为 $(d_P, d_Q, q_{inv}, p, q)$。</p>
+<ul>
+<li>公钥加密</li>
+</ul>
+<p>$$ C = M^e \pmod {n} $$</p>
+<ul>
+<li>私钥解密</li>
+</ul>
+<p>这里和常规方法不同。  </p>
+<ol>
+<li>计算 $C_p = C \pmod{p}$, $C_q = C \pmod{q}$</li>
+<li>计算 $x_1={C_p}^{d_P}\pmod{p}$ , $x_2={C_q}^{d_Q}\pmod{q}$</li>
+<li>计算 $h=q_{inv} \times (x_1-x_2)\pmod{p}$</li>
+<li>明文 $M = x_2+ {h}\times{q}$</li>
+</ol>
+<h3 id="Montgomery-Multiplication"><a href="#Montgomery-Multiplication" class="headerlink" title="Montgomery Multiplication"></a>Montgomery Multiplication</h3><h2 id="padding-1"><a href="#padding-1" class="headerlink" title="padding"></a>padding</h2><h3 id="PKCS1"><a href="#PKCS1" class="headerlink" title="PKCS1"></a>PKCS1</h3><h3 id="OAEP"><a href="#OAEP" class="headerlink" title="OAEP"></a>OAEP</h3><p>OAEP (optimal asymmetric encryption padding)</p>
+<h3 id="PSS"><a href="#PSS" class="headerlink" title="PSS"></a>PSS</h3><p><a target="_blank" rel="noopener" href="https://www.di-mgt.com.au/rsa_alg.html">RSA Algorithom 详尽的介绍</a></p>
+<h1 id="Paillier同态加密算法-Paillier-Homomorphic-Encryption"><a href="#Paillier同态加密算法-Paillier-Homomorphic-Encryption" class="headerlink" title="Paillier同态加密算法(Paillier Homomorphic Encryption)"></a>Paillier同态加密算法(Paillier Homomorphic Encryption)</h1><p>Paillier加密系统是概率公钥加密系统。基于复合剩余类的困难问题。该加密算法是一种同态加密，满足加法和数乘同态。</p>
+<h2 id="密钥生成："><a href="#密钥生成：" class="headerlink" title="密钥生成："></a>密钥生成：</h2><ul>
+<li>随机选择两个大素数 $p$ , $q$ ，即满足 $ gcd(pq,(p−1)(q−1))=1 $，这个属性是为了保证两个质数长度相等, $gcd()$用于计算两个数的最大公约数 。</li>
+<li>计算 $n=pq$ , $ \lambda=\mathrm{lcm}(p-1)(q-1)$， $lcm()$ 用于计算最小公倍数。</li>
+<li>随机选择一个整数 $g$ , $ g\in \mathbb{Z}_{n^2}^*$ ， 且满足 $gcd(L(g^{\lambda }{\bmod  n}^{2}),n)=1$</li>
+<li>$\mu =(L(g^{\lambda }{\bmod  n}^{2}))^{-1}{\bmod  n} $，这里 $L$ 被定义为 $L(x)=\frac{x-1}{n} $.</li>
+</ul>
+<p>$\mathbb{Z}_{n^2}$ 为小于 $n^2$ 的整数集合，而$\mathbb{Z}_{n^2}^*$ 为 $\mathbb{Z}_{n^2}$ 中与 $n^2$ 互质的整数的集合。</p>
+<p><strong>公钥</strong>：$(n, g)$<br><strong>私钥</strong>：$(\lambda, \mu)$ 。</p>
+<h2 id="加密过程："><a href="#加密过程：" class="headerlink" title="加密过程："></a>加密过程：</h2><ul>
+<li>m 是要被加密的明文，在这里 $0 \leq m \lt n$。</li>
+<li>随机选择一个整数 $r$, $0 \lt r \lt n $, $r \in \mathbb{Z}^*_{n^2}$, 与$n$ 互质，即 $\mathrm{gcd}(r,n)=1$。  </li>
+<li>计算密文：$c=g^{m}\cdot r^{n}{\bmod  n}^{2}$</li>
+</ul>
+<p>对于任意明文 $m \in \mathbb{Z}_{n}$，随机选取的整数 $r$ 不同，得到的密文就不同，但是解密后可以还原出相同的明文 $m$ ，从而保证了m密文的语义安全。</p>
+<h2 id="解密过程："><a href="#解密过程：" class="headerlink" title="解密过程："></a>解密过程：</h2><ul>
+<li>$c$ 是要解密的密文，$c \in \mathbb{Z}^*_{n^2}$</li>
+<li>计算明文：$m=L(c^{\lambda }{\bmod  n}^{2})\cdot \mu {\bmod  n}$</li>
+</ul>
+<h2 id="证明"><a href="#证明" class="headerlink" title="证明"></a>证明</h2><p>$$m=L(c^{\lambda }{\bmod  n}^{2})\cdot \mu {\bmod  n}<br>=\frac{L(c^{\lambda }{\bmod  n}^{2})}{L(g^{\lambda }{\bmod  n}^{2})} {\bmod n}$$</p>
+<p>Carmichael’s theorem:<br>$$c^{\lambda}=(g^m \cdot ⋅r^n )^{λ} = g^{mλ} \cdot r^{nλ} =g^{mλ} $$</p>
+<p>多项式的幂次项:<br>$$(1+n)^x ≡1+nx \bmod {n^2}$$</p>
+<p>$$g^{mλ} =((1+n)^α\cdot β^n )^{λm} =(1+n)^{αλm} \cdot β^{nλm} ≡(1+αλmn) \bmod {n^2}$$</p>
+<p>应用 $L()$ 函数</p>
+<p>$$\frac{L(c^{\lambda }{\bmod  n}^{2})}{L(g^{\lambda }{\bmod  n}^{2})} {\bmod n} = \frac{L(1+αλmn)}{L(1+αλn)} {\bmod n}=\frac{αλmn}{αλn} {\bmod n} = m$$</p>
+<h2 id="同态的性质"><a href="#同态的性质" class="headerlink" title="同态的性质"></a>同态的性质</h2><h3 id="同态加法"><a href="#同态加法" class="headerlink" title="同态加法"></a>同态加法</h3><ul>
+<li>两个密文的乘机将解密为对应的明文之和</li>
+</ul>
+<p>$$ D(E(m_{1},r_{1})\cdot E(m_{2},r_{2}){\bmod  n}^{2})=m_{1}+m_{2}{\bmod  n} $$</p>
+<ul>
+<li>一个密文与以 $g$为底、明文为幂的数相乘将解密为对应明文之和 </li>
+</ul>
+<p>$$ D(E(m_{1},r_{1})\cdot g^{m_{2}}{\bmod  n}^{2})=m_{1}+m_{2}{\bmod  n} $$</p>
+<h3 id="同态乘法"><a href="#同态乘法" class="headerlink" title="同态乘法"></a>同态乘法</h3><ul>
+<li>密文的明文幂将倍解密为对应明文的乘积</li>
+</ul>
+<p>$$ D(E(m_{1},r_{1})^{m_{2}}{\bmod  n}^{2})=m_{1}m_{2}{\bmod  n} $$<br>$$ D(E(m_{2},r_{2})^{m_{1}}{\bmod  n}^{2})=m_{1}m_{2}{\bmod  n}$$<br>更一般地，<br>$$ D(E(m_{1},r_{1})^{k}{\bmod  n}^{2})=km_{1}{\bmod  n}$$</p>
+<p>参考：<br><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Paillier_cryptosystem#Key_generation">Paillier cryptosystem</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41199831/article/details/81096625">Paillier算法详解及Java实现</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/caorui_nk/article/details/83305709">Paillier Cryptosystem</a>  </p>
+<h2 id="百万富翁安全比富问题"><a href="#百万富翁安全比富问题" class="headerlink" title="百万富翁安全比富问题"></a>百万富翁安全比富问题</h2><p>安全多方计算起源于百万富翁问题（比谁更富有但不泄露财产），即两方安全函数计算（two-party secure function evaluation，2P-SFE）。</p>
+<p>安全多方计算在针对无可信第三方情况下，可让多个数据所有者在联合的数据上进行协同计算以提取数据的价值，而不泄露每个数据所有者的原始数据。在安全多方计算里节点通过隐私计算协议完成加密运算，核心思想是不让其他节点看到保密信息，确保在计算过程中对输入的数据保密，在不暴露明文的前提下完成某种运算。<br>安全多方计算在云数据安全和隐私保护方面开始应用。</p>
+<p>回到百万富翁比富问题，比较常见的是利用同态加密来实现。<br>同样假设两个富翁Alice与Bob，财富分别是$a$ 和 $b$，安全比较过程如下：</p>
+<p>第一步：Bob生成两个非常大的随机正整数 $x$ 和 $y$ ，但是并不公开只有他自己知道；</p>
+<p>第二步：Alice生成一对属于自己的密钥(公钥是$pub$，私钥是$pri$)，用公钥加密自己的财富的到 $E(a)$ ，并将它和公钥一起公布出去；</p>
+<p>第三步：Bob得到Alice公布出来的数据以后，首先用Alice公钥计算出 $E(b⋅x+y)$，然后用Paillier算法的同态属性计算出 $E(a⋅x+y)=E(a)x⋅E(y)$，并将这两个结果也公布出去；</p>
+<p>第四步：Alice得到Bob公布出来的计算结果以后，用自己的私钥分别反解出 $A=a⋅x+y$ 和 $B=b⋅x+y$ 的值。Alice虽然对 $x$ 、 $y$ 和 $b$ 一无所知，但她只要比较 $A$ 和 $B$ 的大小就行了。而对于Bob来说，他对 $A$ 、 $B$ 和 $a$ 也是一无所知，如果他也想要知道相对大小，要么Alice告诉他，要么把角色对换重新执行一遍协议即可。</p>
+<p>Python代码可以参考<a target="_blank" rel="noopener" href="https://www.dploop.org/2017-10-18-zhihu66376147/">两个百万富翁如何安全比富</a></p>
+<h1 id="零知识证明-Zero-knowledge-proof"><a href="#零知识证明-Zero-knowledge-proof" class="headerlink" title="零知识证明 Zero-knowledge proof"></a>零知识证明 Zero-knowledge proof</h1><p>零知识证明(Zero—Knowledge Proof)，指的是证明者能够在不向验证者提供任何有用的信息的情况下，使验证者相信某个论断是正确的。零知识证明实质上是一种涉及两方或更多方的协议。证明者向验证者证明并使其相信自己知道或拥有某一消息，但证明过程不能向验证者泄漏任何关于被证明消息的信息。大量事实证明，零知识证明在密码学中非常有用。如果能够将零知识证明用于验证，将可以有效解决许多问题。</p>
+<p>在密码应用中，Peggy想要向Victor证明她知道在给定群中的给定值的离散对数。比如，对于给定值 $y$ ，素数 $p$ ，生成元 $g$ ，她想证明她知道满足 $g^{x}{\bmod {p}}=y$ 的 $x$ ，而不泄露 $x$ 。 Victor想要确定她是否知道 $x$ 的过程如下。 </p>
+<ol>
+<li>Peggy第一次计算 $g^{x}{\bmod {p}}=y$ 并将 $y$ 传给 Victor。</li>
+<li>Peggy选择随机数 $r$ ，并计算 $ C=g^{r}{\bmod {p}} $ 再将计算结果传给 Victor。</li>
+<li>Victor 向 Peggy请求 $ (x+r){\bmod {(p-1)}} $ ，并且验证 $ (C\cdot y){\bmod {p}}\equiv g^{(x+r){\bmod {(p-1)}}}{\bmod {p}} $ 。</li>
+<li>Victor 重复向Peggy 请求随机数并作验证。</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Zero-knowledge_proof">https://en.wikipedia.org/wiki/Zero-knowledge_proof</a></p>
+<h1 id="离散对数体系（Discrete-Logarithm）"><a href="#离散对数体系（Discrete-Logarithm）" class="headerlink" title="离散对数体系（Discrete Logarithm）"></a>离散对数体系（Discrete Logarithm）</h1><p>实现离散对数体制的最常用的群是有限域的乘法群的循环子群和椭圆曲线群的循环子群。  </p>
+<h2 id="困难问题"><a href="#困难问题" class="headerlink" title="困难问题"></a>困难问题</h2><ul>
+<li>离散对数问题discrete logarithm problem  </li>
+</ul>
+<p>给定素数 $p$ 和正整数 $g$ ，知道 $g^x \pmod{p}$ 的值，求 $x$ 。  </p>
+<ul>
+<li>椭圆曲线上的离散对数问题 elliptic curve discrete logarithm problem  </li>
+</ul>
+<p>k为正整数，P 是椭圆曲线上的点，已知 $P^k$ 和 $P$ ，计算 $k=\log_{P}{P^k}$ 。</p>
+<p><a target="_blank" rel="noopener" href="https://cryptobook.nakov.com/asymmetric-key-ciphers/elliptic-curve-cryptography-ecc#elliptic-curve-discrete-logarithm-problem-ecdlp">Elliptic-Curve Discrete Logarithm Problem (ECDLP)</a>  </p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qmickecs/article/details/76585303">离散对数和椭圆曲线加密原理</a>  </p>
+<h2 id="D-H"><a href="#D-H" class="headerlink" title="D-H"></a>D-H</h2><p>第一个离散对数体制是Diffie-Hellman于1976年提出的密钥协商协议。1984年，ElGamal提出了离散对数公钥加密方案和离散对数签名方案。以后，人们相机提出了离散对数公钥密码的各种变种。<br>下面介绍基本的ElGamal公钥加密方案和密钥签名方案（DSA）。</p>
+<p><code>模除</code>（又称模数、取模操作、取模运算等，英语： <code>modulo</code> 有时也称作 <code>modulus</code>）得到的是一个数除以另一个数的余数。</p>
+<p>Diffie–Hellman key exchange<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E8%BF%AA%E8%8F%B2-%E8%B5%AB%E7%88%BE%E6%9B%BC%E5%AF%86%E9%91%B0%E4%BA%A4%E6%8F%9B">[2]</a>，迪菲-赫尔曼密钥交换，是一种安全协议。它能够让通信双方在没有对方任何预先信息的前提下通过不安全信道进行密钥交换。它是无认证的密钥交换协议。目的是创建一个可以用于公共信道上安全通信的共享秘密（shared secret）。</p>
+<p><img src="../%E5%AF%86%E7%A0%81%E5%AD%A6EXM/Diffie-Hellman-Schl%C3%BCsselaustausch.svg" alt="Diffie-Hellman流程图"></p>
+<ol>
+<li>通信双方爱丽丝A和鲍勃B两人，再通信前约定好生成元g和质数p。（此g可以被攻击者捕获）</li>
+<li>爱丽丝A随机选择一个自然数a并且将g^a mod p发送给鲍勃B。</li>
+<li>鲍勃B随机选择一个自然数b并且将g^b mod p 发送给爱丽丝A。</li>
+<li>爱丽丝A计算(g^b mod p)^a mod p。</li>
+<li>鲍勃B计算(g^a mod p)^b mod p。</li>
+<li>爱丽丝A和鲍勃B最终得到了相同的值，协商出的群元素g^(ab)作为共享密钥。</li>
+</ol>
+<h2 id="基于椭圆曲线的DH密钥交换（ECDH）"><a href="#基于椭圆曲线的DH密钥交换（ECDH）" class="headerlink" title="基于椭圆曲线的DH密钥交换（ECDH）"></a>基于椭圆曲线的DH密钥交换（ECDH）</h2><p>ECDH跟DH的流程基本是一致的。</p>
+<ol>
+<li>爱丽丝A 和 鲍勃B 约定使用某条椭圆曲线（包括曲线参数，有限域参数以及基点P等）</li>
+<li>爱丽丝A 生成私钥 x，计算 $x∗P$ 作为公钥公布出去</li>
+<li>鲍勃B 生成私钥 $y$，计算 $y∗P$ 作为公钥公布出去</li>
+<li>爱丽丝A 得知 $y∗P$ 后，计算<br>$s=x∗(y∗P)=xy∗P$  </li>
+<li>鲍勃B 得到 x∗P 后，计算<br>$s=y∗(x∗P)=yx∗P$    </li>
+<li>双方都得到了相同的密钥的 s，交换完毕</li>
+</ol>
+<p>D-H具体实现分为 <em>基于离散对数</em> 和 <em>基于椭圆曲线离散对数</em> 两种。 两种方法的密钥安全等级如下，对于同样的安全等级，椭圆曲线密钥长度比离散对数密钥长度要小得多。 </p>
+<table>
+<thead>
+<tr>
+<th>Security level in bits</th>
+<th>Discrete log key bits</th>
+<th>Elliptic curve key bits</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>56</td>
+<td>512</td>
+<td>112</td>
+</tr>
+<tr>
+<td>80</td>
+<td>1024</td>
+<td>160</td>
+</tr>
+<tr>
+<td>112</td>
+<td>2048</td>
+<td>224</td>
+</tr>
+<tr>
+<td>128</td>
+<td>3072</td>
+<td>256</td>
+</tr>
+<tr>
+<td>256</td>
+<td>15360</td>
+<td>512</td>
+</tr>
+</tbody></table>
+<p>D-H容易遭受  man-in-the-middle，即MITM（中间人）攻击。因为消息没有认证。</p>
+<h2 id="ElGamal加密算法"><a href="#ElGamal加密算法" class="headerlink" title="ElGamal加密算法"></a>ElGamal加密算法</h2><p>定义可以参见<a target="_blank" rel="noopener" href="https://ctf-wiki.github.io/ctf-wiki/crypto/signature/elgamal/">https://ctf-wiki.github.io/ctf-wiki/crypto/signature/elgamal/</a></p>
+<p>非常详细的ElGamal加密的教程，给了循环组的例子。<br><a target="_blank" rel="noopener" href="https://ritter.vg/security_adventures_elgamal.html">https://ritter.vg/security_adventures_elgamal.html</a></p>
+<p>ElGamal加密算法是一个基于 Diffie-Hellman 密钥交换的非对称加密算法。<br>ElGamal加密算法由三部分组成：密钥生成、加密和解密。</p>
+<h3 id="密钥生成"><a href="#密钥生成" class="headerlink" title="密钥生成"></a>密钥生成</h3><p>密钥生成的步骤如下：</p>
+<ul>
+<li>Alice利用生成元  ${g}$ 产生一个大素数 $q$,即$g$是$q$的本原根，阶循环群 $G$的有效描述，该循环群的阶为 $q-1$。该循环群需要满足一定的安全性质。[ [本原根的概念对应模q乘法群(需循环群)中的生成元。]]</li>
+<li>Alice从 $\lbrace1,\ldots ,q-1\rbrace$中随机选择一个 $x$。</li>
+<li>Alice计算 $h:=g^{x}$。</li>
+<li>Alice公开 $h$,以及 $G,q,g$的描述作为其公钥，并保留 $x$ 作为其私钥。私钥必须保密。</li>
+</ul>
+<h3 id="加密"><a href="#加密" class="headerlink" title="加密"></a>加密</h3><p>使用Alice的公钥 $(G,q,g,h)$向她加密一条消息 $m$ 的加密算法工作方式如下：</p>
+<ul>
+<li>Bob从 $\lbrace1,\ldots ,q-1\rbrace$ 随机选择一个 $y$，然后计算 $c_{1}:=g^{y}$。</li>
+<li>Bob计算共享秘密 $s:=h^{y}$。</li>
+<li>Bob把他要发送的秘密消息 $m$ 映射为 $G$ 上的一个元素 $m’$。</li>
+<li>Bob计算 $c_{2}:=m’\cdot s$。</li>
+<li>Bob将密文 $(c_{1},c_{2})=(g^{y},m’\cdot h^{y})=(g^{y},m’\cdot (g^{x})^{y})$发送给Alice。</li>
+</ul>
+<p>值得注意的是，如果一个人知道了 $m’$，那么它很容易就能知道 $h^{y}$的值。因此对每一条信息都产生一个新的 $y$ 可以提高安全性。所以 $y$ 也被称作临时密钥。</p>
+<h3 id="解密"><a href="#解密" class="headerlink" title="解密"></a>解密</h3><p>利用私钥 $x$ 对密文 $(c_{1},c_{2})$进行解密的算法工作方式如下：</p>
+<ul>
+<li>Alice计算共享秘密 $s:=c_{1}{}^{x}$<br>然后计算 $m’:=c_{2}\cdot s^{-1}$，并将其映射回明文 $m$，其中 $s^{-1}$ 是 $s$ 在群 $G$ 上的逆元。（例如：如果 $G$ 是整数模n乘法群的一个子群，那么逆元就是模逆元）。<br>解密算法是能够正确解密出明文的，因为<br>$c_{2}\cdot s^{-1}=m’\cdot h^{y}\cdot (g^{xy})^{-1}=m’\cdot g^{xy}\cdot g^{-xy}=m’.$</li>
+</ul>
+<p>同样参考 <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/cd36ae7dca47">ElGamal加密算法</a></p>
+<h2 id="ElGamal签名算法"><a href="#ElGamal签名算法" class="headerlink" title="ElGamal签名算法"></a>ElGamal签名算法</h2><p>ElGamal 来说，其签名方案与相应的加密方案具有很大区别。</p>
+<p><strong>补充</strong>： 在同余理论中，模 n 的互质同余类组成一个乘法群，称为整数模 n 乘法群。</p>
+<blockquote>
+<p>In modular arithmetic, the integers coprime (relatively prime) to n from the set {0,1,… ,n-1} of n non-negative integers form a group under multiplication modulo n, called the multiplicative group of integers modulo n.</p>
+</blockquote>
+<p><strong>补充</strong>：<br>扩展欧几里得算法（英语：Extended Euclidean algorithm）是欧几里得算法（又叫辗转相除法）的扩展。已知整数a、b，扩展欧几里得算法可以在求得a、b的最大公约数的同时，能找到整数x、y（其中一个很可能是负数），使它们满足贝祖等式</p>
+<p>$ ax + by = \gcd(a, b)$</p>
+<h3 id="密钥生成-1"><a href="#密钥生成-1" class="headerlink" title="密钥生成"></a>密钥生成</h3><ol>
+<li>选取一个足够大的素数 $p$（十进制位数不低于 160），以便于在$Z_p$上求解离散对数问题是困难的。</li>
+<li>选取整数模 $p$ 乘法群$Z_{p}^{*}$ 的生成元 $g$。</li>
+<li>随机选取密钥 $x$，满足 $1 &lt; x &lt; p − 2$，计算 $y = g^x \bmod p$ 。</li>
+</ol>
+<p>其中私钥为 ${x}$，公钥为 ${p,g,y}$ 。</p>
+<h3 id="签名"><a href="#签名" class="headerlink" title="签名"></a>签名</h3><p>如果A 要对消息 $m$ 进行签名 $sig_d(m,k)=(r,s)$ ，过程为：</p>
+<ol>
+<li> 选取随机数 $k$ ，满足 $1 &lt; k &lt; p − 1$ ，并且 $gcd(k,p-1)=1$。</li>
+<li>计算  $r,\equiv ,g^{k}{\pmod {p}}$</li>
+<li>利用扩展欧几里得公式 $m , \equiv , x r + s k \pmod{p-1}$，计算 $s,\equiv ,(m-xr)k^{-1}{\pmod {p-1}}$ 。</li>
+<li>如果 $s=0$ ， 重新计算。</li>
+</ol>
+<p>对 $m$ 的签名结果为 $(r,s)$ 。</p>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>B拿到消息和消息的签名结果验证阶段：<br>如果 $g^m, \equiv , y^{r}r^{s} {\pmod {p}}$ ，那么验证成功，否则验证失败。</p>
+<p>由于 $m , \equiv , x r + s k \pmod{p-1}$<br>$$<br>\begin{align}<br>g^{m} &amp; \equiv g^{xr} g^{ks} \<br>&amp; \equiv (g^{x})^r (g^{k})^s \<br>&amp; \equiv (y)^r (r)^s \pmod p.\<br>\end{align}$$</p>
+<h2 id="DSA-Digital-Signature-Algorithm"><a href="#DSA-Digital-Signature-Algorithm" class="headerlink" title="DSA -Digital Signature Algorithm"></a>DSA -Digital Signature Algorithm</h2><p>Digital Signature Algorithm (DSA)是Schnorr和ElGamal签名算法的变种，被美国NIST作为DSS(DigitalSignature Standard)。 专门用于签名和验签。<br>DSA是基于整数有限域离散对数难题的，其安全性与RSA相比差不多。</p>
+<h3 id="密钥生成-2"><a href="#密钥生成-2" class="headerlink" title="密钥生成"></a>密钥生成</h3><p>密钥生成有两个阶段。<br>第一阶段，是公开的参数信息。</p>
+<ol>
+<li>选择一个合适的哈希函数 $H$，目前一般选择 SHA1，当前也可以选择强度更高的哈希函数 如 SHA2。</li>
+<li>选择密钥的长度 $L$ 和 $N$，这两个值决定了签名的安全程度。在最初的 DSS（Digital Signature Standard ）中建议 $L$ 必须为 64 的倍数，并且 $512 ≤ L ≤ 1024$，当然，也可以更大。 $N$ 必须不大于哈希函数 $H$ 输出的长度。FIPS 186-3 给出了一些建议的 L 和 N 的取值例子：(1024, 160)， (2048, 224)， (2048, 256)，以及 (3,072, 256)。</li>
+<li>选择 $N$ 比特的素数 $q$ , $N$ 长度小于或等于哈希函数输出长度。</li>
+<li>选择 $L$ 比特的素数 $p$，使得 $p-1$ 是 $q$ 的倍数。</li>
+<li>选择 $g$ ，其模$p$ 的乘阶为 $q$ ，意味着 $q$ 是满足  $g^q=1\pmod p$ 最小的正整数，即 $ord_p(g)=p$。 即 $g$ 在模 $p$ 的意义下，其指数次幂可以生成具有 $q$ 个元素的子群。这里，我们可以通过计算 $g = h^ {\frac {p − 1} {q} }\pmod {p}$ 来得到 $g$，其中 $1 &lt; h &lt; p − 1$ 。 大部分的 $h$ 选择会导致可使用的 $g$ ，通常 $h=2$ 。</li>
+</ol>
+<p>$(p, g, q)$会在不同的系统间公开。<br>第二阶段，计算公钥和私钥。<br>选择私钥 $x$，使其满足 $0 &lt; x &lt; q$ ，计算 $y ≡ g^x mod p$ 。<br>公钥为 $(p, q, g, y)$ 。</p>
+<h3 id="签名-1"><a href="#签名-1" class="headerlink" title="签名"></a>签名</h3><ol>
+<li>选择随机整数数 k 作为<em>临时密钥</em>， $ 0 &lt; k &lt; q $。 </li>
+<li>计算 $r ≡ (g^k \pmod {p} ) \pmod {q} $</li>
+<li>计算 $s ≡ (H(m) + x r ) k^{−1} \pmod {q}$ 。</li>
+</ol>
+<p>签名结果为 $(r,s)$。<strong>需要注意的是，这里与 Elgamal 很重要的不同是这里使用了哈希函数对消息进行了哈希处理</strong>。</p>
+<p>可以利用扩展欧几里得算法计算 模逆 $k^{−1} \pmod {q}$ ，或者使用费马小定理。</p>
+<p>由于签名者 既不知道 私钥 $x$ ，又不知道随机数 $k$ ，在验证 $s ≡ (H(m) + x r ) k^{−1} \pmod {q}$ 时，需要将其转换成 $ k ≡ (H(m) + x r ) s^{−1} \pmod {q} $ 。<br>两边作 $g$ 的幂指数，得到 $ g^k ≡ g^{H(m)k^{-1}}y^{rs^{-1}} \pmod {p}$ 。 所以，验签者可以计算等式右边，等式左边是 $r$ ，那么可以判断等式是否成立。</p>
+<h3 id="验证-1"><a href="#验证-1" class="headerlink" title="验证"></a>验证</h3><ol>
+<li>先判断 $ 0 &lt; r &lt;q $ 或者 $ 0 &lt; s &lt; q $ 是否满足条件，如果不满足，则不验签。</li>
+<li>计算 $w=s^{-1}{\bmod {,}}q $</li>
+<li>计算 $ u_{1}=H\left(m\right)\cdot w,{\bmod {,}}q $</li>
+<li>计算 $ u_{2}=r\cdot w,{\bmod {,}}q $</li>
+<li>计算 $ v=\left(g^{u_{1}}y^{u_{2}}{\bmod {,}}p\right){\bmod {,}}q $</li>
+</ol>
+<p>如果 $ v = r $ ， 那么签名有效。</p>
+<h3 id="正确性证明"><a href="#正确性证明" class="headerlink" title="正确性证明"></a>正确性证明</h3><p>签名者计算 $$ s ≡ (H(m) + x r ) k^{−1} \pmod {q}$$ ，<br>可得<br>$$<br>\begin{align}<br>k &amp; \equiv H(m)s^{-1}+xrs^{-1}\<br>  &amp; \equiv H(m)w + xrw \pmod{q}<br>\end{align}<br>$$</p>
+<p>费马小定理 $ g^q ≡ h^{p − 1} ≡ 1 \pmod {p} $ ，且 $ g &gt;1 $ , $q$ 是质数， 因此 $g$ 有 $q \pmod{p}$ 阶。<br>$$<br>\begin{align}<br>g^{k}&amp;\equiv g^{H(m)w}g^{xrw}\<br>    &amp;\equiv g^{H(m)w}y^{rw}\<br>    &amp;\equiv g^{u_{1}}y^{u_{2}}{\pmod {p}}<br>\end{align}<br>$$</p>
+<p>DSA的正确性可从下式得出：<br>$$<br>\begin{align}<br>r&amp;=(g^{k}{\bmod {,}}p){\bmod {,}}q\<br>&amp;=(g^{u_{1}}y^{u_{2}}{\bmod {,}}p){\bmod {,}}q\<br>&amp;=v<br>\end{align}<br>$$</p>
+<h2 id="ECDSA"><a href="#ECDSA" class="headerlink" title="ECDSA"></a>ECDSA</h2><p>随机数很重要！</p>
+<blockquote>
+<p>The ECDSA digital signature has a drawback compared to RSA in that it requires a good source of entropy.<br>Without proper randomness, the private key could be revealed.<br>A flaw in the random number generator on Android allowed hackers to find the ECDSA private key used to protect the bitcoin wallets of several people in early 2013.<br>Sony’s Playstation implementation of ECDSA had a similar vulnerability.<br>A good source of random numbers is needed on the machine making the signatures. Dual_EC_DRBG is not recommended.</p>
+</blockquote>
+<p>from <a target="_blank" rel="noopener" href="https://blog.cloudflare.com/a-relatively-easy-to-understand-primer-on-elliptic-curve-cryptography/">A (Relatively Easy To Understand) Primer on Elliptic Curve Cryptography</a>  </p>
+<h1 id="Elliptic-Curve-Cryptography-ECC"><a href="#Elliptic-Curve-Cryptography-ECC" class="headerlink" title="Elliptic Curve Cryptography (ECC)"></a>Elliptic Curve Cryptography (ECC)</h1><p><a target="_blank" rel="noopener" href="https://cryptobook.nakov.com/asymmetric-key-ciphers/elliptic-curve-cryptography-ecc">Elliptic Curve Cryptography (ECC)</a>  </p>
+<p>基于椭圆曲线的密码算法包括：</p>
+<ol>
+<li><p>ECC签名算法，比如ECDSA和EdDSA  </p>
+</li>
+<li><p>ECC加密算法，比如ECIES integrated encryption scheme and EEECC (EC-based ElGamal).</p>
+</li>
+<li><p>ECC密钥协商，比如ECDH、X25519。    </p>
+</li>
+</ol>
+<p>ECC算法可以选取不同的椭圆曲线，根据曲线的不同，安全等级、密钥长度、计算速度也不同。<br>比如 <code>secp256k1</code> 和 <code>Curve25519</code> 。<br>一般，ECC私钥长度为 256 bits，但是也分曲线。比如 192-bit (curve secp192r1), 233-bit (curve sect233k1), 224-bit (curve secp224k1), 256-bit (curves secp256k1 and Curve25519), 283-bit (curve sect283k1), 384-bit (curves p384 and secp384r1), 409-bit (curve sect409r1), 414-bit (curve Curve41417), 448-bit (curve Curve448-Goldilocks), 511-bit (curve M-511), 521-bit (curve P-521), 571-bit (curve sect571k1)。  </p>
+<p>椭圆曲线的函数表示：  $y^2 = x^3 + a*x + b$<br>例如，对于 secp256k1，$y^2 = x^3 + 7$，a=0,b=7。  </p>
+<p>椭圆曲线上的操作包括点加（ EC point addition），点乘（EC point multiplication）。  </p>
+<p>椭圆曲线的几点要素：  </p>
+<ul>
+<li>Еlliptic curve (EC) over finite field $𝔽_p$</li>
+<li>$G$ == generator point (fixed constant, a base point on the EC)</li>
+<li>$k$ == private key (integer)</li>
+<li>$P$ == public key (point)  </li>
+</ul>
+<p>私钥是 一个整数，公钥是一个椭圆曲线上的点(EC point)，$P = k * G$。  </p>
+<p>有限域上的椭圆曲线的点构成了循环群，因此定义曲线的阶数 <code>order</code> 为EC全部的点。<br>定义无穷远点为 任一点乘以 0 得到的点。<br>但是有些曲线会生成若干$h$循环子群，每个子群的阶数为$r$，因此整个群的阶数为 $n=h*r$。  </p>
+<ul>
+<li>Curve25519  </li>
+</ul>
+<p>$y^2 = x^3 + 486662x^2 + x$</p>
+<h1 id="国产密码算法"><a href="#国产密码算法" class="headerlink" title="国产密码算法"></a>国产密码算法</h1><p>国产密码算法（国密算法）是指国家密码局认定的<code>国产商用密码算法</code>，在金融领域目前主要使用公开的SM2、SM3、SM4三类算法，分别是非对称算法、哈希算法和对称算法。 其中<code>SM</code>代表“商密”，即用于商用的、不涉及国家秘密的密码技术。</p>
+<h2 id="SM2椭圆曲线公钥密码算"><a href="#SM2椭圆曲线公钥密码算" class="headerlink" title="SM2椭圆曲线公钥密码算"></a>SM2椭圆曲线公钥密码算</h2><p>SM2椭圆曲线公钥密码算法是我国自主设计的公钥密码算法，包括 <strong>SM2-1椭圆曲线数字签名算法</strong>，<strong>SM2-2椭圆曲线密钥交换协议</strong>，<strong>SM2-3椭圆曲线公钥加密算法</strong>，分别用于实现数字签名密钥协商和数据加密等功能。SM2算法与RSA算法不同的是，SM2算法是基于椭圆曲线上点群离散对数难题，相对于RSA算法，256位的SM2密码强度已经比2048位的RSA密码强度要高。  </p>
+<p>SM2 $F_p-256$ 椭圆曲线选取：<br>$$y^2 = x^3 + ax + b$$<br>曲线参数：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">p&#x3D;FFFFFFFE FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF 00000000 FFFFFFFF FFFFFFFF</span><br><span class="line">a&#x3D;FFFFFFFE FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF 00000000 FFFFFFFF FFFFFFFC</span><br><span class="line">b&#x3D;28E9FA9E 9D9F5E34 4D5A9E4B CF6509A7 F39789F5 15AB8F92 DDBCBD41 4D940E93</span><br><span class="line">n&#x3D;FFFFFFFE FFFFFFFF FFFFFFFF FFFFFFFF 7203DF6B 21C6052B 53BBF409 39D54123</span><br><span class="line">Gx&#x3D;32C4AE2C 1F198119 5F990446 6A39C994 8FE30BBF F2660BE1 715A4589 334C74C7</span><br><span class="line">Gy&#x3D;BC3736A2 F4F6779C 59BDCEE3 6B692153 D0A9877C C62A4740 02DF32E5 2139F0A0</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://github.com/openssl/openssl/tree/master/crypto/sm2">OpenSSL SM2代码</a>  </p>
+<h3 id="SM2-椭圆曲线数字签名算法"><a href="#SM2-椭圆曲线数字签名算法" class="headerlink" title="SM2-椭圆曲线数字签名算法"></a>SM2-椭圆曲线数字签名算法</h3><h3 id="SM2-椭圆曲线密钥交换协议"><a href="#SM2-椭圆曲线密钥交换协议" class="headerlink" title="SM2-椭圆曲线密钥交换协议"></a>SM2-椭圆曲线密钥交换协议</h3><h3 id="SM2-椭圆曲线公钥加密算法"><a href="#SM2-椭圆曲线公钥加密算法" class="headerlink" title="SM2-椭圆曲线公钥加密算法"></a>SM2-椭圆曲线公钥加密算法</h3><h2 id="SM3杂凑算法"><a href="#SM3杂凑算法" class="headerlink" title="SM3杂凑算法"></a>SM3杂凑算法</h2><p>SM3杂凑算法是我国自主设计的密码杂凑算法，适用于商用密码应用中的数字签名和验证消息认证码的生成与验证以及随机数的生成，可满足多种密码应用的安全需求。为了保证杂凑算法的安全性，其产生的杂凑值的长度不应太短，例如MD5输出128比特杂凑值，输出长度太短，影响其安全性SHA-1算法的输出长度为160比特，SM3算法的消息分组长度是512比特，输出长度为256比特，因此SM3算法的安全性要高于MD5算法和SHA-1算法。</p>
+<p>整个算法的执行过程可以概括成四个步骤：消息填充、迭代压缩、输出结果。  </p>
+<h3 id="消息填充"><a href="#消息填充" class="headerlink" title="消息填充"></a>消息填充</h3><p>由于分组长度为512比特，把数据长度填充至512位的倍数。<br>首先在数据末尾填充一个比特<code>1</code>，而后在后面填充k个0，k满足(n+1+k) mod 512 = 448的最小正整数。这是为了保证最后填充的64位存储真实有效的原始数据长度，</p>
+<p>这里存在着这种情况，如果最后一分组的有效数据长度超过448，那么需要再创建一个512的分组。</p>
+<h3 id="迭代压缩"><a href="#迭代压缩" class="headerlink" title="迭代压缩"></a>迭代压缩</h3><p>将消息按照512分组进行迭代压缩。 每轮的迭代过程为：<br>$$V^{(i+1)} = CF(V^{(i)}, B^{(i)})$$</p>
+<p>其中 $CF$ 是压缩函数，$V^{(0)}$ 为256比特初始值$IV$，$B^{(i)}$ 为填充后的消息分组，迭代压缩的结果为$V^{(n)}$。  </p>
+<p>对于压缩函数计算过程，SM3没有直接使用原始消息，而是SM3使用 <strong>消息扩展</strong> 得到的消息字进行运算。  </p>
+<p>压缩函数的初值IV被放在A、B、C、D、E、F、G、H八个32位变量中，需要进行64轮迭代，每轮的输出再作为下一轮压缩函数时的初值。</p>
+<p>将得到的A、B、C、D、E、F、G、H八个变量拼接输出，就是SM3算法的输出。</p>
+<p>kernel中sm3实现在 <em>crypto/sm3_generic.c</em></p>
+<h2 id="SM4分组密码算法"><a href="#SM4分组密码算法" class="headerlink" title="SM4分组密码算法"></a>SM4分组密码算法</h2><p>SM4分组密码算法是我国自主设计的分组对称密码算法，用于实现数据的加密/解密运算，以保证数据和信息的机密性。<br>要保证一个对称密码算法的安全性的基本条件是其具备足够的密钥长度，SM4算法与AES算法具有相同的密钥长度/分组长度128比特，因此在安全性上高于3DES算法。</p>
+<p>SM4加密算法与密钥扩展算法都采用 32 轮非线性迭代结构。数据解密和数据加密的算法结构相同，<br>只是轮密钥的使用顺序相反，解密轮密钥是加密轮密钥的逆序。  </p>
+<p>该分组密码算法实现相对简单，也同样分为密钥扩展算法、加密和解密算法。<br>字节按照大端序处理。 </p>
+<ul>
+<li>每一轮的轮函数 $F$：  </li>
+</ul>
+<p>$$𝐹(𝑋_0, 𝑋_2, 𝑋_3, 𝑋_4, 𝑟𝑘) = 𝑋_0\bigoplus𝑇(𝑋_2 \bigoplus 𝑋_3 \bigoplus 𝑋_4 \bigoplus 𝑟𝑘)$$<br>其中，输入 $(𝑋_0, 𝑋_2, 𝑋_3, 𝑋_4)$ 为4个32bit的字， $rk$ 为当前32bit的轮密钥，$T$ 为可逆变换，由字节替换(SBox)和循环向左移位异或两部组成。 </p>
+<p>$$T(x) = L(\tau(x))$$<br>其中， $\tau(x)$ 为非线性变换，将 32bit 的 $x$ 的每个字节使用 SBox 替换。<br>$L(x)= x \bigoplus (x&lt;&lt;&lt;2) \bigoplus (x&lt;&lt;&lt;10) \bigoplus (x&lt;&lt;&lt;18) \bigoplus (x&lt;&lt;&lt;24)$ </p>
+<p>循环左移可参见宏  </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> ROTL(x, shift)	(((x)<span class="meta-string">&lt;&lt;(shift&amp;(32-1))) | ((x)&gt;</span>&gt;(32-(shift&amp;(32-1)))))</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="密钥扩展算法"><a href="#密钥扩展算法" class="headerlink" title="密钥扩展算法"></a>密钥扩展算法</h3><p>密钥扩展算法需要辅助参数 $FK$ 和 $CK$ ，</p>
+<p>加密密钥为 $MK=(MK_0, MK_1, MK_2, MK_3)$，<br>则首先生成首轮轮密钥： $(K_0, K_1, K_2, K_3)=(MK_0 \bigoplus FK_0, MK_1 \bigoplus FK_1, MK_2 \bigoplus FK_2, MK_3 \bigoplus FK_3)$。<br>则32个轮密钥都由前3个产生，即<br>$$rk_i=K_{i+4}=K_i \bigoplus T’(K_{i+1} \bigoplus K_{i+2} \bigoplus K_{i+3} \bigoplus CK_{i})$$</p>
+<p>$T’()$ 是将合成转置中的 $L$ 替换成 $L’$，即 $L’(x) = x \bigoplus (x&lt;&lt;&lt;13) \bigoplus (x&lt;&lt;&lt;23)$ 。</p>
+<h3 id="加密算法"><a href="#加密算法" class="headerlink" title="加密算法"></a>加密算法</h3><p>进行32次迭代计算：  $$X_{i+4}=F(X_i,X_{i+1},X_{i+2},X_{i+3},𝑟𝑘_{i})$$  </p>
+<p>将最后结果反序： </p>
+<p>$$(Y_0,Y_1,Y_2,Y_3) = R(X_{32},X_{33},X_{34},X_{35}) = (X_{35},X_{34},X_{33},X_{32})$$</p>
+<h3 id="解密算法"><a href="#解密算法" class="headerlink" title="解密算法"></a>解密算法</h3><p>本算法的解密变换与加密变换结构相同，不同的仅是轮密钥的使用顺序。解密时，使用<br>轮密钥序 $(rk_{31},rk_{30},…,rk_{0})$。</p>
+<p>kernel中sm3实现在 <em>crypto/sm4_generic.c</em>，用户态实现见<a target="_blank" rel="noopener" href="https://github.com/fengkx/sm4">sm4实现</a>、 <a target="_blank" rel="noopener" href="https://github.com/windard/sm4">SM4实现</a>。  </p>
+<h2 id="祖冲之序列密码算法"><a href="#祖冲之序列密码算法" class="headerlink" title="祖冲之序列密码算法"></a>祖冲之序列密码算法</h2><h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
+<li><a target="_blank" rel="noopener" href="http://www.cnblogs.com/songwenlong/p/5944139.html">安全体系（一）—— DES算法详解</a></li>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E8%BF%AA%E8%8F%B2-%E8%B5%AB%E7%88%BE%E6%9B%BC%E5%AF%86%E9%91%B0%E4%BA%A4%E6%8F%9B">迪菲-赫尔曼密钥交换</a></li>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%88%86%E7%BB%84%E5%AF%86%E7%A0%81%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F">分组密码工作模式</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.cnblogs.com/luop/p/4334160.html">密码算法详解——AES</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.gmbz.org.cn/upload/2018-03-24/1521879142922000396.pdf">密码标准应用指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.crypto101.io/">学习密码学的一套教程 CRYPTO101</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cryptography/" rel="tag"># cryptography</a>
+              <a href="/tags/%E5%9B%BD%E4%BA%A7%E5%AF%86%E7%A0%81/" rel="tag"># 国产密码</a>
+              <a href="/tags/ECDSA/" rel="tag"># ECDSA</a>
+              <a href="/tags/SM/" rel="tag"># SM</a>
+              <a href="/tags/RSA/" rel="tag"># RSA</a>
+              <a href="/tags/AES/" rel="tag"># AES</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/08/06/sql%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/" rel="prev" title="sql注入入门">
+      <i class="fa fa-chevron-left"></i> sql注入入门
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/08/07/format-strings/" rel="next" title="格式化字符串漏洞">
+      格式化字符串漏洞 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#tutorials"><span class="nav-number">1.</span> <span class="nav-text">tutorials</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%AF%E6%92%92%E5%92%8C%E6%A0%85%E6%A0%8F%E5%AF%86%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">凯撒和栅栏密码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#base64-32-16%E7%BC%96%E7%A0%81"><span class="nav-number">3.</span> <span class="nav-text">base64&#x2F;32&#x2F;16编码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#stream-cipher"><span class="nav-number">4.</span> <span class="nav-text">stream cipher</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#RC4-arch4"><span class="nav-number">4.1.</span> <span class="nav-text">RC4 (arch4)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Salsa20"><span class="nav-number">4.2.</span> <span class="nav-text">Salsa20</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ChaCha"><span class="nav-number">4.3.</span> <span class="nav-text">ChaCha</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#KDF"><span class="nav-number">5.</span> <span class="nav-text">KDF</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A1%AB%E5%85%85%E6%A8%A1%E5%BC%8F"><span class="nav-number">6.</span> <span class="nav-text">填充模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%BB%84%E5%AF%86%E7%A0%81%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F-mode-of-operation"><span class="nav-number">6.1.</span> <span class="nav-text">分组密码工作模式 mode of operation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%B5%E5%AD%90%E5%AF%86%E7%A0%81%E6%9C%AC%EF%BC%88Electronic-codebook%EF%BC%8CECB%EF%BC%89"><span class="nav-number">6.1.1.</span> <span class="nav-text">电子密码本（Electronic codebook，ECB）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%9D%97%E9%93%BE%E6%8E%A5%EF%BC%88CBC%EF%BC%8CCipher-block-chaining%EF%BC%89"><span class="nav-number">6.1.2.</span> <span class="nav-text">密码块链接（CBC，Cipher-block chaining）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E6%95%B0%E5%99%A8%E6%A8%A1%E5%BC%8F%EF%BC%88CTR%EF%BC%8CCounter-Mode%EF%BC%89"><span class="nav-number">6.1.3.</span> <span class="nav-text">计数器模式（CTR，Counter Mode）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A1%AB%E5%85%85%E5%AF%86%E7%A0%81%E5%9D%97%E9%93%BE%E6%8E%A5-%EF%BC%88PCBC%EF%BC%8CPropagating-cipher-block-chaining%EF%BC%89"><span class="nav-number">6.1.4.</span> <span class="nav-text">填充密码块链接 （PCBC，Propagating cipher-block chaining）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E6%96%87%E5%8F%8D%E9%A6%88%EF%BC%88CFB%EF%BC%8CCipher-feedback%EF%BC%89"><span class="nav-number">6.1.5.</span> <span class="nav-text">密文反馈（CFB，Cipher feedback）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%93%E5%87%BA%E5%8F%8D%E9%A6%88%E6%A8%A1%E5%BC%8F%EF%BC%88Output-feedback-OFB%EF%BC%89"><span class="nav-number">6.1.6.</span> <span class="nav-text">输出反馈模式（Output feedback, OFB）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GCM"><span class="nav-number">6.1.7.</span> <span class="nav-text">GCM</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#padding"><span class="nav-number">6.2.</span> <span class="nav-text">padding</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PKCS-5-PKCS-7-padding"><span class="nav-number">6.2.1.</span> <span class="nav-text">PKCS#5&#x2F;PKCS#7 padding</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Message-Authentication-Code-MAC"><span class="nav-number">6.3.</span> <span class="nav-text">Message Authentication Code(MAC)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Hash-based-Message-Authentication-Code-HMAC"><span class="nav-number">6.3.1.</span> <span class="nav-text">Hash-based Message Authentication Code(HMAC)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AEAD-Authenticated-Encryption-with-Associated-Data"><span class="nav-number">6.3.2.</span> <span class="nav-text">AEAD(Authenticated Encryption with Associated Data)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Block-ciphers"><span class="nav-number">7.</span> <span class="nav-text">Block ciphers</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#AES"><span class="nav-number">7.1.</span> <span class="nav-text">AES</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AES-%E5%8A%A0%E5%AF%86"><span class="nav-number">7.1.1.</span> <span class="nav-text">AES 加密</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SubBytes"><span class="nav-number">7.1.1.1.</span> <span class="nav-text">SubBytes</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ShiftRows"><span class="nav-number">7.1.1.2.</span> <span class="nav-text">ShiftRows</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MixColumns"><span class="nav-number">7.1.1.3.</span> <span class="nav-text">MixColumns</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AddRoundKey"><span class="nav-number">7.1.1.4.</span> <span class="nav-text">AddRoundKey</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AES-%E8%A7%A3%E5%AF%86"><span class="nav-number">7.1.2.</span> <span class="nav-text">AES 解密</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#InvShiftRows"><span class="nav-number">7.1.2.1.</span> <span class="nav-text">InvShiftRows</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#InvSubBytes"><span class="nav-number">7.1.2.2.</span> <span class="nav-text">InvSubBytes</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#InvMixColumns"><span class="nav-number">7.1.2.3.</span> <span class="nav-text">InvMixColumns</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">7.1.3.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RSA"><span class="nav-number">8.</span> <span class="nav-text">RSA</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#RSA%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B"><span class="nav-number">8.1.</span> <span class="nav-text">RSA算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Modular-Exponentiation"><span class="nav-number">8.2.</span> <span class="nav-text">Modular Exponentiation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%EF%BC%9Asliding-windows"><span class="nav-number">8.2.1.</span> <span class="nav-text">滑动窗口：sliding windows</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CRT-calculation"><span class="nav-number">8.2.2.</span> <span class="nav-text">CRT calculation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Montgomery-Multiplication"><span class="nav-number">8.2.3.</span> <span class="nav-text">Montgomery Multiplication</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#padding-1"><span class="nav-number">8.3.</span> <span class="nav-text">padding</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PKCS1"><span class="nav-number">8.3.1.</span> <span class="nav-text">PKCS1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OAEP"><span class="nav-number">8.3.2.</span> <span class="nav-text">OAEP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PSS"><span class="nav-number">8.3.3.</span> <span class="nav-text">PSS</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Paillier%E5%90%8C%E6%80%81%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95-Paillier-Homomorphic-Encryption"><span class="nav-number">9.</span> <span class="nav-text">Paillier同态加密算法(Paillier Homomorphic Encryption)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90%EF%BC%9A"><span class="nav-number">9.1.</span> <span class="nav-text">密钥生成：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E5%AF%86%E8%BF%87%E7%A8%8B%EF%BC%9A"><span class="nav-number">9.2.</span> <span class="nav-text">加密过程：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%AF%86%E8%BF%87%E7%A8%8B%EF%BC%9A"><span class="nav-number">9.3.</span> <span class="nav-text">解密过程：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%81%E6%98%8E"><span class="nav-number">9.4.</span> <span class="nav-text">证明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8C%E6%80%81%E7%9A%84%E6%80%A7%E8%B4%A8"><span class="nav-number">9.5.</span> <span class="nav-text">同态的性质</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%80%81%E5%8A%A0%E6%B3%95"><span class="nav-number">9.5.1.</span> <span class="nav-text">同态加法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%80%81%E4%B9%98%E6%B3%95"><span class="nav-number">9.5.2.</span> <span class="nav-text">同态乘法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%99%BE%E4%B8%87%E5%AF%8C%E7%BF%81%E5%AE%89%E5%85%A8%E6%AF%94%E5%AF%8C%E9%97%AE%E9%A2%98"><span class="nav-number">9.6.</span> <span class="nav-text">百万富翁安全比富问题</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9B%B6%E7%9F%A5%E8%AF%86%E8%AF%81%E6%98%8E-Zero-knowledge-proof"><span class="nav-number">10.</span> <span class="nav-text">零知识证明 Zero-knowledge proof</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%A6%BB%E6%95%A3%E5%AF%B9%E6%95%B0%E4%BD%93%E7%B3%BB%EF%BC%88Discrete-Logarithm%EF%BC%89"><span class="nav-number">11.</span> <span class="nav-text">离散对数体系（Discrete Logarithm）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%B0%E9%9A%BE%E9%97%AE%E9%A2%98"><span class="nav-number">11.1.</span> <span class="nav-text">困难问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#D-H"><span class="nav-number">11.2.</span> <span class="nav-text">D-H</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E7%9A%84DH%E5%AF%86%E9%92%A5%E4%BA%A4%E6%8D%A2%EF%BC%88ECDH%EF%BC%89"><span class="nav-number">11.3.</span> <span class="nav-text">基于椭圆曲线的DH密钥交换（ECDH）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ElGamal%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="nav-number">11.4.</span> <span class="nav-text">ElGamal加密算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90"><span class="nav-number">11.4.1.</span> <span class="nav-text">密钥生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%AF%86"><span class="nav-number">11.4.2.</span> <span class="nav-text">加密</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%AF%86"><span class="nav-number">11.4.3.</span> <span class="nav-text">解密</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ElGamal%E7%AD%BE%E5%90%8D%E7%AE%97%E6%B3%95"><span class="nav-number">11.5.</span> <span class="nav-text">ElGamal签名算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90-1"><span class="nav-number">11.5.1.</span> <span class="nav-text">密钥生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%BE%E5%90%8D"><span class="nav-number">11.5.2.</span> <span class="nav-text">签名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-number">11.5.3.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DSA-Digital-Signature-Algorithm"><span class="nav-number">11.6.</span> <span class="nav-text">DSA -Digital Signature Algorithm</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90-2"><span class="nav-number">11.6.1.</span> <span class="nav-text">密钥生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%BE%E5%90%8D-1"><span class="nav-number">11.6.2.</span> <span class="nav-text">签名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81-1"><span class="nav-number">11.6.3.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E"><span class="nav-number">11.6.4.</span> <span class="nav-text">正确性证明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ECDSA"><span class="nav-number">11.7.</span> <span class="nav-text">ECDSA</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Elliptic-Curve-Cryptography-ECC"><span class="nav-number">12.</span> <span class="nav-text">Elliptic Curve Cryptography (ECC)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%BD%E4%BA%A7%E5%AF%86%E7%A0%81%E7%AE%97%E6%B3%95"><span class="nav-number">13.</span> <span class="nav-text">国产密码算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SM2%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%85%AC%E9%92%A5%E5%AF%86%E7%A0%81%E7%AE%97"><span class="nav-number">13.1.</span> <span class="nav-text">SM2椭圆曲线公钥密码算</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SM2-%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E7%AE%97%E6%B3%95"><span class="nav-number">13.1.1.</span> <span class="nav-text">SM2-椭圆曲线数字签名算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SM2-%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%AF%86%E9%92%A5%E4%BA%A4%E6%8D%A2%E5%8D%8F%E8%AE%AE"><span class="nav-number">13.1.2.</span> <span class="nav-text">SM2-椭圆曲线密钥交换协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SM2-%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%85%AC%E9%92%A5%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="nav-number">13.1.3.</span> <span class="nav-text">SM2-椭圆曲线公钥加密算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SM3%E6%9D%82%E5%87%91%E7%AE%97%E6%B3%95"><span class="nav-number">13.2.</span> <span class="nav-text">SM3杂凑算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%A1%AB%E5%85%85"><span class="nav-number">13.2.1.</span> <span class="nav-text">消息填充</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%AD%E4%BB%A3%E5%8E%8B%E7%BC%A9"><span class="nav-number">13.2.2.</span> <span class="nav-text">迭代压缩</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SM4%E5%88%86%E7%BB%84%E5%AF%86%E7%A0%81%E7%AE%97%E6%B3%95"><span class="nav-number">13.3.</span> <span class="nav-text">SM4分组密码算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E9%92%A5%E6%89%A9%E5%B1%95%E7%AE%97%E6%B3%95"><span class="nav-number">13.3.1.</span> <span class="nav-text">密钥扩展算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="nav-number">13.3.2.</span> <span class="nav-text">加密算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%AF%86%E7%AE%97%E6%B3%95"><span class="nav-number">13.3.3.</span> <span class="nav-text">解密算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A5%96%E5%86%B2%E4%B9%8B%E5%BA%8F%E5%88%97%E5%AF%86%E7%A0%81%E7%AE%97%E6%B3%95"><span class="nav-number">13.4.</span> <span class="nav-text">祖冲之序列密码算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">14.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

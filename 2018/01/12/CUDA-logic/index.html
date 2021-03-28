@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本篇博客介绍CUDA的实现，包括物理和逻辑，内存结构等。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CUDA 介绍">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/01/12/CUDA-logic/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本篇博客介绍CUDA的实现，包括物理和逻辑，内存结构等。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/CUDA-logic/CUDA-logic.jpg">
+<meta property="article:published_time" content="2018-01-12T06:22:37.000Z">
+<meta property="article:modified_time" content="2021-03-28T08:06:30.126Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="GPU">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="SIMT">
+<meta property="article:tag" content="mmap">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://juniorprincewang.github.io/img/CUDA-logic/CUDA-logic.jpg">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/01/12/CUDA-logic/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>CUDA 介绍 | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/01/12/CUDA-logic/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CUDA 介绍
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-12 14:22:37" itemprop="dateCreated datePublished" datetime="2018-01-12T14:22:37+08:00">2018-01-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-28 16:06:30" itemprop="dateModified" datetime="2021-03-28T16:06:30+08:00">2021-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GPU/" itemprop="url" rel="index">
+                    <span itemprop="name">GPU</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GPU/CUDA/" itemprop="url" rel="index">
+                    <span itemprop="name">CUDA</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇博客介绍CUDA的实现，包括物理和逻辑，内存结构等。</p>
+<span id="more"></span>
+
+
+
+
+<h1 id="GPU物理层"><a href="#GPU物理层" class="headerlink" title="GPU物理层"></a>GPU物理层</h1><p>NVidia GPU的流处理器（Stream Multiprocessors, SM）是GPU种非常重要的部分，GPU的并行性是由SM决定的。<br>以Fermi架构为例，主要组成部分如下:</p>
+<ul>
+<li>CUDA cores，执行单元</li>
+<li>Shared Memory/L1Cache，共享内存和一级Cache</li>
+<li>Register File</li>
+<li>Load/Store Units</li>
+<li>Special Function Units: 特殊函数单元（SFU），用以计算log/exp，sin/cos，rcp/rsqrt的单精度近似值；</li>
+<li>Warp Scheduler：一个线程束调度器。</li>
+</ul>
+<h1 id="CUDA基本概念"><a href="#CUDA基本概念" class="headerlink" title="CUDA基本概念"></a>CUDA基本概念</h1><h2 id="函数限定符"><a href="#函数限定符" class="headerlink" title="函数限定符"></a>函数限定符</h2><p><code>__device__</code> ：声明某函数在设备上执行，只能从设备中调用<br><code>__global__</code> ：声明某函数为内核(kernel)函数，在设备上执行，只能从宿主中调用<br><code>__host__</code> ：host声明某函数在宿主上执行，只能从宿主中调用</p>
+<h2 id="变量类型限定符"><a href="#变量类型限定符" class="headerlink" title="变量类型限定符"></a>变量类型限定符</h2><p><code>__constant__</code> 限定符与 <code>__device__</code> 结合使用，声明变量：<br>    驻留在常量内存空间中，具有应用程序的生命期，可通过运行时库被网格的所有线程访问，也可被宿主访问。<br><code>__shared__</code> 限定符可以与 <code>__device__</code> 结合使用，声明变量：<br>    驻留在线程块的共享内存空间中，具有块的生命期，仅可被块内的所有线程访问。</p>
+<h1 id="逻辑层"><a href="#逻辑层" class="headerlink" title="逻辑层"></a>逻辑层</h1><p>CUDA为了方便编程，提出了 <code>kernel</code> 、 <code>thread</code> 、 <code>block</code> 、 <code>grid</code> 、 <code>warp</code> 概念。</p>
+<ul>
+<li><p><code>kernel</code> : 是CUDA C扩展C语言函数定义出来的函数，它可以被N个CUDA线程调用N次。</p>
+</li>
+<li><p><code>thread</code> : GPU程序执行的最小单位，每个线程拥有自己的程序计数器和状态寄存器，并且用自己的数据执行指令。<br>每个线程可以有自己独立的 <code>指令寄存器</code> 、 <code>寄存器状态</code> 、 <code>独立的执行路径</code> 。</p>
+</li>
+<li><p><code>block</code> ：一个block由3维空间的thread组成，同一个block中的thread可以同步，也可以通过shared memory通信。</p>
+</li>
+<li><p><code>grid</code> ：一个grid再由3维空间的block组成。</p>
+</li>
+<li><p><code>warp</code> ：GPU执行 程序的调度单位，目前cuda的一个warp由32个线程组成。<br><code>warp</code> 包含32个线程，用以协调把指令分发到执行单元，是调度和运行的基本单位。 <code>warp</code> 中的所有 <code>threads</code> 并行执行相同的指令。<br>一个 <code>warp</code> 只能分配到一个 <code>SM</code> 运行， 一个 <code>SM</code> 可以同时允许多个 <code>warp</code> 执行。</p>
+</li>
+</ul>
+<p><code>thread</code> 、 <code>block</code> 、 <code>grid</code> 、 <code>kernel</code> 的关系图：  </p>
+<p><img src="/img/CUDA-logic/CUDA-logic.jpg" alt="逻辑关系图"> </p>
+<h1 id="内存层次"><a href="#内存层次" class="headerlink" title="内存层次"></a>内存层次</h1><h2 id="register"><a href="#register" class="headerlink" title="register"></a>register</h2><p>GPU 寄存器提供了线程快速存取地址，每个寄存器大小为32位，寄存器数量有限。</p>
+<table>
+<thead>
+<tr>
+<th>Compute capability</th>
+<th>#registers per thread</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.x</td>
+<td>128</td>
+</tr>
+<tr>
+<td>2.x</td>
+<td>63</td>
+</tr>
+<tr>
+<td>3.x</td>
+<td>63</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>255</td>
+</tr>
+</tbody></table>
+<p>Kernel中的局部(简单类型)变量第一选择是被分配到寄存器中。 </p>
+<p>比如， <code>kernel1</code> 中的变量 <code>a[ARRAY_SIZE]</code> 优化为寄存器。<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/Bruce_0712/article/details/65664840">代码出处:CUDA之编程中线程分配的数组在register中还是local memory中？</a>  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__global__ <span class="keyword">void</span> <span class="title">kernel1</span><span class="params">(<span class="keyword">float</span> *buf)</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">float</span> a[ARRAY_SIZE];  </span><br><span class="line">    <span class="keyword">int</span> tid = threadIdx.x + blockIdx.x * blockDim.x;  </span><br><span class="line">  </span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> unroll  </span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; ++i) &#123;  </span><br><span class="line">        a[i] = buf[tid];  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">float</span> sum = <span class="number">0.f</span>;  </span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> unroll  </span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; ++i) &#123;  </span><br><span class="line">        <span class="comment">//static indexing  </span></span><br><span class="line">        sum += a[i];  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    buf[tid] = sum;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h2 id="local-memory"><a href="#local-memory" class="headerlink" title="local memory"></a>local memory</h2><p>local memory 或者称为 “thread-local global memory”，属于片下内存，因此访问速度慢，带宽小。<br>由于寄存器数量有限，当寄存器耗尽后，线程中数据将被存储到local memory。<br>如果每个线程中使用了过多的寄存器（known as <em>register spilling</em>），或声明了大型结构体或大数组，或编译器无法确定数组大小（Dynamic Indexing），线程的私有数据就会被分配到local memory中。<br>local memory 是每个线程私有。  </p>
+<p><em>tips</em>：  在声明局部变量时，尽量使变量可以分配到register。如：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unsigned int mt[3];</span><br></pre></td></tr></table></figure>
+<p>改为：　</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unsigned int mt0, mt1, mt2;</span><br></pre></td></tr></table></figure>
+
+<p>编译器会将自动变量存放入local memory中。<br>更多内容参考 <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory-accesses">https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory-accesses</a><br><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/10297067/in-a-cuda-kernel-how-do-i-store-an-array-in-local-thread-memory">In a CUDA kernel, how do I store an array in “local thread memory”?</a>  </p>
+<h2 id="shared-memory"><a href="#shared-memory" class="headerlink" title="shared memory"></a>shared memory</h2><p><code>shared memory</code> 按照线程块（block）划分， 其上的数据可以为同一 <code>block</code> 中的所有线程共享。<br>每个 <code>warp</code> 的 <code>shared memory</code> 大小是 <code>64KB</code> , 这个和 <code>L1 cache</code> 共用。、<br>按照 16KB L1 / 48KB shared 或者 48KB L1 / 16KB shared 划分。<br> ([PixelVault])<br>同一个线程块中的线程可以通过共享内存互相通信，在逻辑上同一个线程块中的所有线程同时执行，但是在物理上，同一个线程块中的所有线程并不是同时执行的，所以同一个线程块中的线程并不是同时执行结束的。<br>共享内存可能会导致线程之间的竞争：多个线程同时访问某个数据。CUDA提供了线程块内的同步，保证同一个线程块中的线程在下一步执行前都完成了上一步的执行。但是<strong>线程块</strong>之间无法同步。</p>
+<h2 id="global-memory"><a href="#global-memory" class="headerlink" title="global memory"></a>global memory</h2><p>存储器和编程逻辑之间的关系如下表：</p>
+<table>
+<thead>
+<tr>
+<th>存储器</th>
+<th>位置</th>
+<th>访问权限</th>
+<th>生存周期</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>register</td>
+<td>GPU 片内</td>
+<td>Device 读写</td>
+<td>thread</td>
+</tr>
+<tr>
+<td>local memory</td>
+<td>板载显存</td>
+<td>Device 读写</td>
+<td>thread</td>
+</tr>
+<tr>
+<td>shared memory</td>
+<td>GPU 片内</td>
+<td>Device 读写</td>
+<td>block</td>
+</tr>
+<tr>
+<td>Constant memory</td>
+<td>板载显存</td>
+<td>host 读写, Device 读</td>
+<td>host分配释放</td>
+</tr>
+<tr>
+<td>Texture memory</td>
+<td>板载显存</td>
+<td>host 读写, Device 读</td>
+<td>host分配释放</td>
+</tr>
+<tr>
+<td>Global memory</td>
+<td>板载显存</td>
+<td>host 读写, Device 读写</td>
+<td>host分配释放</td>
+</tr>
+<tr>
+<td>Host memory</td>
+<td>host 内存</td>
+<td>host 读写</td>
+<td>host分配释放</td>
+</tr>
+<tr>
+<td>Pinened memory</td>
+<td>host 内存</td>
+<td>host 读写</td>
+<td>host分配释放</td>
+</tr>
+</tbody></table>
+<h1 id="driver-API"><a href="#driver-API" class="headerlink" title="driver API"></a>driver API</h1><p>不同于运行时 runtime API , Driver API 提供了GPU更底层的访问控制，用于后向兼容GPU驱动。Driver API实现在动态库 cuda.so中，函数名称以 <code>cu</code> 开头。</p>
+<p>CUDA中能够访问到的对象如下表。</p>
+<table>
+<thead>
+<tr>
+<th>Object</th>
+<th>Handle</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Device</td>
+<td>CUdevice</td>
+<td>CUDA-enabled device</td>
+</tr>
+<tr>
+<td>Context</td>
+<td>CUcontext</td>
+<td>Roughly equivalent to a CPU process</td>
+</tr>
+<tr>
+<td>Module</td>
+<td>CUmodule</td>
+<td>Roughly equivalent to a dynamic library</td>
+</tr>
+<tr>
+<td>Function</td>
+<td>CUfunction</td>
+<td>Kernel</td>
+</tr>
+<tr>
+<td>Heap memory</td>
+<td>CUdeviceptr</td>
+<td>Pointer to device memory</td>
+</tr>
+<tr>
+<td>CUDA array</td>
+<td>CUarray</td>
+<td>Opaque container for one-dimensional or two-dimensional data on the device, readable via texture or surface references</td>
+</tr>
+<tr>
+<td>Texture reference</td>
+<td>CUtexref</td>
+<td>Object that describes how to interpret texture memory data</td>
+</tr>
+<tr>
+<td>Surface reference</td>
+<td>CUsurfref</td>
+<td>Object that describes how to read or write CUDA arrays</td>
+</tr>
+<tr>
+<td>Event</td>
+<td>CUevent</td>
+<td>Object that describes a CUDA event</td>
+</tr>
+</tbody></table>
+<p>在调用Driver API 前需要调用 <code>cuInit()</code> 来初始化。然后必须创建一个CUDA上下文 Context，该Context附加到特定设备并使其成为当前调用主机线程的当前上下文。</p>
+<p>在CUDA Context内部，内核通过主机代码显式加载为PTX或二进制对象。 因此，用C编写的内核必须单独编译为PTX或二进制对象。 但是<br>任何想要在未来的设备架构上兼容运行的应用程序都必须加载PTX，而不是二进制代码。 这是因为二进制代码是体系结构特定的，因此可能与未来的体系结构存在着不兼容性，而PTX代码在加载时由设备驱动程序编译为二进制代码。</p>
+<p>Driver API的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    int N &#x3D; ...;</span><br><span class="line">    size_t size &#x3D; N * sizeof(float);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Allocate input vectors h_A and h_B in host memory</span><br><span class="line">    float* h_A &#x3D; (float*)malloc(size);</span><br><span class="line">    float* h_B &#x3D; (float*)malloc(size);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Initialize input vectors</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Initialize</span><br><span class="line">    cuInit(0);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Get number of devices supporting CUDA</span><br><span class="line">    int deviceCount &#x3D; 0;</span><br><span class="line">    cuDeviceGetCount(&amp;deviceCount);</span><br><span class="line">    if (deviceCount &#x3D;&#x3D; 0) &#123;</span><br><span class="line">        printf(&quot;There is no device supporting CUDA.\n&quot;);</span><br><span class="line">        exit (0);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Get handle for device 0</span><br><span class="line">    CUdevice cuDevice;</span><br><span class="line">    cuDeviceGet(&amp;cuDevice, 0);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Create context</span><br><span class="line">    CUcontext cuContext;</span><br><span class="line">    cuCtxCreate(&amp;cuContext, 0, cuDevice);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Create module from binary file</span><br><span class="line">    CUmodule cuModule;</span><br><span class="line">    cuModuleLoad(&amp;cuModule, &quot;VecAdd.ptx&quot;);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Allocate vectors in device memory</span><br><span class="line">    CUdeviceptr d_A;</span><br><span class="line">    cuMemAlloc(&amp;d_A, size);</span><br><span class="line">    CUdeviceptr d_B;</span><br><span class="line">    cuMemAlloc(&amp;d_B, size);</span><br><span class="line">    CUdeviceptr d_C;</span><br><span class="line">    cuMemAlloc(&amp;d_C, size);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Copy vectors from host memory to device memory</span><br><span class="line">    cuMemcpyHtoD(d_A, h_A, size);</span><br><span class="line">    cuMemcpyHtoD(d_B, h_B, size);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Get function handle from module</span><br><span class="line">    CUfunction vecAdd;</span><br><span class="line">    cuModuleGetFunction(&amp;vecAdd, cuModule, &quot;VecAdd&quot;);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; Invoke kernel</span><br><span class="line">    int threadsPerBlock &#x3D; 256;</span><br><span class="line">    int blocksPerGrid &#x3D;</span><br><span class="line">            (N + threadsPerBlock - 1) &#x2F; threadsPerBlock;</span><br><span class="line">    void* args[] &#x3D; &#123; &amp;d_A, &amp;d_B, &amp;d_C, &amp;N &#125;;</span><br><span class="line">    cuLaunchKernel(vecAdd,</span><br><span class="line">                   blocksPerGrid, 1, 1, threadsPerBlock, 1, 1,</span><br><span class="line">                   0, 0, args, 0);</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Context"><a href="#Context" class="headerlink" title="Context"></a>Context</h2><p>CUDA 的上下文也类似于CPU 进程的上下文，一般情况下，它是管理CUDA程序中所有对象生命周期的容器。这些对象包括：</p>
+<pre><code>所有分配内存（线性设备内存，host内存，和CUDA arrays）
+Modules，类似于动态链接库，以.cubin和.ptx结尾
+CUDA streams，管理执行单元的并发性
+CUDA events
+texture和surface引用
+kernel里面使用到的本地内存（设备内存）
+用于调试、分析和同步的内部资源
+用于分页复制的固定缓冲区
+</code></pre>
+<p>CUDA runtime（软件层的库）不提供API直接访问CUDA context，而是通过延迟初始化（deferred initialization）来创建context。<br>具体意思是，不涉及到context内容的API，Driver不会主动创建context，比如cudaGetDeviceCount等函数。否则，例如申请内存等API就可以显式的控制初始化，即调用cudaFree(0)。尤其是在第一次调用一个改变驱动状态的函数时会自动默认创建一个上下文环境，如cudaMalloc() 默认在 GPU 0 上创建上下文。<br>CUDA runtime将context和device的概念合并了，即在一个GPU上操作可看成在一个context下。因而cuda runtime提供的函数如cudaDeviceSynchronize()对应于Driver API的cuCtxSynchronize()。</p>
+<p>应用可以通过驱动API来访问当前context的栈。与context相关的操作，都是以cuCtxXXXX()的形式作为driver API实现。</p>
+<p>GPU设备驱动通过设备驱动程序为应用程序提供多个上下文环境，就可以使单个CUDA应用程序使用多个设备。 但同一时刻只能有一个上下文环境处于活动状态，如果需要操作多个设备时，需要用cudaSetDevice()切换上下文环境。</p>
+<p>上下文中包含的关键抽象是其地址空间：即可用于分配线性设备内存或映射锁页主机内存的私有虚拟内存地址集。这些地址是在每个上下文中唯一的。不同上下文的相同地址可能有效也可能无效，并且当然不会解析到相同的内存位置，除非做出特殊规定。 CUDA上下文的地址空间是独立的，与CUDA主机代码使用的CPU地址空间不同。</p>
+<p>当context被销毁，里面分配的资源也都被销毁，一个context内分配的资源不能被其他的context使用。在Driver API中，每一个cpu线程都有一个current context的栈，新建的context就入栈。<br>针对每一个线程只能有一个出栈变成可使用的current context，而这个游离的context可以转移到另一个cpu线程，通过函数cuCtxPushCurrent/cuCtxPopCurrent来实现。<br>current context堆栈的另一个好处是能够从不同的CPU线程驱动给定的CUDA上下文。 使用驱动程序API的应用程序可以通过使用cuCtxPopCurrent（）弹出上下文，然后从另一个线程调用cuCtxPushCurrent（），将CUDA上下文“迁移”到其他CPU线程。 </p>
+<h2 id="Module"><a href="#Module" class="headerlink" title="Module"></a>Module</h2><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/12936986/why-does-cudamalloc-use-pointer-to-pointer">Why does cudaMalloc() use pointer to pointer?</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/GPU/" rel="tag"># GPU</a>
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/tags/SIMT/" rel="tag"># SIMT</a>
+              <a href="/tags/mmap/" rel="tag"># mmap</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/11/01/rCUDA/" rel="prev" title="rCUDA">
+      <i class="fa fa-chevron-left"></i> rCUDA
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/01/13/NVidia%E4%BA%A7%E5%93%81%E5%92%8C%E5%BE%AE%E6%9E%B6%E6%9E%84/" rel="next" title="NVidia产品和微架构">
+      NVidia产品和微架构 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#GPU%E7%89%A9%E7%90%86%E5%B1%82"><span class="nav-number">1.</span> <span class="nav-text">GPU物理层</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CUDA%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">2.</span> <span class="nav-text">CUDA基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E9%99%90%E5%AE%9A%E7%AC%A6"><span class="nav-number">2.1.</span> <span class="nav-text">函数限定符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E7%B1%BB%E5%9E%8B%E9%99%90%E5%AE%9A%E7%AC%A6"><span class="nav-number">2.2.</span> <span class="nav-text">变量类型限定符</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%80%BB%E8%BE%91%E5%B1%82"><span class="nav-number">3.</span> <span class="nav-text">逻辑层</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%B1%82%E6%AC%A1"><span class="nav-number">4.</span> <span class="nav-text">内存层次</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#register"><span class="nav-number">4.1.</span> <span class="nav-text">register</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#local-memory"><span class="nav-number">4.2.</span> <span class="nav-text">local memory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shared-memory"><span class="nav-number">4.3.</span> <span class="nav-text">shared memory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#global-memory"><span class="nav-number">4.4.</span> <span class="nav-text">global memory</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#driver-API"><span class="nav-number">5.</span> <span class="nav-text">driver API</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Context"><span class="nav-number">5.1.</span> <span class="nav-text">Context</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Module"><span class="nav-number">5.2.</span> <span class="nav-text">Module</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

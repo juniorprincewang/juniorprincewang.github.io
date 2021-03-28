@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="整理经常使用到的latex语法和WinEdt 10工具。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="latex语法学习">
+<meta property="og:url" content="http://juniorprincewang.github.io/2019/08/15/latex%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="整理经常使用到的latex语法和WinEdt 10工具。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-08-15T07:48:04.000Z">
+<meta property="article:modified_time" content="2021-03-26T11:25:06.948Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="latex">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2019/08/15/latex%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>latex语法学习 | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2019/08/15/latex%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          latex语法学习
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-15 15:48:04" itemprop="dateCreated datePublished" datetime="2019-08-15T15:48:04+08:00">2019-08-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-26 19:25:06" itemprop="dateModified" datetime="2021-03-26T19:25:06+08:00">2021-03-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/latex/" itemprop="url" rel="index">
+                    <span itemprop="name">latex</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>整理经常使用到的latex语法和WinEdt 10工具。</p>
+<span id="more"></span>
+
+<p>写论文用到的在线Latex编辑和生成网站是 <a target="_blank" rel="noopener" href="https://www.overleaf.com/">overleaf</a>。<br>但是有时由于网络不稳定，会遇到掉线的情况。这时候选用的本地Latex编辑和生成软件是WinEdt。 </p>
+<h1 id="latex语法"><a href="#latex语法" class="headerlink" title="latex语法"></a>latex语法</h1><p>网上的latex语法教程简直数不胜数，我选择了Overleaf官网给出的教程<a target="_blank" rel="noopener" href="https://www.overleaf.com/learn/latex/Learn_LaTeX_in_30_minutes">https://www.overleaf.com/learn/latex/Learn_LaTeX_in_30_minutes</a>。  </p>
+<p>latex的文档后缀名为 <em>.tex</em>。  </p>
+<h2 id="hello-latex"><a href="#hello-latex" class="headerlink" title="hello latex"></a>hello latex</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\documentclass&#123;article&#125;</span><br><span class="line"> </span><br><span class="line">\begin&#123;document&#125;</span><br><span class="line">Hello Latex.</span><br><span class="line">\end&#123;document&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p><code>\begin&#123;document&#125;</code> 之前的部分为 <em>preamble</em> ，这里的语句可以定义文档的类型，语言，包（package）等等。<br><code>\begin&#123;document&#125;</code> 和 <code>\end&#123;document&#125;</code> 之间的部分为 <em>body</em>。</p>
+<h2 id="文档类型"><a href="#文档类型" class="headerlink" title="文档类型"></a>文档类型</h2><p><code>\documentclass&#123;&#125;</code>  规定文档的类型，可以选择文章article，也可以选择其它类型，如book、letter等等<br>在写论文时，一般会有模板，这里套上相关的文档类型即可。  </p>
+<p><code>\documentclass[12pt, a4paper]&#123;article&#125;</code> 设置纸张大小为 A4。 如果不设置字体大小，默认的字体大小为 10pt。  </p>
+<p>对于页大小和页边距的设置可参见：<a target="_blank" rel="noopener" href="https://www.overleaf.com/learn/latex/Page_size_and_margins">Page size and margins</a>。  </p>
+<h2 id="添加包"><a href="#添加包" class="headerlink" title="添加包"></a>添加包</h2><p><code>\usepackage&#123;&#125;</code> ，比如添加图片的包： <code>\usepackage&#123;graphicx&#125;</code> 。  </p>
+<h2 id="添加标题、作者、日期等信息"><a href="#添加标题、作者、日期等信息" class="headerlink" title="添加标题、作者、日期等信息"></a>添加标题、作者、日期等信息</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">\title&#123;First document&#125;</span><br><span class="line">\author&#123;Hubert Farnsworth \thanks&#123;funded by the Overleaf team&#125;&#125;</span><br><span class="line">\date&#123;February 2017&#125;</span><br><span class="line"></span><br><span class="line">\begin&#123;document&#125; </span><br><span class="line">\maketitle </span><br><span class="line"></span><br><span class="line">Hello world! </span><br><span class="line"></span><br><span class="line">\end&#123;document&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>： 需要在<em>body</em> 中使用命令 <code>\maketitle</code>将这些信息按照预定的格式打印出来。  </p>
+<h2 id="添加注释"><a href="#添加注释" class="headerlink" title="添加注释"></a>添加注释</h2><p><code>%</code> 为注释符。如果文章内容中需要使用%的话，需要在%前面加上反斜杠\。</p>
+<h2 id="添加章节"><a href="#添加章节" class="headerlink" title="添加章节"></a>添加章节</h2><figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-1  <span class="keyword">\part</span>&#123;part&#125;</span><br><span class="line">0   <span class="keyword">\chapter</span>&#123;chapter&#125;</span><br><span class="line">1   <span class="keyword">\section</span>&#123;section&#125;</span><br><span class="line">2   <span class="keyword">\subsection</span>&#123;subsection&#125;</span><br><span class="line">3   <span class="keyword">\subsubsection</span>&#123;subsubsection&#125;</span><br><span class="line">4   <span class="keyword">\paragraph</span>&#123;paragraph&#125;</span><br><span class="line">5   <span class="keyword">\subparagraph</span>&#123;subparagraph&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>\section&#123;&#125;</code>的花括号内的内容是标题，标题序号默认自动排序。如果不想要标题序号，使用 <code>\section*&#123;&#125;</code>。</li>
+<li><code>\part</code> 和 <code>\chapter</code> 用于 <em>report</em> 和 <em>book</em> 类型。</li>
+</ul>
+<p>更多章节内容，参见 <a target="_blank" rel="noopener" href="https://www.overleaf.com/learn/latex/Sections_and_chapters">Sections and chapters</a>。  </p>
+<h2 id="Abstracts"><a href="#Abstracts" class="headerlink" title="Abstracts"></a>Abstracts</h2><p>论文中，摘要（<em>Abstract</em>）是正文最开始的一段，它高度概括了本文的主旨。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;document&#125;</span><br><span class="line"> </span><br><span class="line">\begin&#123;abstract&#125;</span><br><span class="line">This is a simple paragraph at the beginning of the </span><br><span class="line">document. A brief introduction about the main subject.</span><br><span class="line">\end&#123;abstract&#125;</span><br><span class="line">\end&#123;document&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="段落"><a href="#段落" class="headerlink" title="段落"></a>段落</h2><h3 id="换行"><a href="#换行" class="headerlink" title="换行"></a>换行</h3><ul>
+<li>如果要另起一段，需要摁 “Enter” 键两次。即两段之间有一空白行。  </li>
+<li><code>\\</code> 放在行位换行。  </li>
+<li><code>\par</code> 放在段尾，起到了换行的作用。  </li>
+</ul>
+<h3 id="Paragraph-Alignment-Text-Justification"><a href="#Paragraph-Alignment-Text-Justification" class="headerlink" title="Paragraph Alignment(Text Justification)"></a>Paragraph Alignment(Text Justification)</h3><p>默认两端对齐，如果要调整，可以换成 <em>center</em>, <em>flushleft</em> 和 <em>flushright</em> 。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;flushleft&#125;</span><br><span class="line">paragraph</span><br><span class="line">\end&#123;flushleft&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Paragraph-Indentation"><a href="#Paragraph-Indentation" class="headerlink" title="Paragraph Indentation"></a>Paragraph Indentation</h3><p>section默认首段不缩进，紧接着的下一段缩进可由 <code>\parindent</code> 控制。但是缩进的长度是由 class 决定得，这可通过命令 <code>\setlength</code> 更改。<br><code>\noindent</code>放置于段首，段落无缩进。  </p>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">\setlength</span>&#123;<span class="keyword">\parindent</span>&#125;&#123;10ex&#125;</span><br><span class="line">This is the text in first paragraph. This is the text in first </span><br><span class="line">paragraph. This is the text in first paragraph. <span class="keyword">\par</span></span><br><span class="line"><span class="keyword">\noindent</span> <span class="comment">%The next paragraph is not indented</span></span><br><span class="line">This is the text in second paragraph. This is the text in second </span><br><span class="line">paragraph. This is the text in second paragraph.</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="粗体、斜体、下划线"><a href="#粗体、斜体、下划线" class="headerlink" title="粗体、斜体、下划线"></a>粗体、斜体、下划线</h2><ul>
+<li><code>\textbf&#123;...&#125;</code>  设置粗体（Bold）</li>
+<li><code>\textit&#123;...&#125;</code>  设置斜体（Italics）</li>
+<li><code>\underline&#123;...&#125;</code> 设置下划线（underline）  </li>
+<li><code>\emph&#123;...&#125;</code> 命令很有用：在正常文本中被强调的部分呈 <em>斜体</em>，但是在斜体文本中，呈正常体。  </li>
+</ul>
+<p>更多字体的设置可以参见 <a target="_blank" rel="noopener" href="https://www.overleaf.com/learn/latex/Font_sizes,_families,_and_styles">Font sizes, families, and styles</a>。  </p>
+<ul>
+<li>Font sizes： <code>\large</code> 等</li>
+<li>Font styles ： <code>\textbf</code> 等</li>
+<li>font families： <code>\textrm</code> 等  </li>
+</ul>
+<h2 id="添加图片"><a href="#添加图片" class="headerlink" title="添加图片"></a>添加图片</h2><p>latex本身不管理图片，需要引入包 <em>graphicx</em>，此包包含两个命令 <code>\includegraphics&#123;...&#125;</code> 和 <code>\graphicspath&#123;...&#125;</code> 。  </p>
+<ul>
+<li><code>\graphicspath&#123; &#123;images/&#125; &#125;</code> 表示图片存放路径在当前路径的 <em>images</em>文件夹下。  </li>
+<li><code>\includegraphics&#123;universe&#125; </code> 表示在文档中引入名称为 <em>universe</em> 的图片， <em>universe</em> 没有带文件扩展名，文件名不包括空格和点。  </li>
+</ul>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">\usepackage</span>&#123;graphicx&#125;</span><br><span class="line"><span class="keyword">\graphicspath</span>&#123; &#123;images/&#125; &#125;</span><br><span class="line"><span class="keyword">\begin</span>&#123;document&#125;</span><br><span class="line"><span class="keyword">\includegraphics</span>&#123;universe&#125; </span><br><span class="line"><span class="keyword">\end</span>&#123;document&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="标题、标签和引用"><a href="#标题、标签和引用" class="headerlink" title="标题、标签和引用"></a>标题、标签和引用</h3><figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">\begin</span>&#123;figure&#125;[h]</span><br><span class="line">    <span class="keyword">\centering</span></span><br><span class="line">    <span class="keyword">\includegraphics</span>[width=0.25<span class="keyword">\textwidth</span>]&#123;mesh&#125;</span><br><span class="line">    <span class="keyword">\caption</span>&#123;a nice plot&#125;</span><br><span class="line">    <span class="keyword">\label</span>&#123;fig:mesh1&#125;</span><br><span class="line"><span class="keyword">\end</span>&#123;figure&#125;  </span><br><span class="line">As you can see in the figure <span class="keyword">\ref</span>&#123;fig:mesh1&#125;, the </span><br><span class="line">function grows near 0. Also, in the page <span class="keyword">\pageref</span>&#123;fig:mesh1&#125; </span><br><span class="line">is the same example.</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>\caption&#123;a nice plot&#125;</code> 标题，可以放在图片上方或下方。</li>
+<li><code>\label&#123;fig:mesh1&#125;</code> 方便引用。 </li>
+<li><code>\ref&#123;fig:mesh1&#125;</code> 通过 <code>\ref&#123;fig:mesh1&#125;</code> 引用。</li>
+</ul>
+<h2 id="添加表格"><a href="#添加表格" class="headerlink" title="添加表格"></a>添加表格</h2><figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Table <span class="keyword">\ref</span>&#123;table:data&#125; is an example of referenced <span class="keyword">\LaTeX</span>&#123;&#125; elements.</span><br><span class="line"> </span><br><span class="line"><span class="keyword">\begin</span>&#123;table&#125;[h!]</span><br><span class="line"><span class="keyword">\centering</span></span><br><span class="line"><span class="keyword">\begin</span>&#123;tabular&#125;&#123;||c c c c||&#125; </span><br><span class="line"> <span class="keyword">\hline</span></span><br><span class="line"> Col1 <span class="built_in">&amp;</span> Col2 <span class="built_in">&amp;</span> Col2 <span class="built_in">&amp;</span> Col3 <span class="keyword">\\</span> [0.5ex] </span><br><span class="line"> <span class="keyword">\hline</span><span class="keyword">\hline</span></span><br><span class="line"> 1 <span class="built_in">&amp;</span> 6 <span class="built_in">&amp;</span> 87837 <span class="built_in">&amp;</span> 787 <span class="keyword">\\</span> </span><br><span class="line"> 2 <span class="built_in">&amp;</span> 7 <span class="built_in">&amp;</span> 78 <span class="built_in">&amp;</span> 5415 <span class="keyword">\\</span></span><br><span class="line"> 3 <span class="built_in">&amp;</span> 545 <span class="built_in">&amp;</span> 778 <span class="built_in">&amp;</span> 7507 <span class="keyword">\\</span></span><br><span class="line"> 4 <span class="built_in">&amp;</span> 545 <span class="built_in">&amp;</span> 18744 <span class="built_in">&amp;</span> 7560 <span class="keyword">\\</span></span><br><span class="line"> 5 <span class="built_in">&amp;</span> 88 <span class="built_in">&amp;</span> 788 <span class="built_in">&amp;</span> 6344 <span class="keyword">\\</span> [1ex] </span><br><span class="line"> <span class="keyword">\hline</span></span><br><span class="line"><span class="keyword">\end</span>&#123;tabular&#125;</span><br><span class="line"><span class="keyword">\caption</span>&#123;Table to test captions and labels&#125;</span><br><span class="line"><span class="keyword">\label</span>&#123;table:data&#125;</span><br><span class="line"><span class="keyword">\end</span>&#123;table&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>tabular</code> 是latex创建表格的tag。</li>
+<li><code> &#123;c c c c&#125;</code> 表示有4列。 </li>
+<li><code>\begin&#123;center&#125;</code> 表示表格内容居中对齐，还可以选择 <code>l</code> 和 <code>r</code> 。</li>
+<li><code>&amp;</code> 符号用于分隔表格的条目。  </li>
+<li><code>\\</code> 用于表格的换行。  </li>
+<li><code>&#123; |c|c|c| &#125;</code> 中的 <code>|</code> 用于插入一条垂直线。  </li>
+<li><code>\hline</code> 用于插入一条水平线。</li>
+</ul>
+<p>表格的 <em>标题、标签和引用</em> 和 图片的基本一致。  </p>
+<h3 id="表格脚注"><a href="#表格脚注" class="headerlink" title="表格脚注"></a>表格脚注</h3><p>需要用到 <code>threeparttable</code> 这个包。<br>注意在 <code>tablenotes</code> 标签之间使用 <code>\item</code>。  </p>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">\usepackage</span>&#123;threeparttable&#125;</span><br><span class="line"><span class="comment">%A table with footnotes appearing at the bottom of the table:</span></span><br><span class="line"><span class="keyword">\begin</span>&#123;table&#125;</span><br><span class="line">   <span class="keyword">\centering</span></span><br><span class="line">   <span class="keyword">\begin</span>&#123;threeparttable&#125;[b]</span><br><span class="line">   <span class="keyword">\caption</span>&#123;Table with footnotes after the table&#125;</span><br><span class="line">   <span class="keyword">\label</span>&#123;tab:test2&#125;</span><br><span class="line">   <span class="keyword">\begin</span>&#123;tabular&#125;&#123;llll&#125;</span><br><span class="line">   <span class="keyword">\hline</span></span><br><span class="line">   column 1 <span class="built_in">&amp;</span> column 2 <span class="built_in">&amp;</span> column 3<span class="keyword">\tnote</span>&#123;1&#125; <span class="built_in">&amp;</span> column 4<span class="keyword">\tnote</span>&#123;2&#125; <span class="keyword">\\</span></span><br><span class="line">   <span class="keyword">\hline</span></span><br><span class="line">   row 1 <span class="built_in">&amp;</span> data 1 <span class="built_in">&amp;</span> data 2 <span class="built_in">&amp;</span> data 3 <span class="keyword">\\</span></span><br><span class="line">   row 2 <span class="built_in">&amp;</span> data 1 <span class="built_in">&amp;</span> data 2 <span class="built_in">&amp;</span> data 3 <span class="keyword">\\</span></span><br><span class="line">   row 3 <span class="built_in">&amp;</span> data 1 <span class="built_in">&amp;</span> data 2 <span class="built_in">&amp;</span> data 3 <span class="keyword">\\</span></span><br><span class="line">   <span class="keyword">\hline</span></span><br><span class="line">   <span class="keyword">\end</span>&#123;tabular&#125;</span><br><span class="line">   <span class="keyword">\begin</span>&#123;tablenotes&#125;</span><br><span class="line">     <span class="keyword">\item</span>[1] tablefootnote 1</span><br><span class="line">     <span class="keyword">\item</span>[2] tablefootnote 2</span><br><span class="line">   <span class="keyword">\end</span>&#123;tablenotes&#125;</span><br><span class="line">  <span class="keyword">\end</span>&#123;threeparttable&#125;</span><br><span class="line"><span class="keyword">\end</span>&#123;table&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">\end</span>&#123;document&#125;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://tex.stackexchange.com/questions/12676/add-notes-under-the-table">Add notes under the table</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/ShuqiaoS/article/details/86230367">Latex给表格加脚注</a>  </p>
+<h2 id="添加列表"><a href="#添加列表" class="headerlink" title="添加列表"></a>添加列表</h2><h3 id="无序列表"><a href="#无序列表" class="headerlink" title="无序列表"></a>无序列表</h3><figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">\begin</span>&#123;itemize&#125;</span><br><span class="line">  <span class="keyword">\item</span> The individual entries are indicated with a black dot, a so-called bullet.</span><br><span class="line">  <span class="keyword">\item</span> The text in the entries may be of any length.</span><br><span class="line"><span class="keyword">\end</span>&#123;itemize&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="有序列表"><a href="#有序列表" class="headerlink" title="有序列表"></a>有序列表</h3><figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">\begin</span>&#123;enumerate&#125;</span><br><span class="line">  <span class="keyword">\item</span> This is the first entry in our list</span><br><span class="line">  <span class="keyword">\item</span> The list numbers increase with each entry we add</span><br><span class="line"><span class="keyword">\end</span>&#123;enumerate&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="添加引用"><a href="#添加引用" class="headerlink" title="添加引用"></a>添加引用</h2><p>主要参见 <a target="_blank" rel="noopener" href="https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX">Bibliography management in LaTeX</a>。  </p>
+<h3 id="The-bibliography-file"><a href="#The-bibliography-file" class="headerlink" title="The bibliography file"></a>The bibliography file</h3><figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">@article&#123;einstein,</span><br><span class="line">    author = &quot;Albert Einstein&quot;,</span><br><span class="line">    title = &quot;&#123;Zur Elektrodynamik bewegter K&#123;<span class="keyword">\&quot;</span>o&#125;rper&#125;. (&#123;German&#125;)</span><br><span class="line">    [&#123;On&#125; the electrodynamics of moving bodies]&quot;,</span><br><span class="line">    journal = &quot;Annalen der Physik&quot;,</span><br><span class="line">    volume = &quot;322&quot;,</span><br><span class="line">    number = &quot;10&quot;,</span><br><span class="line">    pages = &quot;891--921&quot;,</span><br><span class="line">    year = &quot;1905&quot;,</span><br><span class="line">    DOI = &quot;http://dx.doi.org/10.1002/andp.19053221004&quot;,</span><br><span class="line">    keywords = &quot;physics&quot;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">@book&#123;dirac,</span><br><span class="line">    title = &#123;The Principles of Quantum Mechanics&#125;,</span><br><span class="line">    author = &#123;Paul Adrien Maurice Dirac&#125;,</span><br><span class="line">    isbn = &#123;9780198520115&#125;,</span><br><span class="line">    series = &#123;International series of monographs on physics&#125;,</span><br><span class="line">    year = &#123;1981&#125;,</span><br><span class="line">    publisher = &#123;Clarendon Press&#125;,</span><br><span class="line">    keywords = &#123;physics&#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">@online&#123;knuthwebsite,</span><br><span class="line">    author = &quot;Donald Knuth&quot;,</span><br><span class="line">    title = &quot;Knuth: Computers and Typesetting&quot;,</span><br><span class="line">    url  = &quot;http://www-cs-faculty.stanford.edu/~uno/abcde.html&quot;,</span><br><span class="line">    addendum = &quot;(accessed: 01.09.2016)&quot;,</span><br><span class="line">    keywords = &quot;latex,knuth&quot;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">@inbook&#123;knuth-fa,</span><br><span class="line">    author = &quot;Donald E. Knuth&quot;,</span><br><span class="line">    title = &quot;Fundamental Algorithms&quot;,</span><br><span class="line">    publisher = &quot;Addison-Wesley&quot;,</span><br><span class="line">    year = &quot;1973&quot;,</span><br><span class="line">    chapter = &quot;1.2&quot;,</span><br><span class="line">    keywords  = &quot;knuth,programming&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>引用 <code>\cite&#123;einstein&#125;</code> , <code>\cite&#123;knuth-fa&#125;</code> 等。</p>
+<h3 id="cite-a-website"><a href="#cite-a-website" class="headerlink" title="cite a website"></a>cite a website</h3><p>尝试了 <code>misc</code> 和 <code>online</code> 两个标签，都不能将url显示出来。<br>问题出在没有添加相关的包啊。<br><strong>And remember to load a package such as hyperref or url.</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@misc&#123;WinNT,</span><br><span class="line">  title &#x3D; &#123;&#123;MS Windows NT&#125; Kernel Description&#125;,</span><br><span class="line">  howpublished &#x3D; &#123;\url&#123;http:&#x2F;&#x2F;web.archive.org&#x2F;web&#x2F;20080207010024&#x2F;&#125;&#125;,</span><br><span class="line">  note &#x3D; &#123;Accessed: 2010-09-30&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://tex.stackexchange.com/a/3608">How can I use BibTeX to cite a web page?</a></li>
+<li><a target="_blank" rel="noopener" href="https://coderwall.com/p/wntyia/how-to-cite-a-website-in-latex">How to cite a website in LaTeX</a>  </li>
+</ul>
+<h3 id="quotes-in-bibliographic-field"><a href="#quotes-in-bibliographic-field" class="headerlink" title="quotes in bibliographic field"></a>quotes in bibliographic field</h3><blockquote>
+<p>use {} as delimiters for all fields in .bib files<br>title = {“This is inside quote” and outside quote content}</p>
+</blockquote>
+<p>都使用 <code>&#123;&#125;</code> 当作分隔符即可。  </p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://tex.stackexchange.com/q/65331">Handling quotes inside quotes in a bibliographic field</a></li>
+</ul>
+<h2 id="include-sections-of-files"><a href="#include-sections-of-files" class="headerlink" title="include sections of files"></a>include sections of files</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\input&#123;sections&#x2F;introduction.tex&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://tex.stackexchange.com/a/31907">‘\include’ sections of files?</a></li>
+</ul>
+<h1 id="WinEdt-10的安装"><a href="#WinEdt-10的安装" class="headerlink" title="WinEdt 10的安装"></a>WinEdt 10的安装</h1><ol>
+<li>在winedt官网下载winedt 10.2：<a target="_blank" rel="noopener" href="http://www.winedt.com/download.html">http://www.winedt.com/download.html</a></li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-595351-1-1.html">吾爱破解</a> 中给出了WinEdt 10.2的破解方法：</p>
+<pre><code>注册码：
+Cracker TeCHiScy
+1130140925535334280 
+</code></pre>
+<ol start="2">
+<li>在MikTex官网下载MikTex2.9： <a target="_blank" rel="noopener" href="https://miktex.org/download">https://miktex.org/download</a>  </li>
+</ol>
+<p>并将路径<em>path…\MiKTeX 2.9\miktex\bin\x64</em> 添加到环境变量path中。  </p>
+<ol start="3">
+<li><p>在WinEdt菜单栏 <em>Options-&gt;Execution Mode-&gt;TeX System</em> 中更改 <em>TeX root</em> 的路径到MikTeX 2.9的安装目录。  </p>
+</li>
+<li><p>使用 <code>pdflatex</code> 编译文件，使用 <code>bibtex</code> 编译参考文献。  </p>
+</li>
+</ol>
+<p>为避免出现 <em>LaTex Warning: citation undefined</em>错误, 要如下操作：<br>使用 pdflatex 编译<br>之后使用 bibtex 编译<br>之后在使用 pdflatex 编译两次  </p>
+<h1 id="简历-CV-Resume"><a href="#简历-CV-Resume" class="headerlink" title="简历 CV Resume"></a>简历 CV Resume</h1><p>简历模板可以从<a target="_blank" rel="noopener" href="https://www.overleaf.com/gallery/tagged/cv">overleaf Gallery — Résumé / CV</a>获取，但是很少有支持中文的。  </p>
+<h2 id="中文的支持"><a href="#中文的支持" class="headerlink" title="中文的支持"></a>中文的支持</h2><p>在overleaf上找到的latex cv_resume不支持中文，又找了几个支持中文的resume：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/dyweb/awesome-resume-for-chinese">适合中文的简历模板收集</a><br>有基于 ModernCV 模板的，进行了中文字体支持和优化，使用 xelatex 编译。即这个 <a target="_blank" rel="noopener" href="https://github.com/geekplux/cv_resume">cv_resume</a>和<a target="_blank" rel="noopener" href="https://gist.github.com/juniorprincewang/7a7e0c9bbc4884fc2eeafe041dd02946">demo of moderncv</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.xiangsun.org/tex/notes-on-moderncv">moderncv 的笔记（支持中文）</a></li>
+</ul>
+<p>主要的做发是：  </p>
+<p>添加xeCJK中文包，使用 xelatex 命令编译源文件。  </p>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 该文件使用 xelatex 命令可以编译通过</span></span><br><span class="line"><span class="keyword">\documentclass</span>[12pt, a4paper]&#123;article&#125;</span><br><span class="line"><span class="keyword">\usepackage</span>&#123;fontspec&#125;</span><br><span class="line"><span class="keyword">\usepackage</span>[slantfont, boldfont]&#123;xeCJK&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 设置英文字体</span></span><br><span class="line"><span class="keyword">\setmainfont</span>&#123;Microsoft YaHei&#125;</span><br><span class="line"><span class="keyword">\setsansfont</span>&#123;Comic Sans MS&#125;</span><br><span class="line"><span class="keyword">\setmonofont</span>&#123;Courier New&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 设置中文字体</span></span><br><span class="line"><span class="keyword">\setCJKmainfont</span>&#123;Microsoft YaHei&#125;</span><br><span class="line"><span class="keyword">\setCJKmonofont</span>&#123;Source Code Pro&#125;</span><br><span class="line"><span class="keyword">\setCJKsansfont</span>&#123;YouYuan&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">% 中文断行设置</span></span><br><span class="line"><span class="keyword">\XeTeXlinebreaklocale</span> &quot;zh&quot;</span><br><span class="line"><span class="keyword">\XeTeXlinebreakskip</span> = 0pt plus 1pt</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>\setCJKmainfont{} 命令用来设置正文的字体，同时也是 \textrm{} 命令使用的字体。</li>
+<li>\setCJKmonofont{} 用来设置 \texttt{} 命令中的中文使用的字体 。</li>
+<li>\setCJKsansfont{} 用来设置 \textsf{} 命令中的中文使用的字体。</li>
+</ul>
+<p>可是仍然有几个偏僻字无法成功显示，这是由于 xeCJK 宏包提供了有限的中文字符。<br>使用ctex 宏包或者ctexart 文档类。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\documentclass[UTF8]&#123;ctexart&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 ctexart documentclass 时候，最好加上 \usepackage[T1]{fontenc}。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">\documentclass&#123;article&#125;</span><br><span class="line">\usepackage[UTF8]&#123;ctex&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以使用 latex，pdflatex，xelatex 或者 lualatex 命令来编译 生成 PDF 文件，CTeX 开发者推荐使用 xelatex 命令编译源文件。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://jdhao.github.io/2018/03/29/latex-chinese.zh/">如何在 LaTeX 中使用中文</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/latex/" rel="tag"># latex</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/07/31/cuda-wiki/" rel="prev" title="cuda wiki">
+      <i class="fa fa-chevron-left"></i> cuda wiki
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/24/C%E7%A8%8B%E5%BA%8F%E5%92%8C%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%97%B6%E9%97%B4/" rel="next" title="C程序和代码执行时间">
+      C程序和代码执行时间 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#latex%E8%AF%AD%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">latex语法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#hello-latex"><span class="nav-number">1.1.</span> <span class="nav-text">hello latex</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E6%A1%A3%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.2.</span> <span class="nav-text">文档类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%8C%85"><span class="nav-number">1.3.</span> <span class="nav-text">添加包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E6%A0%87%E9%A2%98%E3%80%81%E4%BD%9C%E8%80%85%E3%80%81%E6%97%A5%E6%9C%9F%E7%AD%89%E4%BF%A1%E6%81%AF"><span class="nav-number">1.4.</span> <span class="nav-text">添加标题、作者、日期等信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E6%B3%A8%E9%87%8A"><span class="nav-number">1.5.</span> <span class="nav-text">添加注释</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E7%AB%A0%E8%8A%82"><span class="nav-number">1.6.</span> <span class="nav-text">添加章节</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Abstracts"><span class="nav-number">1.7.</span> <span class="nav-text">Abstracts</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AE%B5%E8%90%BD"><span class="nav-number">1.8.</span> <span class="nav-text">段落</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8D%A2%E8%A1%8C"><span class="nav-number">1.8.1.</span> <span class="nav-text">换行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Paragraph-Alignment-Text-Justification"><span class="nav-number">1.8.2.</span> <span class="nav-text">Paragraph Alignment(Text Justification)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Paragraph-Indentation"><span class="nav-number">1.8.3.</span> <span class="nav-text">Paragraph Indentation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B2%97%E4%BD%93%E3%80%81%E6%96%9C%E4%BD%93%E3%80%81%E4%B8%8B%E5%88%92%E7%BA%BF"><span class="nav-number">1.9.</span> <span class="nav-text">粗体、斜体、下划线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%9B%BE%E7%89%87"><span class="nav-number">1.10.</span> <span class="nav-text">添加图片</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E9%A2%98%E3%80%81%E6%A0%87%E7%AD%BE%E5%92%8C%E5%BC%95%E7%94%A8"><span class="nav-number">1.10.1.</span> <span class="nav-text">标题、标签和引用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E8%A1%A8%E6%A0%BC"><span class="nav-number">1.11.</span> <span class="nav-text">添加表格</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A8%E6%A0%BC%E8%84%9A%E6%B3%A8"><span class="nav-number">1.11.1.</span> <span class="nav-text">表格脚注</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%88%97%E8%A1%A8"><span class="nav-number">1.12.</span> <span class="nav-text">添加列表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E5%BA%8F%E5%88%97%E8%A1%A8"><span class="nav-number">1.12.1.</span> <span class="nav-text">无序列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E5%BA%8F%E5%88%97%E8%A1%A8"><span class="nav-number">1.12.2.</span> <span class="nav-text">有序列表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%BC%95%E7%94%A8"><span class="nav-number">1.13.</span> <span class="nav-text">添加引用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#The-bibliography-file"><span class="nav-number">1.13.1.</span> <span class="nav-text">The bibliography file</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cite-a-website"><span class="nav-number">1.13.2.</span> <span class="nav-text">cite a website</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#quotes-in-bibliographic-field"><span class="nav-number">1.13.3.</span> <span class="nav-text">quotes in bibliographic field</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#include-sections-of-files"><span class="nav-number">1.14.</span> <span class="nav-text">include sections of files</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WinEdt-10%E7%9A%84%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">WinEdt 10的安装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E5%8E%86-CV-Resume"><span class="nav-number">3.</span> <span class="nav-text">简历 CV Resume</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AD%E6%96%87%E7%9A%84%E6%94%AF%E6%8C%81"><span class="nav-number">3.1.</span> <span class="nav-text">中文的支持</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

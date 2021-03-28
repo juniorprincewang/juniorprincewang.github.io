@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本文分析 NVIDIA GPU 的虚拟内存（virtual memory），由 envytools 工具和文档提供。分析的G80显卡（NV50），由于是首代支持虚拟内存的显卡，对于当前使用的显卡已经不适用了，仅供参考。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NVIDIA GPU虚拟内存（NV50）">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/07/09/NVIDIA-GPU-VMM-NV50/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本文分析 NVIDIA GPU 的虚拟内存（virtual memory），由 envytools 工具和文档提供。分析的G80显卡（NV50），由于是首代支持虚拟内存的显卡，对于当前使用的显卡已经不适用了，仅供参考。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/NVIDIA-GPU-VMM-NV50/page-table.png">
+<meta property="article:published_time" content="2018-07-09T01:14:15.000Z">
+<meta property="article:modified_time" content="2021-03-28T08:10:15.191Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="GPU">
+<meta property="article:tag" content="virtual memory">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://juniorprincewang.github.io/img/NVIDIA-GPU-VMM-NV50/page-table.png">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/07/09/NVIDIA-GPU-VMM-NV50/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>NVIDIA GPU虚拟内存（NV50） | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/07/09/NVIDIA-GPU-VMM-NV50/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          NVIDIA GPU虚拟内存（NV50）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-07-09 09:14:15" itemprop="dateCreated datePublished" datetime="2018-07-09T09:14:15+08:00">2018-07-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-28 16:10:15" itemprop="dateModified" datetime="2021-03-28T16:10:15+08:00">2021-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GPU/" itemprop="url" rel="index">
+                    <span itemprop="name">GPU</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本文分析 <code>NVIDIA GPU</code> 的虚拟内存（virtual memory），由 <code>envytools</code> 工具和文档提供。分析的G80显卡（NV50），由于是首代支持虚拟内存的显卡，对于当前使用的显卡已经不适用了，仅供参考。  </p>
+<span id="more"></span>
+
+<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>G80 一代的显卡的内存管理模块，即MMU，将用户可见的虚拟内存地址转换成设备物理地址。<br>转换分成两层，DMA对象（如同 x86 的段） 和 页表。<br>转换包括以下地址空间。</p>
+<ul>
+<li><p><strong>逻辑地址</strong>：40位的逻辑地址 + channel描述符地址 + DMA对象地址。所有出现在 FIFO 命令描述符中的地址都是逻辑地址，或者最终转换成逻辑地址。</p>
+</li>
+<li><p><strong>虚拟地址</strong>：40位的虚拟地址 + channel描述符地址。 指定地址将会在相关channel中的页表中查询。虚拟地址总是逻辑地址转换的结果，并且不能被直接指定。</p>
+</li>
+<li><p><strong>线性地址</strong>：40位的线性地址 + 目标区分符（target specifier）。 区分符可以是 video memory <code>VRAM</code> 、 coherent system memory <code>SYSRAM_SNOOP</code>或者<code>HOST</code> 、 non-coherent system memory <code>SYSRAM_NOSNOOP</code>或者<code>NCOH</code>。</p>
+<ul>
+<li>VRAM: 32位线性地址，高8位忽略，在设备板上的内存。</li>
+<li>SYSRAM: 40位的线性地址，访问此空间会使得显卡对给定的地址调用PCI/PCIe读写事务，允许访问系统内存（CPU）或者别的PCI设备内存。 <code>SYSRAM_SNOOP</code> 使用正常的 PCIe 事务，<code>SYSRAM_NOSNOOP</code> 使用PCIe 事务，启用了 <code>no snoop</code> 位。<br>大多数时候，线性地址是逻辑地址翻译的结果，但是一些内存区域可以被它们的线性地址直接赋值。</li>
+</ul>
+</li>
+<li><p><strong>tag地址</strong>：12位的标签地址，用于选择隐藏压缩标签内存的一个小单元，用于VRAM的压缩区域。</p>
+</li>
+<li><p><strong>物理地址</strong>：对于VRAM，是内存单元的分表\子分表\行\列等；对于SYSRAM，是最终的总线地址。</p>
+</li>
+</ul>
+<p>虚拟内存(以下简称VM)的作用是将逻辑地址转换成相关的数据，可以转换成设备物理地址或者主机物理地址。</p>
+<ul>
+<li>linear address <code>addr</code></li>
+<li>target specifier <code>aper</code>: <code>VRAM</code> , <code>HOST</code> , <code>NCOH</code> 。</li>
+<li>read only flag <code>ro</code></li>
+<li>supervisor-only flag <code>priv</code></li>
+<li>storage type:  <code>kind</code> 一个特殊值，选择包含数据的内部结构，通过增加cache的局部性来更有效的访问。</li>
+<li>compression mode： <code>comp</code></li>
+<li>compression tag address： <code>ctag</code></li>
+<li>partition cycle： </li>
+<li>encryption flag：</li>
+</ul>
+<p><img src="/img/NVIDIA-GPU-VMM-NV50/page-table.png" alt="GPU页表"></p>
+<p>虚拟内存访问也会以失败结束，比如不在当前页，这就会触发缺页中断。</p>
+<h1 id="VM用户"><a href="#VM用户" class="headerlink" title="VM用户"></a>VM用户</h1><p>VM被多种用户(client)使用，通常由id区分。<br>相关的概念是VM引擎(engine)，由共享TLBs，并且在一个时刻处于同一channel中的一组用户组成。而对于同一用户，是可能处于不同的VM引擎的。<br>但是 client + engine 结合并不能区分获取的来源。为了消除歧义， DMA slot ids 也加入了进来。 DMA slot ids也依赖engine和client id。</p>
+<h1 id="channel"><a href="#channel" class="headerlink" title="channel"></a>channel</h1><p>所有的VM访问都是代表一些channel。一个VM channel 就是一个内存结构体，包括 DMA 对象和页目录（page directory）。<br>VM channel 也是一个FIFO channel，被PFIFO和FIFO引擎使用并且包含其他数据结构，或者仅仅是一个VM channel，使用非FIFO的引擎。</p>
+<p>一个channel由 channel描述符（channel descriptor）标识，这是一个30位的数，指向了channel内存结构的基址。</p>
+<ul>
+<li>位0-27：channel内存结构体的12-39位，线性地址。</li>
+<li>位28-29： channel 内存结构体的target specifier - 0：<code>VRAM</code>; 1:invalid,不使用; 2: SYSRAM_SNOOP or <code>HOST</code> - 3: SYSRAM_NOSNOOP or <code>NCOH</code></li>
+</ul>
+<p>channel内存结构体包含一些固定偏移的元素，也包含可以放置在结构体内任何位置的channel对象，比如DMA对象。<br>channel结构体没有固定的大小，尽管channel对象的最大地址是0xffff0。 channel结构体也必须0x1000字节对齐。</p>
+<p>原始的G80 channel 有以下固定的元素：</p>
+<ul>
+<li>0x000-0x200: RAMFC [fifo channels only]</li>
+<li>0x200-0x400: DMA objects for fifo engines’ contexts [fifo channels only]</li>
+<li>0x400-0x1400: PFIFO CACHE [fifo channels only]</li>
+<li>0x1400-0x5400: page directory</li>
+</ul>
+<p>而 G84+ 卡使用以下结构体：</p>
+<ul>
+<li>0x000-0x200: DMA objects for fifo engines’ contexts [fifo channels only]</li>
+<li>0x200-0x4200: page directory</li>
+</ul>
+<p>channel 对象被指定为16字节的偏移从channel结构体的起始位置在 0x10字节单元中。</p>
+<h1 id="DMA-objects"><a href="#DMA-objects" class="headerlink" title="DMA objects"></a>DMA objects</h1><p>虚拟内存系统关心的唯一的channel对象是DMA对象。<br>DMA对象代表了虚拟的或线性的内存中连续的段，是虚拟内存地址转换最开始的步骤。<br>DMA对象可以分页也可以不分页。</p>
+<ul>
+<li>未分页的DMA对象直接指定了目标空间和所有属性，仅仅检查基地址和检查限制。</li>
+<li>分页的DMA对象增加基地址并且在页表中查找它。属性或者来自页表，或者单独被DMA对象覆盖。</li>
+</ul>
+<p>DMA对象由16位 selector 区分。在FIFO引擎中，<code>RAMHT</code> 用于将用户可见的32位handles 转换到 selector。<br>selector 向左位移4位，并且增加到channel结构体基地址来获取DMA对象结构体的地址， DMA对象结构体的地址是0x18字节长，由32位小端字组成。</p>
+<ul>
+<li>word 0<ul>
+<li>bits 0-15: object class.<br>Ignored by VM, but usually validated by fifo engines- should be 0x2 [read-only], 0x3 [write-only], or 0x3d [read-write]</li>
+<li>bits 16-17: target specifier:  <ul>
+<li>0: VM - paged object - the logical address is to be added to the base address to obtain a virtual address, then the virtual address should be translated via the page tables</li>
+<li>1: VRAM - unpaged object - the logical address should be added to the base address to directly obtain the linear address in VRAM</li>
+<li>2: SYSRAM_SNOOP - like VRAM, but gives SYSRAM address</li>
+<li>3: SYSRAM_NOSNOOP - like VRAM, but gives SYSRAM address and uses nosnoop transactions</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>bits 18-19: read-only flag<ul>
+<li>0: use read-only flag from page tables [paged objects only]</li>
+<li>1: read-only</li>
+<li>2: read-write</li>
+</ul>
+</li>
+<li>bits 20-21: supervisor-only flag<ul>
+<li>0: use supervisor-only flag from page tables [paged objects only]</li>
+<li>1: user-supervisor</li>
+<li>2: supervisor-only</li>
+</ul>
+</li>
+<li>bits 22-28: storage type. If the value is 0x7f, use storage type from page tables, otherwise directly specifies the storage type</li>
+<li>bits 29-30: compression mode<ul>
+<li>0: no compression</li>
+<li>1: SINGLE compression</li>
+<li>2: DOUBLE compression</li>
+<li>3: use compression mode from page tables</li>
+</ul>
+</li>
+<li>bit 31: if set, is a supervisor DMA object, user DMA object otherwise  </li>
+</ul>
+</li>
+<li>word 1:<ul>
+<li>bits 0-31 of limit address</li>
+</ul>
+</li>
+<li>word 2:<ul>
+<li>bits 0-31 of base address</li>
+</ul>
+</li>
+<li>word 3:<ul>
+<li>bits 0-7: bits 32-39 of base address</li>
+<li>bits 24-31: bits 32-39 of limit address</li>
+</ul>
+</li>
+<li>word 4:<ul>
+<li>bits 0-11: base tag address</li>
+<li>bits 16-27: limit tag address</li>
+</ul>
+</li>
+<li>word 5:<ul>
+<li>bits 0-15: compression base address bits 16-31 [bits 0-15 are forced to 0]</li>
+<li>bits 16-17: partition cycle<ul>
+<li>0: use partition cycle from page tables</li>
+<li>1: short cycle</li>
+<li>2: long cycle</li>
+</ul>
+</li>
+<li>bits 18-19 [G84-]: encryption flag<ul>
+<li>0: not encrypted</li>
+<li>1: encrypted</li>
+<li>2: use encryption flag from page tables</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>首先，DMA对象选择器selector 与0比较。如果selector是0，触发 NULL_DMAOBJ fault。然后，逻辑地址添加到DMA对象基地址中。<br>作为结果的地址与DMA对象得来的限制地址比较，如果超过了，就触发 DMAOBJ_LIMIT fault。<br>如果DMA对象分页了，地址就需要到页表中查询，带上 read-only flag, supervisor-only flag, storage type, 和 compression mode。否则该地址直接变成线性地址。<br>对于压缩的未分页的 VRAM 对象， tag address 由以下组成：</p>
+<ul>
+<li>从中取出计算后的VRAM线性地址，并提取出压缩基地址。如果结果是负值，强制压缩模式为None。</li>
+<li>将结果向右位移16位。</li>
+<li>将 base tag 地址加入到结果中。</li>
+<li>如果 result &lt;= limit tag address，这个tag address可以使用；否则，强制压缩模式为None。</li>
+</ul>
+<p>DMA对象限制在的地方通常被称为 “DMA slots”， 也就是MMIO registers 或者 FIFO methods。<br>大部分引擎都缓存着最近使用的DMA对象。 为了 清空这些缓存，通常足够重写 the selector register, 或者重新提交 the selector method。<br>许多引擎都需要DMA对象的基地址来作好对齐。对齐依赖于引擎和slot。</p>
+<p>FIFO引擎内容 dmaobj是值得一提的一组DMA对象。FIFO引擎用其存储每个channel的状态，当给定的channel在相关的引擎中未启用使。<br>它们的大小和结构体依赖于引擎，它们有固定的 selectors，因此位置在channel结构体中固定的地方。</p>
+<p>原始的G80, 对象为：</p>
+<table>
+<thead>
+<tr>
+<th>Selector</th>
+<th>Address</th>
+<th>Engine</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0020</td>
+<td>0x00200</td>
+<td>PGRAPH</td>
+</tr>
+<tr>
+<td>0x0022</td>
+<td>0x00220</td>
+<td>PVP1</td>
+</tr>
+<tr>
+<td>0x0024</td>
+<td>0x00240</td>
+<td>PME</td>
+</tr>
+<tr>
+<td>0x0026</td>
+<td>0x00260</td>
+<td>PMPEG</td>
+</tr>
+</tbody></table>
+<p>在 G84+ 卡中, 对象变为:</p>
+<table>
+<thead>
+<tr>
+<th>Selector</th>
+<th>Address</th>
+<th>Present on</th>
+<th>Engine</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0002</td>
+<td>0x00020</td>
+<td>all</td>
+<td>PGRAPH</td>
+</tr>
+<tr>
+<td>0x0004</td>
+<td>0x00040</td>
+<td>VP2</td>
+<td>PVP2</td>
+</tr>
+<tr>
+<td>0x0004</td>
+<td>0x00040</td>
+<td>VP3-</td>
+<td>PPDEC</td>
+</tr>
+<tr>
+<td>0x0006</td>
+<td>0x00060</td>
+<td>VP2</td>
+<td>PMPEG</td>
+</tr>
+<tr>
+<td>0x0006</td>
+<td>0x00060</td>
+<td>VP3-</td>
+<td>PPPP</td>
+</tr>
+<tr>
+<td>0x0008</td>
+<td>0x00080</td>
+<td>VP2</td>
+<td>PBSP</td>
+</tr>
+<tr>
+<td>0x0008</td>
+<td>0x00080</td>
+<td>VP3-</td>
+<td>PVLD</td>
+</tr>
+<tr>
+<td>0x000a</td>
+<td>0x000a0</td>
+<td>VP2</td>
+<td>PCIPHER</td>
+</tr>
+<tr>
+<td>0x000a</td>
+<td>0x000a0</td>
+<td>VP3</td>
+<td>PSEC</td>
+</tr>
+<tr>
+<td>0x000a</td>
+<td>0x000a0</td>
+<td>MCP89-</td>
+<td>PVCOMP</td>
+</tr>
+<tr>
+<td>0x000c</td>
+<td>0x000c0</td>
+<td>GT215-</td>
+<td>PCOPY</td>
+</tr>
+</tbody></table>
+<h1 id="Page-Tables"><a href="#Page-Tables" class="headerlink" title="Page Tables"></a>Page Tables</h1><p>如果分页的DMA对象被使用了，虚拟地址仍需进一步在页表中查询。<br>页表分为两层，顶层是0x800条目，页目录。每个条目都包含了0x20000000字节的虚拟内存。</p>
+<p>页目录在channel 结构体中，在原始的G80中起始偏移地址为0x1400，在G84+中为0x200。<br>每个页目录条目或者说 PDE 8字节长。PDE指向了页表，并且指定了页表属性。每个页表可以使用小，中，大页块。<br>小页块0x1000字节，中页块0x4000字节，大页块0x10000字节。对于小页块，页表的大小可以任意的限制到仅仅覆盖0x2000, 0x4000, 或者 0x8000 页 而不是全部 0x20000 页。超过这个限制的页将会引发缺页。 中页块和大页块页表总是覆盖超过0x8000或者0x2000条目。两种类型的页表都是8字节页表条目或者说PTE。</p>
+<p>PDE是由2个32位的小端字组成，有以下的形式：</p>
+<ul>
+<li><p>word 0:</p>
+<ul>
+<li>bits 0-1: page table presence and page size<ul>
+<li>0: page table not present</li>
+<li>1: large pages [64kiB]</li>
+<li>2: medium pages [16kiB] [GT215-]</li>
+<li>3: small pages [4kiB]</li>
+</ul>
+</li>
+<li>bits 2-3: target specifier for the page table itself<ul>
+<li>0: VRAM</li>
+<li>1: invalid, do not use</li>
+<li>2: SYSRAM_SNOOP</li>
+<li>3: SYSRAM_NOSNOOP</li>
+</ul>
+</li>
+<li>bit 4: ??? [XXX: figure this out]</li>
+<li>bits 5-6: page table size [small pages only]<ul>
+<li>0: 0x20000 entries [full]</li>
+<li>1: 0x8000 entries</li>
+<li>2: 0x4000 entries</li>
+<li>3: 0x2000 entries</li>
+</ul>
+</li>
+<li>bits 12-31: page table linear address bits 12-31</li>
+</ul>
+</li>
+<li><p>word 1:</p>
+<ul>
+<li>bits 32-39: page table linear address bits 32-39</li>
+</ul>
+</li>
+</ul>
+<p>页表起始地址必须 0x1000 对齐。<br>PTE 由两个32位的小端字word 组成，有以下结构：</p>
+<ul>
+<li><p>word 0:</p>
+<ul>
+<li>bit 0: page present</li>
+<li>bits 1-2: ??? [XXX: figure this out]</li>
+<li>bit 3: read-only flag</li>
+<li>bits 4-5: target specifier<ul>
+<li>0: VRAM</li>
+<li>1: invalid, do not use</li>
+<li>2: SYSRAM_SNOOP</li>
+<li>3: SYSRAM_NOSNOOP</li>
+</ul>
+</li>
+<li>bit 6: supervisor-only flag</li>
+<li>bits 7-9: log2 of contig block size in pages [see below]</li>
+<li>bits 12-31: bits 12-31 of linear address [small pages]</li>
+<li>bits 14-31: bits 14-31 of linear address [medium pages]</li>
+<li>bits 16-31: bits 16-31 of linear address [large pages]</li>
+</ul>
+</li>
+<li><p>word 1:</p>
+<ul>
+<li>bits 32-39: bits 32-39 of linear address</li>
+<li>bits 40-46: storage type</li>
+<li>bits 47-48: compression mode</li>
+<li>bits 49-60: compression tag address</li>
+<li>bit 61: partition cycle<ul>
+<li>0: short cycle</li>
+<li>1: long cycle</li>
+</ul>
+</li>
+<li>bit 62 [G84-]: encryption flag</li>
+</ul>
+</li>
+</ul>
+<h1 id="TLB-flush"><a href="#TLB-flush" class="headerlink" title="TLB flush"></a>TLB flush</h1><p>页表内容缓存在每个引擎的TLB中。为了清除TLB缓存，TLB flush register 0x100c80 被使用。</p>
+<p><strong>MMIO 0x100c80</strong>:</p>
+<ul>
+<li>bit 0: trigger. When set, triggers the TLB flush. Will auto-reset to 0 when flush is complete.</li>
+<li>bits 16-19: 要flush的VM engine</li>
+</ul>
+<p>flush操作包括将 <code>engine &lt;&lt; 16 | 1 </code> 命令写入到此寄存器中，并且等待 位0 变为 0。</p>
+<p>源码见 <em>nouveau\nvkm\subdev\mmu\vmmnv50.c</em> 的 <code>nv50_vmm_flush()</code>   </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">nv50_vmm_flush</span><span class="params">(struct nvkm_vmm *vmm, <span class="keyword">int</span> level)</span> </span>&#123;</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">switch</span> (i) &#123;</span><br><span class="line">		<span class="keyword">case</span> NVKM_ENGINE_GR    : id = <span class="number">0x00</span>; <span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> NVKM_ENGINE_VP    :</span><br><span class="line">		<span class="keyword">case</span> NVKM_ENGINE_MSPDEC: id = <span class="number">0x01</span>; <span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> NVKM_SUBDEV_BAR   : id = <span class="number">0x06</span>; <span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> NVKM_ENGINE_MSPPP :</span><br><span class="line">		<span class="keyword">case</span> NVKM_ENGINE_MPEG  : id = <span class="number">0x08</span>; <span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> NVKM_ENGINE_BSP   :</span><br><span class="line">		<span class="keyword">case</span> NVKM_ENGINE_MSVLD : id = <span class="number">0x09</span>; <span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> NVKM_ENGINE_CIPHER:</span><br><span class="line">		<span class="keyword">case</span> NVKM_ENGINE_SEC   : id = <span class="number">0x0a</span>; <span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> NVKM_ENGINE_CE0   : id = <span class="number">0x0d</span>; <span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	nvkm_wr32(device, <span class="number">0x100c80</span>, (id &lt;&lt; <span class="number">16</span>) | <span class="number">1</span>);</span><br><span class="line">	<span class="keyword">if</span> (nvkm_msec(device, <span class="number">2000</span>,</span><br><span class="line">			<span class="keyword">if</span> (!(nvkm_rd32(device, <span class="number">0x100c80</span>) &amp; <span class="number">0x00000001</span>))</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">		) &lt; <span class="number">0</span>)</span><br><span class="line">			nvkm_error(subdev, <span class="string">&quot;%s mmu invalidate timeout\n&quot;</span>,</span><br><span class="line">				   nvkm_subdev_name[i]);</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="http://envytools.readthedocs.io/en/latest/hw/memory/g80-vm.html">Tesla virtual memory¶</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/GPU/" rel="tag"># GPU</a>
+              <a href="/tags/virtual-memory/" rel="tag"># virtual memory</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/06/18/%E7%A1%AC%E4%BB%B6%E6%94%AF%E6%8C%81%E7%9A%84GPU%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF/" rel="prev" title="硬件支持的GPU虚拟化技术">
+      <i class="fa fa-chevron-left"></i> 硬件支持的GPU虚拟化技术
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/07/09/PCI-driver-model/" rel="next" title="PCI driver model">
+      PCI driver model <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#VM%E7%94%A8%E6%88%B7"><span class="nav-number">2.</span> <span class="nav-text">VM用户</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#channel"><span class="nav-number">3.</span> <span class="nav-text">channel</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DMA-objects"><span class="nav-number">4.</span> <span class="nav-text">DMA objects</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Page-Tables"><span class="nav-number">5.</span> <span class="nav-text">Page Tables</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TLB-flush"><span class="nav-number">6.</span> <span class="nav-text">TLB flush</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

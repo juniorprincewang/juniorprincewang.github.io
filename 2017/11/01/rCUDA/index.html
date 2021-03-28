@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本篇博客讲述rCUDA、rCUDA的安装。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rCUDA">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/11/01/rCUDA/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本篇博客讲述rCUDA、rCUDA的安装。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-11-01T02:37:23.000Z">
+<meta property="article:modified_time" content="2021-03-28T08:22:34.519Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="GPU">
+<meta property="article:tag" content="rCUDA">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/11/01/rCUDA/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>rCUDA | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/11/01/rCUDA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          rCUDA
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-11-01 10:37:23" itemprop="dateCreated datePublished" datetime="2017-11-01T10:37:23+08:00">2017-11-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-28 16:22:34" itemprop="dateModified" datetime="2021-03-28T16:22:34+08:00">2021-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GPU/" itemprop="url" rel="index">
+                    <span itemprop="name">GPU</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GPU/CUDA/" itemprop="url" rel="index">
+                    <span itemprop="name">CUDA</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇博客讲述rCUDA、rCUDA的安装。</p>
+<span id="more"></span>
+
+<h1 id="rCUDA简介"><a href="#rCUDA简介" class="headerlink" title="rCUDA简介"></a>rCUDA简介</h1><p><a target="_blank" rel="noopener" href="http://rcuda.net/index.php/what-s-rcuda.html">rCUDA</a>，（remtoe CUDA）是CUDA的远程调用版本，在本地无GPU的主机上远程访问有CUDA环境的GPU主机。</p>
+<p>rCUDA是Client-Server架构的服务。下面就讲讲如何安装rCUDA。</p>
+<h2 id="准备条件"><a href="#准备条件" class="headerlink" title="准备条件"></a>准备条件</h2><h3 id="CUDA8-0"><a href="#CUDA8-0" class="headerlink" title="CUDA8.0"></a>CUDA8.0</h3><p>目前的rCUDA是基于CUDA-8.0版本的，所以需要在宿主机和虚拟机上提前安装cuda-8.0，并配置好<code>PATH</code>和<code>LD_LIBRARY_PATH</code>路径。<br>安装最好使用</p>
+<p>CUDA在server服务器中成功运行。使用CUDA的deviceQuery和bandwidthTest样例来测试。</p>
+<h3 id="确保client和server正常通信。"><a href="#确保client和server正常通信。" class="headerlink" title="确保client和server正常通信。"></a>确保client和server正常通信。</h3><pre><code>1.  可以选择基于TCP/IP的通信（以太网）。
+2.  也可以选择基于RDMA的通信（InfiniBand或者RoCE）。使用Mellanox OFED的ib_write_bw和ib_read_bw测试IB或RoCE。
+</code></pre>
+<h3 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h3><h4 id="循环登录的问题"><a href="#循环登录的问题" class="headerlink" title="循环登录的问题"></a>循环登录的问题</h4><p>按照上述方式安装好驱动后，重启，到登录界面一切正常。输入登录密码之后，进入桌面，悲剧发生了：桌面一闪就退回到登录界面了，然后就陷入到了输入密码登录、弹出的循环。<br>其实简单卸载掉驱动就可以了。卸载方法是，首先在登录界面进入到Linux的shell i.e. tty model，同时按下Ctrl+Alt+F1 （F1~F6其中一个就可以）。(Ctrl+Alt+F7可以回到桌面界面)<br>然后输入用户名，回车，输入密码，回车，成功进入到shell，开始卸载NVIDIA驱动：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get remove --purge nvidia-*</span><br><span class="line">sudo apt-get install ubuntu-desktop</span><br><span class="line">sudo rm &#x2F;etc&#x2F;X11&#x2F;xorg.conf</span><br><span class="line">echo &#39;nouveau&#39; | sudo tee -a &#x2F;etc&#x2F;modules</span><br><span class="line">#重启系统</span><br><span class="line">sudo reboot</span><br></pre></td></tr></table></figure>
+<p>重启之后就可以登录了。</p>
+<h1 id="安装rCUDA"><a href="#安装rCUDA" class="headerlink" title="安装rCUDA"></a>安装rCUDA</h1><p>去官网下载，需要填写信息。<a target="_blank" rel="noopener" href="http://rcuda.net/index.php/software-request-form.html">http://rcuda.net/index.php/software-request-form.html</a></p>
+<p>我在这里保存了一份<a href="/img/rCUDA/rCUDAv16.11.04.02-CUDA8.0-linux64.tgz">rCUDAv16.11.04.02-CUDA8.0-linux64.tgz</a>，我的系统是64位Ubuntu16.04。</p>
+<p>在client和server两端都需要rCUDA的这份文件。</p>
+<h2 id="rCUDA-server"><a href="#rCUDA-server" class="headerlink" title="rCUDA server"></a>rCUDA server</h2><h3 id="设置环境变量。"><a href="#设置环境变量。" class="headerlink" title="设置环境变量。"></a>设置环境变量。</h3><p>server使用的库<code>LD_LIBRARY_PATH</code>是<code>cuda-8.0</code>的库，而不是自己带的库。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export PATH&#x3D;$PATH:&#x2F;usr&#x2F;local&#x2F;cuda-8.0&#x2F;bin</span><br><span class="line">export LD_LIBRARY_PATH&#x3D;$LD_LIBRARY_PATH:&#x2F;usr&#x2F;local&#x2F;cuda-8.0&#x2F;lib64</span><br></pre></td></tr></table></figure>
+<p>如果是临时设置环境变量，那么就直接在终端里输入命令。如果想要永久设置可以有以下方法。</p>
+<ol>
+<li>修改/etc/profile文件<br>在文件中追加上述命令，此方法对所有用户都有效。<br>然后刷新。</li>
+<li>修改~/.bashrc<br>在文件中追加上述命令，对当前用户有效。<br>保护后为了及时生效。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source ~&#x2F;.bashrc</span><br></pre></td></tr></table></figure>
+验证有没有生效。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="开启rCUDA-server"><a href="#开启rCUDA-server" class="headerlink" title="开启rCUDA server"></a>开启rCUDA server</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># 一定要进入子目录*&#x2F;bin&#x2F;中</span><br><span class="line">cd rCUDAv16.11.04.02-CUDA8.0&#x2F;bin&#x2F;</span><br><span class="line">.&#x2F;rCUDAd</span><br></pre></td></tr></table></figure>
+<p>**BUT!**粗问题了！！！</p>
+<pre><code>./rCUDAd: error while loading shared libraries: libcudnn.so.5: cannot open shared object file: No such file or directory。
+</code></pre>
+<p>搜索了一番发现，cuddn是一个独立于CUDA安装的库。专门用于做深度神经网络的库。The NVIDIA CUDA Deep Neural Network library (cuDNN) 。<br>OK！去官网搜索，找到了<a target="_blank" rel="noopener" href="http://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html">cuDNN的安装教程</a><br>教程中给出的下载链接失效了，可以去这里找<a target="_blank" rel="noopener" href="https://developer.nvidia.com/rdp/cudnn-archive">https://developer.nvidia.com/rdp/cudnn-archive</a>。<br>先解压缩文件，然后将部分文件拷贝出来并修改为读取权限。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tar -xzvf cudnn-9.0-linux-x64-v7.tgz</span><br><span class="line">sudo cp cuda&#x2F;include&#x2F;cudnn.h &#x2F;usr&#x2F;local&#x2F;cuda-8.0&#x2F;include </span><br><span class="line">sudo cp cuda&#x2F;lib64&#x2F;libcudnn* &#x2F;usr&#x2F;local&#x2F;cuda-8.0&#x2F;lib64 </span><br><span class="line">sudo chmod a+r &#x2F;usr&#x2F;local&#x2F;cuda&#x2F;include&#x2F;cudnn.h &#x2F;usr&#x2F;local&#x2F;cuda-8.0&#x2F;lib64&#x2F;libcudnn*</span><br></pre></td></tr></table></figure>
+<p>教程还提供了验证cuDNN安装成功与否的samples。<br>单独下载cuDNN的samples文件，解压缩后有<code>mnistCUDNN</code>和<code>RNN</code>两个文件夹。我们验证仅需要<code>mnistCUDNN</code>文件夹。<br>编译<code>mnistCUDNN</code>样例。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make clean &amp; make</span><br></pre></td></tr></table></figure>
+<p>运行样例。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;mnistCUDNN</span><br></pre></td></tr></table></figure>
+<p>在此处，出意外了！</p>
+<pre><code>./mnistCUDNN: error while loading shared libraries: libcudart.so.8.0 cannot open shared object object file: No such file or directory
+</code></pre>
+<p>怎么办!<br>原来，新安装的共享动态链接库为系统所共享，需要手动激活。[敲黑板]</p>
+<ol>
+<li>往/lib 和 /usr/lib中添加库文件后，不用修改/etc/ld.so.conf的，但是完了之后要调一下ldconfig，不然这个library会找不到。 </li>
+<li>想往上面两个目录以外加东西的时候，一定要修改/etc/ld.so.conf，然后再调用ldconfig，不然也会找不到。 </li>
+<li>比如安装了一个mysql到/usr/local/mysql，mysql有一大堆library在/usr/local/mysql/lib下面，这时就需要在/etc/ld.so.conf下面加一行/usr/local/mysql/lib，保存过后ldconfig一下，新的library才能在程序运行时被找到。 </li>
+<li>如果想在这两个目录以外放lib，但是又不想在/etc/ld.so.conf中加东西（或者是没有权限加东西）。那也可以，就是export一个全局变量LD_LIBRARY_PATH，然后运行程序的时候就会去这个目录中找library。一般来讲这只是一种临时的解决方案，在没有权限或临时需要的时候使用。 </li>
+<li>ldconfig做的这些东西都与运行程序时有关，跟编译时一点关系都没有。编译的时候还是该加-L就得加，不要混淆了。 </li>
+<li>总之，就是不管做了什么关于library的变动后，最好都ldconfig一下，不然会出现一些意想不到的结果。不会花太多的时间，但是会省很多的事。</li>
+</ol>
+<p>ldconfig命令的用途主要是在默认搜寻目录/lib和/usr/lib以及动态库配置文件/etc/ld.so.conf内所列的目录下，搜索出可共享的动态链接库（格式如lib*.so*）,进而创建出动态装入程序(ld.so)所需的连接和缓存文件。</p>
+<p><code>ldconfig</code>通常在系统启动时运行，而当用户安装了一个新的动态链接库时，就需要手工运行这个命令。</p>
+<p>来自: <a target="_blank" rel="noopener" href="http://man.linuxde.net/ldconfig">http://man.linuxde.net/ldconfig</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ldconfig &#x2F;usr&#x2F;local&#x2F;cuda&#x2F;lib64</span><br></pre></td></tr></table></figure>
+
+<p>OK！cudNN samples测试通过！</p>
+<p>再次启动server!</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># 一定要进入子目录*&#x2F;bin&#x2F;中</span><br><span class="line">cd rCUDAv16.11.04.02-CUDA8.0&#x2F;bin&#x2F;</span><br><span class="line">.&#x2F;rCUDAd</span><br></pre></td></tr></table></figure>
+
+<p>可以通过<code>./rCUDAd -h</code>查看相关命令。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-i : 不以守护进程运行，而是以交互式方式运行。</span><br><span class="line">-l : 本地模式，使用TCP</span><br><span class="line">-n &lt;number&gt;: 并发允许的服务器数量。0代表无限多个，默认值为0。</span><br><span class="line">-p : 指定端口，默认为8308。</span><br><span class="line">-v ：详细模式</span><br><span class="line">-h ：打印帮助信息</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="KVM"><a href="#KVM" class="headerlink" title="KVM"></a>KVM</h2><p>KVM全称是基于内核的虚拟机（Kernel-based Virtual Machine），它是Linux的一个内核模块，该内核模块使得Linux变成了一个Hypervisor。</p>
+<p>QEMU是一款开源的模拟器及虚拟机监管器(Virtual Machine Monitor, VMM)。QEMU主要提供两种功能给用户使用。一是作为用户态模拟器，利用动态代码翻译机制来执行不同于主机架构的代码。二是作为虚拟机监管器，模拟全系统，利用其他VMM(Xen, KVM, etc)来使用硬件提供的虚拟化支持，创建接近于主机性能的虚拟机。<br>QEMU使用了KVM模块的虚拟化功能，来为自己的虚拟机提供硬件虚拟化加速。</p>
+<p>libvirt又是一个C语言实现的虚拟机管理工具集，即由它提供的API来实现对qemu和kvm的这些管理过程。</p>
+<p>KVM要求CPU支持，比如英特尔的VT或ADM-V，有些主板会在主板中<strong>默认禁用CPU的虚拟化支持</strong>，所以最好先进入BIOS中确认自己的CPU虚拟化功能处于开启状态。</p>
+<p><strong>在BIOS设置后，要先关机，然后开机，才会生效！先关机，然后开机！先关机，然后开机！</strong></p>
+<p>好坑，折腾半天，原来BIOS中禁用了CPU的虚拟化支持。所以一定要先确认主机是否支持硬件虚拟化。不然，KVM无法加速，虚拟机的反应真的让人受不了。</p>
+<h3 id="验证主机是否支持硬件虚拟化"><a href="#验证主机是否支持硬件虚拟化" class="headerlink" title="验证主机是否支持硬件虚拟化"></a>验证主机是否支持硬件虚拟化</h3><p>可以通过以下命令查看，如果不返回内容，说明机器不支持KVM或者BIOS中没有开启CPU硬件虚拟化。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">egrep &#39;(svm|vmx)&#39; &#x2F;proc&#x2F;cpuinfo</span><br></pre></td></tr></table></figure>
+
+<p>我建议使用下面一种。安装cpu-checker之后通过运行kvm-ok来验证：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install cpu-checker</span><br></pre></td></tr></table></figure>
+
+<p>运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kvm-ok</span><br></pre></td></tr></table></figure>
+<p>如果出现<code>/dev/kvm exists</code>说明机器已经支持kvm；否则需要去BIOS中开启。</p>
+<pre><code>INFO: /dev/kvm exists
+KVM acceleration can be used
+</code></pre>
+<h3 id="安装KVM相关以依赖"><a href="#安装KVM相关以依赖" class="headerlink" title="安装KVM相关以依赖"></a>安装KVM相关以依赖</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install kvm qemu-kvm libvirt-bin virtinst bridge-utils</span><br></pre></td></tr></table></figure>
+
+<p>它们的作用分别为：</p>
+<ul>
+<li>kvm: KVM的内核，通常linux系统自带</li>
+<li>qemu-kvm: KVM的设备模拟器，实际上kvm只是负责加速，qemu才是虚拟机管理器 </li>
+<li>libvirt-bin: libvirt库，虚拟机命令行管理工具，包含很多实用工具，如后面需要大量使用的virsh。（安装之后会生成一个名为virbr0的网桥） </li>
+<li>virtinst: 虚拟机创建（virt-install）和克隆工具（vrit-clone）等 </li>
+<li>birdge-utils: 用于桥接网卡的工具，如命令brctl），如果有图形化桌面，推荐安装virt-manager，这个工具可以非常方便地图形化管理虚拟机，就像常见的virtualbox/vmware界面那样，可以通过点点鼠标来完成虚拟机的管理。</li>
+</ul>
+<p>KVM管理工具的一些注解及一些实用工具</p>
+<ul>
+<li>libvirt：操作和管理KVM虚机的虚拟化API，使用C语言编写，可以由Python,Ruby, Perl, PHP, Java等语言调用。<br>可以操作包括KVM，vmware，XEN，Hyper-v, LXC，virtualbox等 Hypervisor。</li>
+<li>virsh：基于libvirt的命令行工具，后面需要大量使用。  </li>
+<li>virt-v2v：虚机格式迁移工具，该工具与virt-sysprep都包含在包libguestfs-tools中，后面布署中会用到 </li>
+<li>virt-install：创建KVM虚机的命令行工具 </li>
+<li>virt-viewer：连接到虚拟机屏幕的工具，需要主机有桌面环境，该工具需要单独安装<code>sudo apt-get install virt-viewer</code> </li>
+<li>virt-clone：虚机克隆工具 </li>
+<li>virt-top：类似于linux系统下的top命令，可以显示所有虚拟机CPU、内存等使用情况，该工具需要单独安装<code>sudo apt-get install virt-top</code></li>
+</ul>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p>[1] <a target="_blank" rel="noopener" href="http://notes.maxwi.com/2016/11/29/kvm-create-and-manage">Ubuntu Server/Debian下的KVM虚拟机创建及管理详解</a><br>[2] <a target="_blank" rel="noopener" href="http://mirror.pnl.gov/releases/xenial/">Ubuntu 16.04.3 LTS (Xenial Xerus)下载地址</a></p>
+<h2 id="rCUDA-client"><a href="#rCUDA-client" class="headerlink" title="rCUDA client"></a>rCUDA client</h2><h3 id="设置环境变量。-1"><a href="#设置环境变量。-1" class="headerlink" title="设置环境变量。"></a>设置环境变量。</h3><p>client使用的库<code>LD_LIBRARY_PATH</code>是<strong>rCUDA</strong>的<code>lib</code>库。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">export PATH&#x3D;$PATH:&#x2F;usr&#x2F;local&#x2F;cuda-8.0&#x2F;bin #CUDA的路径</span><br><span class="line">export LD_LIBRARY_PATH&#x3D;$HOME&#x2F;rCUDA&#x2F;lib:$LD_LIBRARY_PATH #rCUDA 库路径</span><br><span class="line"># 配置远端GPU</span><br><span class="line">export RCUDA_DEVICE_COUNT&#x3D;1 #远端GPU的数量</span><br><span class="line">export RCUDA_DEVICE_0 &#x3D; 192.168.151.134:0 #第1个GPU</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>设置调用远端GPU的环境变量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RCUDA_DEVICE_COUNT&#x3D;&lt;number_of_GPUs&gt;</span><br><span class="line">export RCUDA_DEVICE_X&#x3D;&lt;server_name_or_ip_address[@port]&gt;[:GPUnumber]</span><br></pre></td></tr></table></figure>
+
+<h3 id="编译CUDA程序"><a href="#编译CUDA程序" class="headerlink" title="编译CUDA程序"></a>编译CUDA程序</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd $HOME&#x2F;NVIDIA_CUDA_Samples&#x2F;1_Utilities&#x2F;deviceQuery</span><br><span class="line">make EXTRA_NVCCFLAGS&#x3D;--cudart&#x3D;shared</span><br></pre></td></tr></table></figure>
+
+<h4 id="nvcc编译选项"><a href="#nvcc编译选项" class="headerlink" title="nvcc编译选项"></a>nvcc编译选项</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">--cudart </span><br><span class="line"></span><br><span class="line">Specify the type of CUDA runtime library</span><br><span class="line">to be used: no CUDA runtime library,</span><br><span class="line">shared&#x2F;dynamic CUDA runtime library, or</span><br><span class="line">static CUDA runtime library.</span><br><span class="line">Allowed values for this option: none ,</span><br><span class="line">shared , static .</span><br><span class="line">Default value: static</span><br></pre></td></tr></table></figure>
+<p>由于 <code>rCUDA</code> 的原理是 API Remoting， <code>CUDA</code>的运行时库应当指定为共享态，即 <code>--cudart=shared</code> 。</p>
+<p>如果有InfiniBand网络，rCUDA用户可以通过高通信传输性能的InfiniBand Verbs API替代TCP/IP协议。</p>
+<h3 id="运行程序"><a href="#运行程序" class="headerlink" title="运行程序"></a>运行程序</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;deviceQuery</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="遇到的问题-1"><a href="#遇到的问题-1" class="headerlink" title="遇到的问题"></a>遇到的问题</h4><h1 id="下一步计划"><a href="#下一步计划" class="headerlink" title="下一步计划"></a>下一步计划</h1><p>优化虚拟机，TCP/IP速度与virtio。数据代码签名。</p>
+<h1 id="rCUDA的分析"><a href="#rCUDA的分析" class="headerlink" title="rCUDA的分析"></a>rCUDA的分析</h1><p><strong>CUDA8.0及以上版本</strong></p>
+<h2 id="kernel-函数的重现。"><a href="#kernel-函数的重现。" class="headerlink" title="kernel 函数的重现。"></a><code>kernel</code> 函数的重现。</h2><pre><code>__host__cudaError_t cudaLaunchKernel (const void
+*func, dim3 gridDim, dim3 blockDim, void **args, size_t
+sharedMem, cudaStream_t stream)
+
+Launches a device function.
+
+Parameters
+    func - Device function symbol
+    gridDim - Grid dimentions
+    blockDim - Block dimentions
+    args - Arguments
+    sharedMem - Shared memory
+    stream - Stream identifier
+Returns
+    cudaSuccess, cudaErrorInvalidDeviceFunction, cudaErrorInvalidConfiguration,
+    cudaErrorLaunchFailure, cudaErrorLaunchTimeout, cudaErrorLaunchOutOfResources,
+    cudaErrorSharedObjectInitFailed, cudaErrorInvalidPtx,
+    cudaErrorNoKernelImageForDevice, cudaErrorJitCompilerNotFound
+</code></pre>
+<p>Description</p>
+<pre><code>The function invokes kernel func on gridDim (gridDim.x × gridDim.y ×
+gridDim.z) grid of blocks. Each block contains blockDim (blockDim.x ×
+blockDim.y × blockDim.z) threads.
+If the kernel has N parameters the args should point to array of N pointers. Each
+pointer, from args[0] to args[N - 1], point to the region of memory from which the
+actual parameter will be copied.
+For templated functions, pass the function symbol as follows:
+func_name&lt;template_arg_0,...,template_arg_N&gt;
+sharedMem sets the amount of dynamic shared memory that will be available to each
+thread block.
+stream specifies a stream the invocation is associated to
+</code></pre>
+<p><code>rCUDA</code> 提到了guest执行 <code>kernel</code> 函数时候将 <code>cudaLaunch</code> , <code>kernel_name</code>, <code>execution stack</code> 传递给服务器，服务器返回 <code>CUDA result code</code> 。</p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><p>[1] <a target="_blank" rel="noopener" href="http://blog.csdn.net/jhszh418762259/article/details/52958287">Ubuntu 16.04 CUDA 8 cuDNN 5.1安装</a><br>[2] <a target="_blank" rel="noopener" href="http://man.linuxde.net/ldconfig">ldconfig命令</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/GPU/" rel="tag"># GPU</a>
+              <a href="/tags/rCUDA/" rel="tag"># rCUDA</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/10/04/vim%E6%93%8D%E4%BD%9C/" rel="prev" title="vim操作">
+      <i class="fa fa-chevron-left"></i> vim操作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/01/12/CUDA-logic/" rel="next" title="CUDA 介绍">
+      CUDA 介绍 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#rCUDA%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">rCUDA简介</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.1.</span> <span class="nav-text">准备条件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CUDA8-0"><span class="nav-number">1.1.1.</span> <span class="nav-text">CUDA8.0</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A1%AE%E4%BF%9Dclient%E5%92%8Cserver%E6%AD%A3%E5%B8%B8%E9%80%9A%E4%BF%A1%E3%80%82"><span class="nav-number">1.1.2.</span> <span class="nav-text">确保client和server正常通信。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.3.</span> <span class="nav-text">遇到的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E7%99%BB%E5%BD%95%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">循环登录的问题</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85rCUDA"><span class="nav-number">2.</span> <span class="nav-text">安装rCUDA</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#rCUDA-server"><span class="nav-number">2.1.</span> <span class="nav-text">rCUDA server</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E3%80%82"><span class="nav-number">2.1.1.</span> <span class="nav-text">设置环境变量。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E5%90%AFrCUDA-server"><span class="nav-number">2.1.2.</span> <span class="nav-text">开启rCUDA server</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KVM"><span class="nav-number">2.2.</span> <span class="nav-text">KVM</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E4%B8%BB%E6%9C%BA%E6%98%AF%E5%90%A6%E6%94%AF%E6%8C%81%E7%A1%AC%E4%BB%B6%E8%99%9A%E6%8B%9F%E5%8C%96"><span class="nav-number">2.2.1.</span> <span class="nav-text">验证主机是否支持硬件虚拟化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85KVM%E7%9B%B8%E5%85%B3%E4%BB%A5%E4%BE%9D%E8%B5%96"><span class="nav-number">2.2.2.</span> <span class="nav-text">安装KVM相关以依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">2.2.3.</span> <span class="nav-text">参考</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rCUDA-client"><span class="nav-number">2.3.</span> <span class="nav-text">rCUDA client</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E3%80%82-1"><span class="nav-number">2.3.1.</span> <span class="nav-text">设置环境变量。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91CUDA%E7%A8%8B%E5%BA%8F"><span class="nav-number">2.3.2.</span> <span class="nav-text">编译CUDA程序</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#nvcc%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">nvcc编译选项</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F"><span class="nav-number">2.3.3.</span> <span class="nav-text">运行程序</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98-1"><span class="nav-number">2.3.3.1.</span> <span class="nav-text">遇到的问题</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8B%E4%B8%80%E6%AD%A5%E8%AE%A1%E5%88%92"><span class="nav-number">3.</span> <span class="nav-text">下一步计划</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rCUDA%E7%9A%84%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">rCUDA的分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#kernel-%E5%87%BD%E6%95%B0%E7%9A%84%E9%87%8D%E7%8E%B0%E3%80%82"><span class="nav-number">4.1.</span> <span class="nav-text">kernel 函数的重现。</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">5.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="由于平时经常分析 ELF 格式的文件，经常用到 objdump 、 readelf 、 nm 程序，而它们都属于 GNU Binutils工具，所以在此简单总结各个程序的用法和参数。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GNU Binutils工具">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/05/08/GNU-Binutils%E5%B7%A5%E5%85%B7/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="由于平时经常分析 ELF 格式的文件，经常用到 objdump 、 readelf 、 nm 程序，而它们都属于 GNU Binutils工具，所以在此简单总结各个程序的用法和参数。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-05-08T02:35:37.000Z">
+<meta property="article:modified_time" content="2021-03-26T11:25:06.929Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="objdump">
+<meta property="article:tag" content="readelf">
+<meta property="article:tag" content="nm">
+<meta property="article:tag" content="c++filt">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/05/08/GNU-Binutils%E5%B7%A5%E5%85%B7/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>GNU Binutils工具 | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/05/08/GNU-Binutils%E5%B7%A5%E5%85%B7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GNU Binutils工具
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-08 10:35:37" itemprop="dateCreated datePublished" datetime="2018-05-08T10:35:37+08:00">2018-05-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-26 19:25:06" itemprop="dateModified" datetime="2021-03-26T19:25:06+08:00">2021-03-26</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>由于平时经常分析 <code>ELF</code> 格式的文件，经常用到 <code>objdump</code> 、 <code>readelf</code> 、 <code>nm</code> 程序，而它们都属于 <code>GNU Binutils</code>工具，所以在此简单总结各个程序的用法和参数。</p>
+<span id="more"></span>
+
+
+<h1 id="binutils"><a href="#binutils" class="headerlink" title="binutils"></a>binutils</h1><p><code>GNU Binary Utilities</code> 或 <code>binutils</code> 是一整套的编程语言工具程序，用来处理许多格式的目标文件。</p>
+<table>
+<thead>
+<tr>
+<th>程序</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>as</td>
+<td>汇编器</td>
+</tr>
+<tr>
+<td>ld</td>
+<td>连接器</td>
+</tr>
+<tr>
+<td>gprof</td>
+<td>性能分析工具程序</td>
+</tr>
+<tr>
+<td>addr2line</td>
+<td>从目标文件的虚拟地址获取文件的行号或符号</td>
+</tr>
+<tr>
+<td>ar</td>
+<td>可以对静态库做创建、修改和取出的操作。</td>
+</tr>
+<tr>
+<td>c++filt</td>
+<td>解码 C++ 的符号</td>
+</tr>
+<tr>
+<td>dlltool</td>
+<td>创建Windows 动态库</td>
+</tr>
+<tr>
+<td>gold</td>
+<td>另一种连接器</td>
+</tr>
+<tr>
+<td>nlmconv</td>
+<td>可以转换成NetWare Loadable Module目标文件格式</td>
+</tr>
+<tr>
+<td>nm</td>
+<td>显示目标文件内的符号</td>
+</tr>
+<tr>
+<td>objcopy</td>
+<td>复制目标文件，过程中可以修改</td>
+</tr>
+<tr>
+<td>objdump</td>
+<td>显示目标文件的相关信息，亦可反汇编</td>
+</tr>
+<tr>
+<td>ranlib</td>
+<td>产生静态库的索引</td>
+</tr>
+<tr>
+<td>readelf</td>
+<td>显示ELF文件的内容</td>
+</tr>
+<tr>
+<td>size</td>
+<td>列出总体和section的大小</td>
+</tr>
+<tr>
+<td>strings</td>
+<td>列出任何二进制档内的可显示字符串</td>
+</tr>
+<tr>
+<td>strip</td>
+<td>从目标文件中移除符号</td>
+</tr>
+<tr>
+<td>windmc</td>
+<td>产生Windows消息资源</td>
+</tr>
+<tr>
+<td>windres</td>
+<td>Windows 资源档编译器</td>
+</tr>
+</tbody></table>
+<h1 id="objdump"><a href="#objdump" class="headerlink" title="objdump"></a>objdump</h1><p>查看目标文件或可执行文件的构成工具。</p>
+<h2 id="选项"><a href="#选项" class="headerlink" title="选项"></a>选项</h2><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>全称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>–archive-headers</td>
+<td>显示档案库的成员信息,类似ls -l将lib*.a的信息列出。</td>
+</tr>
+<tr>
+<td>-b bfdname</td>
+<td>–target=bfdname</td>
+<td>指定目标码格式。这不是必须的，objdump能自动识别许多格式，<br>比如： objdump -b oasys -m vax -h fu.o<br>显示fu.o的头部摘要信息，明确指出该文件是Vax系统下用Oasys编译器生成的目标文件。<br>objdump -i将给出这里可以指定的目标码格式列表。</td>
+</tr>
+<tr>
+<td>-C</td>
+<td>–demangle</td>
+<td>将底层的符号名解码成用户级名字，除了去掉所开头的下划线之外，还使得C++函数名以可理解的方式显示出来。</td>
+</tr>
+<tr>
+<td>-g</td>
+<td>–debugging</td>
+<td>显示调试信息。企图解析保存在文件中的调试信息并以C语言的语法显示出来。仅仅支持某些类型的调试信息。有些其他的格式被readelf -w支持。</td>
+</tr>
+<tr>
+<td>-e</td>
+<td>–debugging-tags</td>
+<td>类似-g选项，但是生成的信息是和ctags工具相兼容的格式。</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>–disassemble</td>
+<td>从objfile中反汇编那些特定指令机器码的section。</td>
+</tr>
+<tr>
+<td>-D</td>
+<td>–disassemble-all</td>
+<td>与 -d 类似，但反汇编所有section.</td>
+</tr>
+<tr>
+<td>-z</td>
+<td>–prefix-addresses</td>
+<td>反汇编的时候，显示每一行的完整地址。这是一种比较老的反汇编格式。</td>
+</tr>
+<tr>
+<td>-EB</td>
+<td>–endian=big</td>
+<td>指定目标文件的大端</td>
+</tr>
+<tr>
+<td>-EL</td>
+<td>–endian=little</td>
+<td>指定目标文件的小端。</td>
+</tr>
+<tr>
+<td>-f</td>
+<td>–file-headers</td>
+<td>显示objfile中每个文件的整体头部摘要信息。</td>
+</tr>
+<tr>
+<td>-h</td>
+<td>–section-headers 或者 –headers</td>
+<td>显示目标文件各个section的头部摘要信息。</td>
+</tr>
+<tr>
+<td>-H</td>
+<td>–help</td>
+<td>简短的帮助信息。</td>
+</tr>
+<tr>
+<td>-i</td>
+<td>–info</td>
+<td>显示对于 -b 或者 -m 选项可用的架构和目标格式列表。</td>
+</tr>
+<tr>
+<td>-j name</td>
+<td>–section=name</td>
+<td>仅仅显示指定名称为name的section的信息</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>–line-numbers</td>
+<td>用文件名和行号标注相应的目标代码，仅仅和-d、-D或者-r一起使用使用-ld和使用-d的区别不是很大。<br>在源码级调试的时候有用，要求编译时使用了-g之类的调试编译选项。</td>
+</tr>
+<tr>
+<td>-m machine</td>
+<td>–architecture=machine</td>
+<td>指定反汇编目标文件时使用的架构，当待反汇编文件本身没描述架构信息的时候(比如S-records)，这个选项很有用。<br>可以用-i选项列出这里能够指定的架构。</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>–reloc</td>
+<td>显示文件的重定位入口。如果和-d或者-D一起使用，重定位部分以反汇编后的格式显示出来。</td>
+</tr>
+<tr>
+<td>-R</td>
+<td>–dynamic-reloc</td>
+<td>显示文件的动态重定位入口，仅仅对于动态目标文件意义，比如某些共享库。</td>
+</tr>
+<tr>
+<td>-s</td>
+<td>–full-contents</td>
+<td>显示指定section的完整内容。默认所有的非空section都会被显示。</td>
+</tr>
+<tr>
+<td>-S</td>
+<td>–source</td>
+<td>尽可能反汇编出源代码，尤其当编译的时候指定了-g这种调试参数时，效果比较明显。隐含了-d参数。</td>
+</tr>
+<tr>
+<td></td>
+<td>–start-address=address</td>
+<td>从指定地址开始显示数据，该选项影响-d、-r和-s选项的输出。</td>
+</tr>
+<tr>
+<td></td>
+<td>–stop-address=address</td>
+<td>显示数据直到指定地址为止，该项影响-d、-r和-s选项的输出。</td>
+</tr>
+<tr>
+<td>-t</td>
+<td>–syms</td>
+<td>显示文件的符号表入口。类似于nm -s提供的信息</td>
+</tr>
+<tr>
+<td>-T</td>
+<td>–dynamic-syms</td>
+<td>显示文件的动态符号表入口，仅仅对动态目标文件意义，比如某些共享库。</td>
+</tr>
+<tr>
+<td>-x</td>
+<td>–all-headers</td>
+<td>显示所可用的头信息，包括符号表、重定位入口。-x 等价于-a -f -h -r -t 同时指定。</td>
+</tr>
+</tbody></table>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>显示目标文件各个段的头部摘要信息： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump -h mytest.o </span><br></pre></td></tr></table></figure>
+
+<p>反汇编目标文件的特定机器码段： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump -d mytest.o </span><br></pre></td></tr></table></figure>
+
+<p>显示文件的符号表入口，将底层符号解码并表示成用户级别: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump -t -C mytest.o </span><br></pre></td></tr></table></figure>
+
+<h1 id="readelf"><a href="#readelf" class="headerlink" title="readelf"></a>readelf</h1><p><code>readelf</code> 用来显示一个或者多个elf格式的目标文件的信息。 这个程序和 <code>objdump</code> 提供的功能类似，但是它显示的信息更为具体，并且它不依赖BFD库。</p>
+<p><code>ELF</code>文件分三种：</p>
+<ul>
+<li>可重定位文件:用户和其他目标文件一起创建可执行文件或者共享目标文件,例如lib*.o文件。 </li>
+<li>可执行文件：用于生成进程映像，载入内存执行,例如编译好的可执行文件a.out。 </li>
+<li>共享目标文件：用于和其他共享目标文件或者可重定位文件一起生成elf目标文件或者和执行文件一起创建进程映像，例如lib*.so文件。 </li>
+</ul>
+<h2 id="选项-1"><a href="#选项-1" class="headerlink" title="选项"></a>选项</h2><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>全称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>–all</td>
+<td>显示全部信息,等价于 -h -l -S -s -r -d -V -A -I.</td>
+</tr>
+<tr>
+<td>-h</td>
+<td>–file-header</td>
+<td>显示elf文件开始的文件头信息</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>–program-headers</td>
+<td>–segments 显示程序头（段头）信息(如果有的话)。</td>
+</tr>
+<tr>
+<td>-S</td>
+<td>–section-headers</td>
+<td>–sections 显示节头信息(如果有的话)。</td>
+</tr>
+<tr>
+<td>-g</td>
+<td>–section-groups</td>
+<td>显示节组信息(如果有的话)。</td>
+</tr>
+<tr>
+<td>-t</td>
+<td>–section-details</td>
+<td>显示节的详细信息(-S的)。</td>
+</tr>
+<tr>
+<td>-s</td>
+<td>–syms 或者  –symbols</td>
+<td>显示符号表段中的项（如果有的话）。</td>
+</tr>
+<tr>
+<td>-e</td>
+<td>–headers</td>
+<td>显示全部头信息，等价于: -h -l -S</td>
+</tr>
+<tr>
+<td>-n</td>
+<td>–notes</td>
+<td>显示note段（内核注释）的信息。</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>–relocs</td>
+<td>显示可重定位段的信息。</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>–dynamic</td>
+<td>显示动态段的信息。</td>
+</tr>
+<tr>
+<td>-A</td>
+<td>–arch-specific</td>
+<td>显示CPU构架信息。</td>
+</tr>
+<tr>
+<td>-D</td>
+<td>–use-dynamic</td>
+<td>使用动态段中的符号表显示符号，而不是使用符号段。</td>
+</tr>
+<tr>
+<td>-x <number or name></td>
+<td>–hex-dump=<number or name></td>
+<td>以16进制方式显示指定段内内容。number指定段表中段的索引,或字符串指定文件中的段名。</td>
+</tr>
+</tbody></table>
+<h2 id="例子-1"><a href="#例子-1" class="headerlink" title="例子"></a>例子</h2><p>读取目标文件形式的elf文件头信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -h myfile.o </span><br></pre></td></tr></table></figure>
+
+<p>查看一个可执行的elf文件的节信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -S main </span><br></pre></td></tr></table></figure>
+
+<p>ELF文件的完整输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br></pre></td><td class="code"><pre><span class="line">$readelf -all a.out</span><br><span class="line">ELF Header:</span><br><span class="line">  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00</span><br><span class="line">  Class:                             ELF32</span><br><span class="line">  Data:                              2&#39;s complement, little endian</span><br><span class="line">  Version:                           1 (current)</span><br><span class="line">  OS&#x2F;ABI:                            UNIX - System V</span><br><span class="line">  ABI Version:                       0</span><br><span class="line">  Type:                              EXEC (Executable file)</span><br><span class="line">  Machine:                           Intel 80386</span><br><span class="line">  Version:                           0x1</span><br><span class="line">  Entry point address:               0x8048330</span><br><span class="line">  Start of program headers:          52 (bytes into file)</span><br><span class="line">  Start of section headers:          4412 (bytes into file)</span><br><span class="line">  Flags:                             0x0</span><br><span class="line">  Size of this header:               52 (bytes)</span><br><span class="line">  Size of program headers:           32 (bytes)</span><br><span class="line">  Number of program headers:         9</span><br><span class="line">  Size of section headers:           40 (bytes)</span><br><span class="line">  Number of section headers:         30</span><br><span class="line">  Section header string table index: 27</span><br><span class="line"></span><br><span class="line">Section Headers:</span><br><span class="line">  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al</span><br><span class="line">  [ 0]                   NULL            00000000 000000 000000 00      0   0  0</span><br><span class="line">  [ 1] .interp           PROGBITS        08048154 000154 000013 00   A  0   0  1</span><br><span class="line">  [ 2] .note.ABI-tag     NOTE            08048168 000168 000020 00   A  0   0  4</span><br><span class="line">  [ 3] .note.gnu.build-i NOTE            08048188 000188 000024 00   A  0   0  4</span><br><span class="line">  [ 4] .gnu.hash         GNU_HASH        080481ac 0001ac 000020 04   A  5   0  4</span><br><span class="line">  [ 5] .dynsym           DYNSYM          080481cc 0001cc 000050 10   A  6   1  4</span><br><span class="line">  [ 6] .dynstr           STRTAB          0804821c 00021c 00004c 00   A  0   0  1</span><br><span class="line">  [ 7] .gnu.version      VERSYM          08048268 000268 00000a 02   A  5   0  2</span><br><span class="line">  [ 8] .gnu.version_r    VERNEED         08048274 000274 000020 00   A  6   1  4</span><br><span class="line">  [ 9] .rel.dyn          REL             08048294 000294 000008 08   A  5   0  4</span><br><span class="line">  [10] .rel.plt          REL             0804829c 00029c 000018 08   A  5  12  4</span><br><span class="line">  [11] .init             PROGBITS        080482b4 0002b4 00002e 00  AX  0   0  4</span><br><span class="line">  [12] .plt              PROGBITS        080482f0 0002f0 000040 04  AX  0   0 16</span><br><span class="line">  [13] .text             PROGBITS        08048330 000330 00018c 00  AX  0   0 16</span><br><span class="line">  [14] .fini             PROGBITS        080484bc 0004bc 00001a 00  AX  0   0  4</span><br><span class="line">  [15] .rodata           PROGBITS        080484d8 0004d8 000011 00   A  0   0  4</span><br><span class="line">  [16] .eh_frame_hdr     PROGBITS        080484ec 0004ec 000034 00   A  0   0  4</span><br><span class="line">  [17] .eh_frame         PROGBITS        08048520 000520 0000c4 00   A  0   0  4</span><br><span class="line">  [18] .ctors            PROGBITS        08049f14 000f14 000008 00  WA  0   0  4</span><br><span class="line">  [19] .dtors            PROGBITS        08049f1c 000f1c 000008 00  WA  0   0  4</span><br><span class="line">  [20] .jcr              PROGBITS        08049f24 000f24 000004 00  WA  0   0  4</span><br><span class="line">  [21] .dynamic          DYNAMIC         08049f28 000f28 0000c8 08  WA  6   0  4</span><br><span class="line">  [22] .got              PROGBITS        08049ff0 000ff0 000004 04  WA  0   0  4</span><br><span class="line">  [23] .got.plt          PROGBITS        08049ff4 000ff4 000018 04  WA  0   0  4</span><br><span class="line">  [24] .data             PROGBITS        0804a00c 00100c 000008 00  WA  0   0  4</span><br><span class="line">  [25] .bss              NOBITS          0804a014 001014 000008 00  WA  0   0  4</span><br><span class="line">  [26] .comment          PROGBITS        00000000 001014 00002a 01  MS  0   0  1</span><br><span class="line">  [27] .shstrtab         STRTAB          00000000 00103e 0000fc 00      0   0  1</span><br><span class="line">  [28] .symtab           SYMTAB          00000000 0015ec 000410 10     29  45  4</span><br><span class="line">  [29] .strtab           STRTAB          00000000 0019fc 0001f9 00      0   0  1</span><br><span class="line">Key to Flags:</span><br><span class="line">  W (write), A (alloc), X (execute), M (merge), S (strings)</span><br><span class="line">  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)</span><br><span class="line">  O (extra OS processing required) o (OS specific), p (processor specific)</span><br><span class="line"></span><br><span class="line">There are no section groups in this file.</span><br><span class="line"></span><br><span class="line">Program Headers:</span><br><span class="line">  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align</span><br><span class="line">  PHDR           0x000034 0x08048034 0x08048034 0x00120 0x00120 R E 0x4</span><br><span class="line">  INTERP         0x000154 0x08048154 0x08048154 0x00013 0x00013 R   0x1</span><br><span class="line">      [Requesting program interpreter: &#x2F;lib&#x2F;ld-linux.so.2]</span><br><span class="line">  LOAD           0x000000 0x08048000 0x08048000 0x005e4 0x005e4 R E 0x1000</span><br><span class="line">  LOAD           0x000f14 0x08049f14 0x08049f14 0x00100 0x00108 RW  0x1000</span><br><span class="line">  DYNAMIC        0x000f28 0x08049f28 0x08049f28 0x000c8 0x000c8 RW  0x4</span><br><span class="line">  NOTE           0x000168 0x08048168 0x08048168 0x00044 0x00044 R   0x4</span><br><span class="line">  GNU_EH_FRAME   0x0004ec 0x080484ec 0x080484ec 0x00034 0x00034 R   0x4</span><br><span class="line">  GNU_STACK      0x000000 0x00000000 0x00000000 0x00000 0x00000 RW  0x4</span><br><span class="line">  GNU_RELRO      0x000f14 0x08049f14 0x08049f14 0x000ec 0x000ec R   0x1</span><br><span class="line"></span><br><span class="line"> Section to Segment mapping:</span><br><span class="line">  Segment Sections...</span><br><span class="line">   00</span><br><span class="line">   01     .interp</span><br><span class="line">   02     .interp .note.ABI-tag .note.gnu.build-id .gnu.hash .dynsym .dynstr .gnu.version .gnu.version_r .rel.dyn .rel.plt .init .plt .text .fini .rodata .eh_frame_hdr .eh_frame</span><br><span class="line">   03     .ctors .dtors .jcr .dynamic .got .got.plt .data .bss</span><br><span class="line">   04     .dynamic</span><br><span class="line">   05     .note.ABI-tag .note.gnu.build-id</span><br><span class="line">   06     .eh_frame_hdr</span><br><span class="line">   07</span><br><span class="line">   08     .ctors .dtors .jcr .dynamic .got</span><br><span class="line"></span><br><span class="line">Dynamic section at offset 0xf28 contains 20 entries:</span><br><span class="line">  Tag        Type                         Name&#x2F;Value</span><br><span class="line"> 0x00000001 (NEEDED)                     Shared library: [libc.so.6]</span><br><span class="line"> 0x0000000c (INIT)                       0x80482b4</span><br><span class="line"> 0x0000000d (FINI)                       0x80484bc</span><br><span class="line"> 0x6ffffef5 (GNU_HASH)                   0x80481ac</span><br><span class="line"> 0x00000005 (STRTAB)                     0x804821c</span><br><span class="line"> 0x00000006 (SYMTAB)                     0x80481cc</span><br><span class="line"> 0x0000000a (STRSZ)                      76 (bytes)</span><br><span class="line"> 0x0000000b (SYMENT)                     16 (bytes)</span><br><span class="line"> 0x00000015 (DEBUG)                      0x0</span><br><span class="line"> 0x00000003 (PLTGOT)                     0x8049ff4</span><br><span class="line"> 0x00000002 (PLTRELSZ)                   24 (bytes)</span><br><span class="line"> 0x00000014 (PLTREL)                     REL</span><br><span class="line"> 0x00000017 (JMPREL)                     0x804829c</span><br><span class="line"> 0x00000011 (REL)                        0x8048294</span><br><span class="line"> 0x00000012 (RELSZ)                      8 (bytes)</span><br><span class="line"> 0x00000013 (RELENT)                     8 (bytes)</span><br><span class="line"> 0x6ffffffe (VERNEED)                    0x8048274</span><br><span class="line"> 0x6fffffff (VERNEEDNUM)                 1</span><br><span class="line"> 0x6ffffff0 (VERSYM)                     0x8048268</span><br><span class="line"> 0x00000000 (NULL)                       0x0</span><br><span class="line"></span><br><span class="line">Relocation section &#39;.rel.dyn&#39; at offset 0x294 contains 1 entries:</span><br><span class="line"> Offset     Info    Type            Sym.Value  Sym. Name</span><br><span class="line">08049ff0  00000206 R_386_GLOB_DAT    00000000   __gmon_start__</span><br><span class="line"></span><br><span class="line">Relocation section &#39;.rel.plt&#39; at offset 0x29c contains 3 entries:</span><br><span class="line"> Offset     Info    Type            Sym.Value  Sym. Name</span><br><span class="line">0804a000  00000107 R_386_JUMP_SLOT   00000000   printf</span><br><span class="line">0804a004  00000207 R_386_JUMP_SLOT   00000000   __gmon_start__</span><br><span class="line">0804a008  00000307 R_386_JUMP_SLOT   00000000   __libc_start_main</span><br><span class="line"></span><br><span class="line">There are no unwind sections in this file.</span><br><span class="line"></span><br><span class="line">Symbol table &#39;.dynsym&#39; contains 5 entries:</span><br><span class="line">   Num:    Value  Size Type    Bind   Vis      Ndx Name</span><br><span class="line">     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND</span><br><span class="line">     1: 00000000     0 FUNC    GLOBAL DEFAULT  UND printf@GLIBC_2.0 (2)</span><br><span class="line">     2: 00000000     0 NOTYPE  WEAK   DEFAULT  UND __gmon_start__</span><br><span class="line">     3: 00000000     0 FUNC    GLOBAL DEFAULT  UND __libc_start_main@GLIBC_2.0 (2)</span><br><span class="line">     4: 080484dc     4 OBJECT  GLOBAL DEFAULT   15 _IO_stdin_used</span><br><span class="line"></span><br><span class="line">Symbol table &#39;.symtab&#39; contains 65 entries:</span><br><span class="line">   Num:    Value  Size Type    Bind   Vis      Ndx Name</span><br><span class="line">     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND</span><br><span class="line">     1: 08048154     0 SECTION LOCAL  DEFAULT    1</span><br><span class="line">     2: 08048168     0 SECTION LOCAL  DEFAULT    2</span><br><span class="line">     3: 08048188     0 SECTION LOCAL  DEFAULT    3</span><br><span class="line">     4: 080481ac     0 SECTION LOCAL  DEFAULT    4</span><br><span class="line">     5: 080481cc     0 SECTION LOCAL  DEFAULT    5</span><br><span class="line">     6: 0804821c     0 SECTION LOCAL  DEFAULT    6</span><br><span class="line">     7: 08048268     0 SECTION LOCAL  DEFAULT    7</span><br><span class="line">     8: 08048274     0 SECTION LOCAL  DEFAULT    8</span><br><span class="line">     9: 08048294     0 SECTION LOCAL  DEFAULT    9</span><br><span class="line">    10: 0804829c     0 SECTION LOCAL  DEFAULT   10</span><br><span class="line">    11: 080482b4     0 SECTION LOCAL  DEFAULT   11</span><br><span class="line">    12: 080482f0     0 SECTION LOCAL  DEFAULT   12</span><br><span class="line">    13: 08048330     0 SECTION LOCAL  DEFAULT   13</span><br><span class="line">    14: 080484bc     0 SECTION LOCAL  DEFAULT   14</span><br><span class="line">    15: 080484d8     0 SECTION LOCAL  DEFAULT   15</span><br><span class="line">    16: 080484ec     0 SECTION LOCAL  DEFAULT   16</span><br><span class="line">    17: 08048520     0 SECTION LOCAL  DEFAULT   17</span><br><span class="line">    18: 08049f14     0 SECTION LOCAL  DEFAULT   18</span><br><span class="line">    19: 08049f1c     0 SECTION LOCAL  DEFAULT   19</span><br><span class="line">    20: 08049f24     0 SECTION LOCAL  DEFAULT   20</span><br><span class="line">    21: 08049f28     0 SECTION LOCAL  DEFAULT   21</span><br><span class="line">    22: 08049ff0     0 SECTION LOCAL  DEFAULT   22</span><br><span class="line">    23: 08049ff4     0 SECTION LOCAL  DEFAULT   23</span><br><span class="line">    24: 0804a00c     0 SECTION LOCAL  DEFAULT   24</span><br><span class="line">    25: 0804a014     0 SECTION LOCAL  DEFAULT   25</span><br><span class="line">    26: 00000000     0 SECTION LOCAL  DEFAULT   26</span><br><span class="line">    27: 00000000     0 FILE    LOCAL  DEFAULT  ABS crtstuff.c</span><br><span class="line">    28: 08049f14     0 OBJECT  LOCAL  DEFAULT   18 __CTOR_LIST__</span><br><span class="line">    29: 08049f1c     0 OBJECT  LOCAL  DEFAULT   19 __DTOR_LIST__</span><br><span class="line">    30: 08049f24     0 OBJECT  LOCAL  DEFAULT   20 __JCR_LIST__</span><br><span class="line">    31: 08048360     0 FUNC    LOCAL  DEFAULT   13 __do_global_dtors_aux</span><br><span class="line">    32: 0804a014     1 OBJECT  LOCAL  DEFAULT   25 completed.6086</span><br><span class="line">    33: 0804a018     4 OBJECT  LOCAL  DEFAULT   25 dtor_idx.6088</span><br><span class="line">    34: 080483c0     0 FUNC    LOCAL  DEFAULT   13 frame_dummy</span><br><span class="line">    35: 00000000     0 FILE    LOCAL  DEFAULT  ABS crtstuff.c</span><br><span class="line">    36: 08049f18     0 OBJECT  LOCAL  DEFAULT   18 __CTOR_END__</span><br><span class="line">    37: 080485e0     0 OBJECT  LOCAL  DEFAULT   17 __FRAME_END__</span><br><span class="line">    38: 08049f24     0 OBJECT  LOCAL  DEFAULT   20 __JCR_END__</span><br><span class="line">    39: 08048490     0 FUNC    LOCAL  DEFAULT   13 __do_global_ctors_aux</span><br><span class="line">    40: 00000000     0 FILE    LOCAL  DEFAULT  ABS a.c</span><br><span class="line">    41: 08049f14     0 NOTYPE  LOCAL  DEFAULT   18 __init_array_end</span><br><span class="line">    42: 08049f28     0 OBJECT  LOCAL  DEFAULT   21 _DYNAMIC</span><br><span class="line">    43: 08049f14     0 NOTYPE  LOCAL  DEFAULT   18 __init_array_start</span><br><span class="line">    44: 08049ff4     0 OBJECT  LOCAL  DEFAULT   23 _GLOBAL_OFFSET_TABLE_</span><br><span class="line">    45: 08048480     2 FUNC    GLOBAL DEFAULT   13 __libc_csu_fini</span><br><span class="line">    46: 08048482     0 FUNC    GLOBAL HIDDEN    13 __i686.get_pc_thunk.bx</span><br><span class="line">    47: 0804a00c     0 NOTYPE  WEAK   DEFAULT   24 data_start</span><br><span class="line">    48: 00000000     0 FUNC    GLOBAL DEFAULT  UND printf@@GLIBC_2.0</span><br><span class="line">    49: 0804a014     0 NOTYPE  GLOBAL DEFAULT  ABS _edata</span><br><span class="line">    50: 080484bc     0 FUNC    GLOBAL DEFAULT   14 _fini</span><br><span class="line">    51: 08049f20     0 OBJECT  GLOBAL HIDDEN    19 __DTOR_END__</span><br><span class="line">    52: 0804a00c     0 NOTYPE  GLOBAL DEFAULT   24 __data_start</span><br><span class="line">    53: 00000000     0 NOTYPE  WEAK   DEFAULT  UND __gmon_start__</span><br><span class="line">    54: 0804a010     0 OBJECT  GLOBAL HIDDEN    24 __dso_handle</span><br><span class="line">    55: 080484dc     4 OBJECT  GLOBAL DEFAULT   15 _IO_stdin_used</span><br><span class="line">    56: 00000000     0 FUNC    GLOBAL DEFAULT  UND __libc_start_main@@GLIBC_</span><br><span class="line">    57: 08048410    97 FUNC    GLOBAL DEFAULT   13 __libc_csu_init</span><br><span class="line">    58: 0804a01c     0 NOTYPE  GLOBAL DEFAULT  ABS _end</span><br><span class="line">    59: 08048330     0 FUNC    GLOBAL DEFAULT   13 _start</span><br><span class="line">    60: 080484d8     4 OBJECT  GLOBAL DEFAULT   15 _fp_hw</span><br><span class="line">    61: 0804a014     0 NOTYPE  GLOBAL DEFAULT  ABS __bss_start</span><br><span class="line">    62: 080483e4    40 FUNC    GLOBAL DEFAULT   13 main</span><br><span class="line">    63: 00000000     0 NOTYPE  WEAK   DEFAULT  UND _Jv_RegisterClasses</span><br><span class="line">    64: 080482b4     0 FUNC    GLOBAL DEFAULT   11 _init</span><br><span class="line"></span><br><span class="line">Histogram for &#96;.gnu.hash&#39; bucket list length (total of 2 buckets):</span><br><span class="line"> Length  Number     % of total  Coverage</span><br><span class="line">      0  1          ( 50.0%)</span><br><span class="line">      1  1          ( 50.0%)    100.0%</span><br><span class="line"></span><br><span class="line">Version symbols section &#39;.gnu.version&#39; contains 5 entries:</span><br><span class="line"> Addr: 0000000008048268  Offset: 0x000268  Link: 5 (.dynsym)</span><br><span class="line">  000:   0 (*local*)       2 (GLIBC_2.0)     0 (*local*)       2 (GLIBC_2.0)</span><br><span class="line">  004:   1 (*global*)</span><br><span class="line"></span><br><span class="line">Version needs section &#39;.gnu.version_r&#39; contains 1 entries:</span><br><span class="line"> Addr: 0x0000000008048274  Offset: 0x000274  Link: 6 (.dynstr)</span><br><span class="line">  000000: Version: 1  File: libc.so.6  Cnt: 1</span><br><span class="line">  0x0010:   Name: GLIBC_2.0  Flags: none  Version: 2</span><br><span class="line"></span><br><span class="line">Notes at offset 0x00000168 with length 0x00000020:</span><br><span class="line">  Owner                 Data size   Description</span><br><span class="line">  GNU                  0x00000010   NT_GNU_ABI_TAG (ABI version tag)</span><br><span class="line">    OS: Linux, ABI: 2.6.15</span><br><span class="line"></span><br><span class="line">Notes at offset 0x00000188 with length 0x00000024:</span><br><span class="line">  Owner                 Data size   Description</span><br><span class="line">  GNU                  0x00000014   NT_GNU_BUILD_ID (unique build ID bitstring)</span><br><span class="line">    Build ID: 17fb9651029b6a8543bfafec9eea23bd16454e65</span><br></pre></td></tr></table></figure>
+
+<h1 id="nm"><a href="#nm" class="headerlink" title="nm"></a>nm</h1><h1 id="strings"><a href="#strings" class="headerlink" title="strings"></a>strings</h1><p><code>strings</code> 命令在对象文件或二进制文件中查找可打印的字符串。字符串是4个或更多可打印字符的任意序列，以换行符或空字符结束。 strings命令对识别随机对象文件很有用。</p>
+<h1 id="c-filt"><a href="#c-filt" class="headerlink" title="c++filt"></a>c++filt</h1>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/objdump/" rel="tag"># objdump</a>
+              <a href="/tags/readelf/" rel="tag"># readelf</a>
+              <a href="/tags/nm/" rel="tag"># nm</a>
+              <a href="/tags/c-filt/" rel="tag"># c++filt</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/25/%E8%A7%A3%E5%86%B3cuda%E7%A8%8B%E5%BA%8F%E6%89%A7%E8%A1%8C%E5%87%BA%E9%94%99/" rel="prev" title="解决cuda程序执行出错">
+      <i class="fa fa-chevron-left"></i> 解决cuda程序执行出错
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/05/14/Linux%E4%B8%8B%E6%9F%A5%E7%9C%8B%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6/" rel="next" title="Linux下查看二进制文件">
+      Linux下查看二进制文件 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#binutils"><span class="nav-number">1.</span> <span class="nav-text">binutils</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#objdump"><span class="nav-number">2.</span> <span class="nav-text">objdump</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E9%A1%B9"><span class="nav-number">2.1.</span> <span class="nav-text">选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90"><span class="nav-number">2.2.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#readelf"><span class="nav-number">3.</span> <span class="nav-text">readelf</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E9%A1%B9-1"><span class="nav-number">3.1.</span> <span class="nav-text">选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90-1"><span class="nav-number">3.2.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#nm"><span class="nav-number">4.</span> <span class="nav-text">nm</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#strings"><span class="nav-number">5.</span> <span class="nav-text">strings</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#c-filt"><span class="nav-number">6.</span> <span class="nav-text">c++filt</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

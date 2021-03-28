@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="简单的fastbin堆溢出漏洞利用。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="堆溢出之fastbin">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/08/23/how2heap-fastbin/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="简单的fastbin堆溢出漏洞利用。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-08-23T05:59:56.000Z">
+<meta property="article:modified_time" content="2021-03-28T08:31:47.729Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="堆溢出">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/08/23/how2heap-fastbin/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>堆溢出之fastbin | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/08/23/how2heap-fastbin/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          堆溢出之fastbin
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-08-23 13:59:56" itemprop="dateCreated datePublished" datetime="2017-08-23T13:59:56+08:00">2017-08-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-28 16:31:47" itemprop="dateModified" datetime="2021-03-28T16:31:47+08:00">2021-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/security/" itemprop="url" rel="index">
+                    <span itemprop="name">security</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/security/pwn/" itemprop="url" rel="index">
+                    <span itemprop="name">pwn</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>简单的fastbin堆溢出漏洞利用。</p>
+<span id="more"></span>
+
+<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>关于Linux下堆管理，需要研读参考文献<a target="_blank" rel="noopener" href="http://www.freebuf.com/articles/system/104144.html">1</a>, <a target="_blank" rel="noopener" href="http://www.freebuf.com/articles/security-management/105285.html">2</a>。</p>
+<p>需要指出的是，fastbin是个单向链表，仅仅使用fd指针，用LIFO算法实现chuck的链接。fastbins数组中的每个fastbin元素均指向了链表尾部的chunk，而尾节点通过fd指向前一个节点。</p>
+<h1 id="一个栗子"><a href="#一个栗子" class="headerlink" title="一个栗子"></a>一个栗子</h1><p>关于fastbin溢出的例子并不多，下面这道题是很好的学习样例。</p>
+<p>这里面观察<code>create</code>创建了0x24大小的堆块，并赋值给全局变量<code>ptr</code>，在<code>del</code>中释放掉<code>ptr</code>但是并未置空。<br><code>free</code>后的chunk被fastbins回收，但是<code>ptr</code>指针任然指向了它，我们可以将我们想要的地址写入此块中，再<code>malloc</code>两次，获得的<code>ptr</code>指针就指向了我们的目标地址。进而可以做目标函数的GOT表地址覆盖。</p>
+<p>这里有点困惑的是，在将堆内存赋值给<code>ptr</code>后，<code>ptr</code>指向的地址是它本身。这样我们可以写入任意要覆盖的地址。详细过程见下面。</p>
+<p>free 后</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-peda$ p main_arena.fastbinsY </span><br><span class="line">$1 &#x3D; &#123;0x0, 0xed9000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一次edit后</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x&#x2F;8xg 0xed9000</span><br><span class="line">0xed9000:	0x0000000000000000	0x0000000000000031</span><br><span class="line">0xed9010:	0x0000000000602098	0x3131313131313131</span><br><span class="line">0xed9020:	0x3131313131313131	0x0031313131313131</span><br><span class="line">0xed9030:	0x0000000000000457	0x0000000000020fd1</span><br></pre></td></tr></table></figure>
+<p>第一次malloc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ p main_arena.fastbinsY </span><br><span class="line">$2 &#x3D; &#123;0x0, 0x602098 &lt;completed&gt;, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0&#125;</span><br><span class="line"></span><br><span class="line">gdb-peda$ x&#x2F;8xg 0x602098</span><br><span class="line">0x602098 &lt;completed.6962&gt;:	0x0000000000000000	0x0000000000000030</span><br><span class="line">0x6020a8 &lt;info+8&gt;:	0x0000000000ed9010	0x0000000000000000</span><br><span class="line">0x6020b8:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x6020c8:	0x0000000000000000	0x0000000000000000</span><br></pre></td></tr></table></figure>
+
+<p>第二次malloc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ p main_arena.fastbinsY </span><br><span class="line">$3 &#x3D; &#123;0x0, 0x1c6d010, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0&#125;</span><br><span class="line"></span><br><span class="line">b-peda$ x&#x2F;8xg 0x602098</span><br><span class="line">0x602098 &lt;completed.6962&gt;:	0x0000000000000000	0x0000000000000031</span><br><span class="line">0x6020a8 &lt;info+8&gt;:	0x0000000000ed9010	0x0000000000000000</span><br><span class="line">0x6020b8:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x6020c8:	0x0000000000000000	0x0000000000000000</span><br></pre></td></tr></table></figure>
+<p>但是执行这条语句</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">   0x400955 &lt;create+4&gt;:	mov    edi,0x24</span><br><span class="line">   0x40095a &lt;create+9&gt;:	call   0x400700 &lt;malloc@plt&gt;</span><br><span class="line">&#x3D;&#x3D;&#x3D;&gt;   0x40095f &lt;create+14&gt;:	</span><br><span class="line">    mov    QWORD PTR [rip+0x201742],rax        # 0x6020a8 &lt;info+8&gt;</span><br></pre></td></tr></table></figure>
+<p>也就是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result &#x3D; malloc(0x24uLL);</span><br><span class="line">ptr &#x3D; result;</span><br></pre></td></tr></table></figure>
+<p> 得到的ptr附近内存分布为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> gdb-peda$ x&#x2F;8xg 0x602098</span><br><span class="line">0x602098 &lt;completed.6962&gt;:	0x0000000000000000	0x0000000000000031</span><br><span class="line">&#x3D;&#x3D;&#x3D;&gt; 0x6020a8 &lt;info+8&gt;:	0x00000000006020a8	0x0000000000000000</span><br><span class="line">0x6020b8:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x6020c8:	0x0000000000000000	0x0000000000000000</span><br></pre></td></tr></table></figure>
+<p>也就是说ptr指向了ptr自己。</p>
+<p>我没弄懂的地方在于，<em>ptr</em>是指针，它保存的是地址，所以读入数据后，保存的地址是<code>0x00000000006020a8</code>，不是将读入的内容覆盖在<code>0x6020a8</code>上。</p>
+<h2 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h2><ol>
+<li>malloc一个堆块</li>
+<li>free掉该堆</li>
+<li>将<code>ptr_addr-16</code>(64位程序，prev_size和size各占8位)写入上述堆</li>
+<li>malloc使fasbinsY指向<code>ptr_addr-16</code></li>
+<li>malloc使<code>ptr</code>指向bss段，也就是它自己。</li>
+<li>将atoi的GOT表地址写入ptr中。</li>
+<li>通过printf函数，泄露出atoi的实际内存地址。</li>
+<li>根据libc中atoi与system的相对偏移量，计算出system在内存中的实际地址。</li>
+<li>将system内存地址通过<code>ptr</code>写入atoi的内存地址。</li>
+<li>再次执行程序，在运行到<code>atoi</code>函数时，输入<code>/bin/sh</code>。</li>
+</ol>
+<p>文件的下载地址<a href="/img/how2heap-fastbin/fastIsfast">fastIsfast</a>，<a href="/img/how2heap-fastbin/libc-2.23-64.so">libc-2.23-64.so</a>。</p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p>[1] <a target="_blank" rel="noopener" href="http://www.freebuf.com/articles/system/104144.html">Linux堆内存管理深入分析（上）</a><br>[2] <a target="_blank" rel="noopener" href="http://www.freebuf.com/articles/security-management/105285.html">Linux堆内存管理深入分析（下）</a><br>[3] <a target="_blank" rel="noopener" href="https://www.xctf.org.cn/library/details/66bf2f67bdaeb06136a3624e632a548441fb4b38/">XCTF Day 11</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/heap/" rel="tag"># heap</a>
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+              <a href="/tags/%E5%A0%86%E6%BA%A2%E5%87%BA/" rel="tag"># 堆溢出</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/08/22/fsb/" rel="prev" title="fsb">
+      <i class="fa fa-chevron-left"></i> fsb
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/09/01/%E5%A0%86%E6%BA%A2%E5%87%BA%E4%B9%8BWerewolf/" rel="next" title="堆溢出之Werewolf">
+      堆溢出之Werewolf <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E6%A0%97%E5%AD%90"><span class="nav-number">2.</span> <span class="nav-text">一个栗子</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">3.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

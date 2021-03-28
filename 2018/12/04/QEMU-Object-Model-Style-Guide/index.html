@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://juniorprincewang.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","width":320,"display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":true,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="本篇博客主要讲述了QOM编程的教程，翻译了QEMU Object Model Style Guide 。   概述本文档是QOM的分步教程。 这里面没有提供具体的API，代码中包含内联文档和API详细信息可在相应的头文件中找到。 动机 QEMU广泛使用面向对象编程。 但是由于QEMU是用C语言编写的，因此这些OOP概念通常使用非常不同的机制来实现相同的目标。QOM的目标是为QEMU中的所有OOP使">
+<meta property="og:type" content="article">
+<meta property="og:title" content="QEMU Object Model Style Guide">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/12/04/QEMU-Object-Model-Style-Guide/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本篇博客主要讲述了QOM编程的教程，翻译了QEMU Object Model Style Guide 。   概述本文档是QOM的分步教程。 这里面没有提供具体的API，代码中包含内联文档和API详细信息可在相应的头文件中找到。 动机 QEMU广泛使用面向对象编程。 但是由于QEMU是用C语言编写的，因此这些OOP概念通常使用非常不同的机制来实现相同的目标。QOM的目标是为QEMU中的所有OOP使">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-12-04T01:11:33.000Z">
+<meta property="article:modified_time" content="2021-03-26T11:25:06.938Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="QEMU">
+<meta property="article:tag" content="QOM">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/12/04/QEMU-Object-Model-Style-Guide/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>QEMU Object Model Style Guide | TO DO</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TO DO</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/juniorprincewang" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/12/04/QEMU-Object-Model-Style-Guide/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          QEMU Object Model Style Guide
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-04 09:11:33" itemprop="dateCreated datePublished" datetime="2018-12-04T09:11:33+08:00">2018-12-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-26 19:25:06" itemprop="dateModified" datetime="2021-03-26T19:25:06+08:00">2021-03-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/QEMU/" itemprop="url" rel="index">
+                    <span itemprop="name">QEMU</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇博客主要讲述了QOM编程的教程，翻译了<a target="_blank" rel="noopener" href="https://lists.gnu.org/archive/html/qemu-devel/2012-08/msg02271.html">QEMU Object Model Style Guide</a> 。</p>
+<!-- more ------------------------------------------------->
+
+<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>本文档是QOM的分步教程。 这里面没有提供具体的API，代码中包含内联文档和API详细信息可在相应的头文件中找到。</p>
+<h1 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h1><hr>
+<p>QEMU广泛使用面向对象编程。 但是由于QEMU是用C语言编写的，因此这些OOP概念通常使用非常不同的机制来实现相同的目标。<br>QOM的目标是为QEMU中的所有OOP使用单一基础架构，提高一致性，并且可以长期保持可维护性。</p>
+<p>QOM提供了一个通用的基础设施：</p>
+<ul>
+<li>类型管理<br>    - 注册类型<br>    - 枚举注册类型</li>
+<li>继承<br>    - 单亲继承<br>    - 继承层次结构的内省<br>    - 通过无状态接口进行多重继承</li>
+<li>多态性<br>    - 基于类的多态性<br>    - 虚拟和纯虚拟方法<br>    - 构造函数/析构函数链接</li>
+<li>对象属性<br>    - 动态属性注册（绑定到对象）<br>    - 属性内省<br>    - 访问权限<br>    - 访问挂钩</li>
+<li>类型转换<br>    - 运行时检查向上转型/向下转型<br>    - 完全支持转型上下链（包括接口）</li>
+<li>对象枚举<br>    - 表达对象之间的关系<br>    - 能够使用符号路径引用对象<br>    - 表示为有向图</li>
+</ul>
+<p>虽然QOM有很多高级概念，但主要的设计目标是使简单的概念易于实现。</p>
+<h1 id="创建简单类型"><a href="#创建简单类型" class="headerlink" title="创建简单类型"></a>创建简单类型</h1><p>理解QOM最简单的方法就是举例子。 这是创建从Object派生的新类型作为父类的典型示例。 在此示例中，所有代码都将存在于单个C源文件中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;qemu&#x2F;object.h&quot;</span><br></pre></td></tr></table></figure>
+<p>这是包含核心QOM基础结构的头文件。 它具有最小的依赖性，便于单元测试。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#define TYPE_MY_TYPE &quot;my-type&quot;</span><br><span class="line">#define MY_TYPE(obj) OBJECT_CHECK(MyType, (obj), TYPE_MY_TYPE)</span><br></pre></td></tr></table></figure>
+
+<p>所有QOM类型都应至少定义两个宏。<br>第一个宏是类型Type名称的符号版本。 它应该始终采用<code>TYPE_ + upper（typename）</code>的形式。 类型名称通常应遵循QAPI的命名规则，这意味着破折号<code>-</code>优先于下划线 <code>_</code>。<br>第二个宏是一个转换宏。 第一个参数是类型结构，其余参数是不言而喻的。 即使C文件当前未使用强制转换宏，也应始终遵循此形式。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">typedef struct MyType MyType;</span><br><span class="line"></span><br><span class="line">struct MyType</span><br><span class="line">&#123;</span><br><span class="line">    Object parent_obj;</span><br><span class="line"></span><br><span class="line">    &#x2F;*&lt; private &gt;*&#x2F;</span><br><span class="line">    int foo;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在声明结构时，应使用前向声明。 由于在定义类时需要它，这对于一致性很有用。<br>第一个元素必须是父类型，并且应该命名为<code>parent_obj</code>或 <code>parent</code> 。 使用QOM类型时，应避免直接访问此成员，而是依赖于转换宏。</p>
+<p>转换宏隐藏了实现中的继承层次结构。 这使得通过更改层次结构而不必改变许多地方的代码，可以更容易地重构代码。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">static TypeInfo my_type_info &#x3D; &#123;</span><br><span class="line">    .name &#x3D; TYPE_MY_TYPE,</span><br><span class="line">    .parent &#x3D; TYPE_OBJECT,</span><br><span class="line">    .instance_size &#x3D; sizeof(MyType),</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">static void register_types(void)</span><br><span class="line">&#123;</span><br><span class="line">    type_register_static(&amp;my_type_info);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type_init(register_types);</span><br></pre></td></tr></table></figure>
+
+<p>必须在QOM基础结构中注册所有QOM类型。 注册后，用户可以枚举类型，创建对象以及与对象交互，而无需任何其他代码。</p>
+<p>所有类型都必须设置 <code>name</code> 和 <code>parent</code> 参数。 <code>类型宏</code> 应始终用于这些参数。 几乎所有类型都应该设置 <code>instance_size</code> 参数，如果没有指定，它将从其父项继承。</p>
+<p>最后，应提供模块初始化函数。 此处显示的命名约定应该在所有新代码中使用。</p>
+<p>通常，一个C文件应该注册一种类型。 此规则有许多有效的例外，但只要有可能，类型应拆分为单独的C文件。</p>
+<h1 id="使用方法创建类型"><a href="#使用方法创建类型" class="headerlink" title="使用方法创建类型"></a>使用方法创建类型</h1><p>与QOM的下一个最常见的交互是创建一个将从另一个类型Type继承的类型Type。 这通常涉及添加类并实现可以覆盖子类的虚方法。 以下差异显示了我们需要扩展前一个示例以允许使用多态继承的更改。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@@ -1,10 +1,25 @@</span><br><span class="line">+#ifndef QEMU_MY_TYPE_H</span><br><span class="line">+#define QEMU_MY_TYPE_H</span><br><span class="line">+</span><br><span class="line"> #include &quot;qemu&#x2F;object.h&quot;</span><br></pre></td></tr></table></figure>
+<p>此示例假定初始声明将拆分为单独的文件头。 为了简化示例，保护用于显示头文件的开始和结束位置。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> #define TYPE_MY_TYPE &quot;my-type&quot;</span><br><span class="line"> #define MY_TYPE(obj) \</span><br><span class="line">     OBJECT_CHECK(MyType, (obj), TYPE_MY_TYPE)</span><br><span class="line">+#define MY_TYPE_CLASS(klass) \</span><br><span class="line">+    OBJECT_CLASS_CHECK(MyTypeClass, (klass), TYPE_MY_TYPE)</span><br><span class="line">+#define MY_TYPE_GET_CLASS(obj) \</span><br><span class="line">+    OBJECT_GET_CLASS(MyTypeClass, (obj), TYPE_MY_TYPE)</span><br></pre></td></tr></table></figure>
+<p>添加类时，我们需要在类型定义中再添加两个宏。<br>第一个宏是类转换宏。 这看起来非常类似于对象强制转换宏，而是将类作为参数。<br>我们添加的第二个宏允许用户从对象Object获取类Class指针。 方法调度需要最后一个宏。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"> typedef struct MyType MyType;</span><br><span class="line">+typedef struct MyTypeClass MyTypeClass;</span><br><span class="line">+</span><br><span class="line">+struct MyTypeClass</span><br><span class="line">+&#123;</span><br><span class="line">+    ObjectClass parent_klass;</span><br><span class="line">+</span><br><span class="line">+    void (*bar)(MyType *obj, int foo);</span><br><span class="line">+&#125;;</span><br></pre></td></tr></table></figure>
+<p>类看起来与对象非常相似，因为它表示为C结构，第一个成员必须是父类型的类。<br>通常，类只包含函数指针，但可以包含类的数据成员。 每个函数指针的第一个参数应始终是对象类型。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"> struct MyType</span><br><span class="line"> &#123;</span><br><span class="line">@@ -14,10 +29,35 @@ struct MyType</span><br><span class="line">     int foo;</span><br><span class="line"> &#125;;</span><br><span class="line"> </span><br><span class="line">+void my_type_bar(MyType *obj, int foo);</span><br><span class="line">+</span><br><span class="line">+#endif</span><br></pre></td></tr></table></figure>
+<p>应该提供辅助函数来进行方法调度。 这提高了可读性和便利性。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">+</span><br><span class="line">+static void my_type_default_bar(MyType *obj, int foo)</span><br><span class="line">+&#123;</span><br><span class="line">+    &#x2F;* do nothing *&#x2F;</span><br><span class="line">+&#125;</span><br><span class="line">+</span><br><span class="line">+void my_type_bar(MyType *obj, int foo)</span><br><span class="line">+&#123;</span><br><span class="line">+    MyTypeClass *mc &#x3D; MY_TYPE_GET_CLASS(obj);</span><br><span class="line">+</span><br><span class="line">+    mc-&gt;bar(obj, foo);</span><br><span class="line">+&#125;</span><br><span class="line">+</span><br><span class="line">+static void my_type_class_init(ObjectClass *klass, void *data)</span><br><span class="line">+&#123;</span><br><span class="line">+    MyTypeClass *mc &#x3D; MY_TYPE_CLASS(klass);</span><br><span class="line">+</span><br><span class="line">+    mc-&gt;bar &#x3D; my_type_default_bar;</span><br><span class="line">+&#125;</span><br><span class="line">+</span><br><span class="line"> static TypeInfo my_type_info &#x3D; &#123;</span><br><span class="line">     .name &#x3D; TYPE_MY_TYPE,</span><br><span class="line">     .parent &#x3D; TYPE_OBJECT,</span><br><span class="line">     .instance_size &#x3D; sizeof(MyType),</span><br><span class="line">+    .class_size &#x3D; sizeof(MyTypeClass),</span><br><span class="line">+    .class_init &#x3D; my_type_class_init,</span><br><span class="line"> &#125;;</span><br><span class="line"> </span><br><span class="line"> static void register_types(void)</span><br></pre></td></tr></table></figure>
+<p>为了为类型添加新类，我们需要在 <code>TypeInfo</code> 中指定类的大小。 我们还需要提供一个初始化类的函数。 只为任何类型创建和初始化类一次，因此无论此类型创建了多少对象，都将调用此函数一次。</p>
+<p>类初始化函数应遵循 <code>typename +&#39;_ class_init&#39;</code>的命名约定。 类初始化函数应该将 klass参数强制转换为适当的类型，然后适当地重载方法。<br>在这个例子中，我们将方法初始化为一个没有用处的虚函数。 这是因为’foo’是一个虚方法，这意味着如果基类不想覆盖行为，则不需要实现该函数。</p>
+<p>如果我们没有初始化该方法，那么该函数将是一个纯虚方法，这意味着子类必须实现该函数。 QOM无法强制执行此要求，因此应在包装函数中小心检查NULL。</p>
+<p>包装函数只是调度方法。 除了调度方法之外，它不应该实现任何逻辑或行为。 包装器函数可以检查NULL并返回错误或断言。</p>
+<h1 id="实现设备和重载方法"><a href="#实现设备和重载方法" class="headerlink" title="实现设备和重载方法"></a>实现设备和重载方法</h1><p>大多数QOM用户不会实现从 <code>TYPE_OBJECT</code> 派生的对象。 相反，通常QOM用户将从 <code>TYPE_DEVICE</code> 或其他一些基类派生，并且还必须实现虚拟方法。</p>
+<p>在此示例中，我们将 <code>MyType</code> 更改为从 <code>TYPE_DEVICE</code> 继承，然后填充所需的纯虚方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@@ -16,14 +16,14 @@ typedef struct MyTypeClass MyTypeClass;</span><br><span class="line"> </span><br><span class="line"> struct MyTypeClass</span><br><span class="line"> &#123;</span><br><span class="line">-    ObjectClass parent_klass;</span><br><span class="line">+    DeviceClass parent_klass;</span><br><span class="line"> </span><br><span class="line">     void (*bar)(MyType *obj, int foo);</span><br><span class="line"> &#125;;</span><br><span class="line"> </span><br><span class="line"> struct MyType</span><br><span class="line"> &#123;</span><br><span class="line">-    Object parent_obj;</span><br><span class="line">+    DeviceState parent_obj;</span><br><span class="line"> </span><br><span class="line">     &#x2F;*&lt; private &gt;*&#x2F;</span><br><span class="line">     int foo;</span><br></pre></td></tr></table></figure>
+<p>更改父类型是微不足道的，因为它只需要修改结构。 这是通过强制转换宏执行所有强制转换的好处之一。 它简化了重构过程。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">@@ -45,16 +45,27 @@ void my_type_bar(MyType *obj, int foo)</span><br><span class="line">     mc-&gt;bar(obj, foo);</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line">+static int my_type_realize(DeviceState *dev)</span><br><span class="line">+&#123;</span><br><span class="line">+    MyType *my &#x3D; MY_TYPE(dev);</span><br><span class="line">+</span><br><span class="line">+    my-&gt;foo &#x3D; 1;</span><br><span class="line">+</span><br><span class="line">+    return 0;</span><br><span class="line">+&#125;</span><br><span class="line">+</span><br><span class="line"> static void my_type_class_init(ObjectClass *klass, void *data)</span><br><span class="line"> &#123;</span><br><span class="line">     MyTypeClass *mc &#x3D; MY_TYPE_CLASS(klass);</span><br><span class="line">+    DeviceClass *dc &#x3D; DEVICE_CLASS(klass);</span><br><span class="line"> </span><br><span class="line">     mc-&gt;bar &#x3D; my_type_default_bar;</span><br><span class="line">+    dc-&gt;init &#x3D; my_type_realize;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p><code>TYPE_DEVICE</code> 有一个纯虚方法 <code>init</code>，这有点用词不当。 <code>init</code> 方法在构造之后但在guest虚拟机第一次启动之前调用。 在QOM命名法中，我们称之为 <code>realize</code>。 在某个时间点，<code>TYPE_DEVICE</code> 将被重构以重命名 <code>init</code> 方法以实现，但是现在，我们必须忍受这种不一致。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> static TypeInfo my_type_info &#x3D; &#123;</span><br><span class="line">     .name &#x3D; TYPE_MY_TYPE,</span><br><span class="line">-    .parent &#x3D; TYPE_OBJECT,</span><br><span class="line">+    .parent &#x3D; TYPE_DEVICE,</span><br><span class="line">     .instance_size &#x3D; sizeof(MyType),</span><br><span class="line">     .class_size &#x3D; sizeof(MyTypeClass),</span><br><span class="line">     .class_init &#x3D; my_type_class_init,</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="使用实例初始化"><a href="#使用实例初始化" class="headerlink" title="使用实例初始化"></a>使用实例初始化</h1><p>QDev要求通过 <code>init</code> 和 <code>exit</code> 方法进行所有初始化和破坏。 由于QDev没有构造函数和析构函数的概念，因此实现链接的类型通常以不一致的方式完成。</p>
+<p>作为 <code>TypeInfo</code> 结构的一部分，QOM有一个 <code>instance_init</code> 和 <code>instance_finalize</code> 方法，它们分别充当构造函数和析构函数。 这些函数从子类开始调用，并通过QOM处理类型层次结构。</p>
+<p>任何可以独立于用户提供的状态进行初始化的状态都应该初始化为构造函数的一部分。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">@@ -33,6 +33,13 @@ void my_type_bar(MyType *obj, int foo);</span><br><span class="line"> </span><br><span class="line"> #endif</span><br><span class="line"> </span><br><span class="line">+static void my_type_initfn(Object *obj)</span><br><span class="line">+&#123;</span><br><span class="line">+    MyType *my &#x3D; MY_TYPE(obj);</span><br><span class="line">+</span><br><span class="line">+    my-&gt;foo &#x3D; 1;</span><br><span class="line">+&#125;</span><br><span class="line">+</span><br><span class="line"> static void my_type_default_bar(MyType *obj, int foo)</span><br><span class="line"> &#123;</span><br><span class="line">     &#x2F;* do nothing *&#x2F;</span><br><span class="line">@@ -47,10 +54,6 @@ void my_type_bar(MyType *obj, int foo)</span><br><span class="line"> </span><br><span class="line"> static int my_type_realize(DeviceState *dev)</span><br><span class="line"> &#123;</span><br><span class="line">-    MyType *my &#x3D; MY_TYPE(dev);</span><br><span class="line">-</span><br><span class="line">-    my-&gt;foo &#x3D; 1;</span><br><span class="line">-</span><br><span class="line">     return 0;</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line">@@ -69,6 +72,7 @@ static TypeInfo my_type_info &#x3D; &#123;</span><br><span class="line">     .instance_size &#x3D; sizeof(MyType),</span><br><span class="line">     .class_size &#x3D; sizeof(MyTypeClass),</span><br><span class="line">     .class_init &#x3D; my_type_class_init,</span><br><span class="line">+    .instance_init &#x3D; my_type_initfn,</span><br><span class="line"> &#125;;</span><br><span class="line"> </span><br><span class="line"> static void register_types(void)</span><br></pre></td></tr></table></figure>
+<p>由于 <code>foo</code> 可以在不依赖于用户提供的状态的情况下进行初始化，因此我们可以将该逻辑完全移至构造函数。 不幸的是，<code>DeviceState</code> init函数必须保留，因为它是纯虚拟的，但它现在是微不足道的。</p>
+<h1 id="用户提供的状态（属性）"><a href="#用户提供的状态（属性）" class="headerlink" title="用户提供的状态（属性）"></a>用户提供的状态（属性）</h1><p>QEMU中大多数对象的共同特性是希望允许用户在初始创建期间或在运行时调整对象的参数。 属性Properties提供了执行此操作的通用框架。</p>
+<p>属性丰富而复杂，这里不会详尽介绍。 有关详尽的文档，请参阅 <code>qemu/object.h</code> 头文件中的文档。</p>
+<p>Most interactions with properties will happen through convenience functions that make adding properties easier for typical users.  In the case of our example, we’ll add properties using the qdev static property interface.<br>大多数与属性的交互都是通过便利函数实现的，这使得典型用户更容易添加属性。 在我们的示例中，我们将使用qdev静态属性接口添加属性。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@@ -27,6 +27,7 @@ struct MyType</span><br><span class="line"> </span><br><span class="line">     &#x2F;*&lt; private &gt;*&#x2F;</span><br><span class="line">     int foo;</span><br><span class="line">+    int max_vectors;</span><br><span class="line"> &#125;;</span><br></pre></td></tr></table></figure>
+<p>对于静态属性，属性就对应于对象结构的成员。 qdev中的基础结构可以在调用DeviceState::init()之前随时自动更改此成员的值。 这意味着任何依赖于作为属性的成员的初始化必须在DeviceState::init方法中完成。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"> void my_type_bar(MyType *obj, int foo);</span><br><span class="line">@@ -54,9 +55,20 @@ void my_type_bar(MyType *obj, int foo)</span><br><span class="line"> </span><br><span class="line"> static int my_type_realize(DeviceState *dev)</span><br><span class="line"> &#123;</span><br><span class="line">+    MyType *mt &#x3D; MY_TYPE(dev);</span><br><span class="line">+</span><br><span class="line">+    if (mt-&gt;max_vectors &gt; 100) &#123;</span><br><span class="line">+        return -EINVAL;</span><br><span class="line">+    &#125;</span><br><span class="line">+</span><br><span class="line">     return 0;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>对于此示例，我们只是验证包含一个合理的值的属性并没有实现。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">+static Property my_type_properties[] &#x3D; &#123;</span><br><span class="line">+    DEFINE_PROP_INT(&quot;max-vectors&quot;, MyType, max_vectors, 0),</span><br><span class="line">+    DEFINE_PROP_END_OF_LIST(),</span><br><span class="line">+&#125;;</span><br><span class="line">+</span><br><span class="line"> static void my_type_class_init(ObjectClass *klass, void *data)</span><br><span class="line"> &#123;</span><br><span class="line">     MyTypeClass *mc &#x3D; MY_TYPE_CLASS(klass);</span><br><span class="line">@@ -64,6 +76,7 @@ static void my_type_class_init(ObjectClass *klass,</span><br><span class="line"> </span><br><span class="line">     mc-&gt;bar &#x3D; my_type_default_bar;</span><br><span class="line">     dc-&gt;init &#x3D; my_type_realize;</span><br><span class="line">+    dc-&gt;props &#x3D; my_type_properties;</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line"> static TypeInfo my_type_info &#x3D; &#123;</span><br></pre></td></tr></table></figure>
+<p>使用 <code>TYPE_DEVICE</code> 类中的静态类变量注册静态属性。基类可以使用此方法添加静态属性，子类将自动继承它们。</p>
+<h1 id="子属性和链接属性"><a href="#子属性和链接属性" class="headerlink" title="子属性和链接属性"></a>子属性和链接属性</h1><p>QOM中其他常见类型的属性是子属性和链接属性。 与静态属性一样，有一些特殊的帮助器可以将这些属性添加到对象中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@@ -25,6 +25,9 @@ struct MyType</span><br><span class="line"> &#123;</span><br><span class="line">     DeviceState parent_obj;</span><br><span class="line"> </span><br><span class="line">+    Pin *in;</span><br><span class="line">+    Pin out;</span><br><span class="line">+</span><br><span class="line">     &#x2F;*&lt; private &gt;*&#x2F;</span><br><span class="line">     int foo;</span><br><span class="line">     int max_vectors;</span><br></pre></td></tr></table></figure>
+
+<p>首先，我们必须在该对象中添加将保存属性的struct成员。 链接是指向另一个对象的指针，在C中表示为指针。子属性是嵌入对象，通过在对象结构中嵌入struct成员来表示。</p>
+<p>子属性的生命周期与父对象相关联。 IOW，当MyType的一个对象被销毁时，嵌入其中的’out’对象将被自动销毁。</p>
+<p>链接属性将保存对其指向的对象的引用，但不控制它指向的对象的生命周期。 也就是说，当MyType的一个对象被破坏时，’in’指向的对象不一定会被破坏，尽管它的引用计数会减少。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@@ -39,6 +42,11 @@ static void my_type_initfn(Object *obj)</span><br><span class="line">     MyType *my &#x3D; MY_TYPE(obj);</span><br><span class="line"> </span><br><span class="line">     my-&gt;foo &#x3D; 1;</span><br><span class="line">+</span><br><span class="line">+    object_initialize(&amp;my-&gt;out, TYPE_PIN);</span><br><span class="line">+    object_property_add_child(obj, &quot;out&quot;, OBJECT(&amp;my-&gt;out), NULL);</span><br><span class="line">+</span><br><span class="line">+    object_property_add_link(obj, &quot;in&quot;, TYPE_PIN,</span><br><span class="line">+                             (Object **)&amp;my-&gt;in, NULL);</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line"> static void my_type_default_bar(MyType *obj, int foo)</span><br></pre></td></tr></table></figure>
+<p>要将属性添加到对象，我们需要首先初始化子对象，然后添加属性。 这应该始终在构造函数中完成。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/QEMU/" rel="tag"># QEMU</a>
+              <a href="/tags/QOM/" rel="tag"># QOM</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/11/24/Linux%E5%86%85%E6%A0%B8%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/" rel="prev" title="Linux内核内存分配">
+      <i class="fa fa-chevron-left"></i> Linux内核内存分配
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/12/05/QEMU%E6%BA%90%E7%A0%81%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87/" rel="next" title="QEMU源码字符设备">
+      QEMU源码字符设备 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A8%E6%9C%BA"><span class="nav-number">2.</span> <span class="nav-text">动机</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E7%AE%80%E5%8D%95%E7%B1%BB%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">创建简单类型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95%E5%88%9B%E5%BB%BA%E7%B1%BB%E5%9E%8B"><span class="nav-number">4.</span> <span class="nav-text">使用方法创建类型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E8%AE%BE%E5%A4%87%E5%92%8C%E9%87%8D%E8%BD%BD%E6%96%B9%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">实现设备和重载方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%AE%9E%E4%BE%8B%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">6.</span> <span class="nav-text">使用实例初始化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E6%8F%90%E4%BE%9B%E7%9A%84%E7%8A%B6%E6%80%81%EF%BC%88%E5%B1%9E%E6%80%A7%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">用户提供的状态（属性）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%90%E5%B1%9E%E6%80%A7%E5%92%8C%E9%93%BE%E6%8E%A5%E5%B1%9E%E6%80%A7"><span class="nav-number">8.</span> <span class="nav-text">子属性和链接属性</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Max"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">86</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">max</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
