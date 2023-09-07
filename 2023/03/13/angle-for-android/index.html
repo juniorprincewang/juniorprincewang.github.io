@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本文总结使用Google ANGLE库用作Android OpenGL ES driver。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ANGLE for Android">
+<meta property="og:url" content="http://juniorprincewang.github.io/2023/03/13/angle-for-android/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本文总结使用Google ANGLE库用作Android OpenGL ES driver。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-13T02:13:37.000Z">
+<meta property="article:modified_time" content="2023-03-22T07:04:37.050Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="opengles">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2023/03/13/angle-for-android/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2023/03/13/angle-for-android/","path":"2023/03/13/angle-for-android/","title":"ANGLE for Android"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ANGLE for Android | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E6%9E%84%E5%BB%BAangle"><span class="nav-number">1.</span> <span class="nav-text">编译构建ANGLE</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#using-angle-as-the-android-opengl-es-driver"><span class="nav-number">2.</span> <span class="nav-text">Using ANGLE as the
+Android OpenGL ES driver</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2023/03/13/angle-for-android/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="ANGLE for Android | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ANGLE for Android
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-03-13 10:13:37" itemprop="dateCreated datePublished" datetime="2023-03-13T10:13:37+08:00">2023-03-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-03-22 15:04:37" itemprop="dateModified" datetime="2023-03-22T15:04:37+08:00">2023-03-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本文总结使用Google ANGLE库用作Android OpenGL ES driver。
+<span id="more"></span></p>
+<p>ANGLE 库项目仓库 <a
+target="_blank" rel="noopener" href="https://chromium.googlesource.com/angle/angle"
+class="uri">https://chromium.googlesource.com/angle/angle</a>
+目前支持将OpenGL ES 3.0 转换成 Vulkan, desktop OpenGL, OpenGL ES,
+Direct3D 11, Metal实现，而 OpenGL ES 3.1 只支持转换成 Vulkan, desktop
+OpenGL, OpenGL ES实现， OpenGL ES 3.2 转换成 Vulkan, desktop OpenGL,
+OpenGL ES 还在实现中。
+Vulkan作为后端渲染器是支持Windows、Linux、Android等平台最多的实现。</p>
+<p>下面总结在Android中用 ANGLE 库作为OpenGL ES
+driver步骤，<strong>构建需要在 Linux 中</strong>，最终构建包含 ANGLE
+库的 ANGLE APK。 &gt; Important note: Android builds currently require
+Linux.</p>
+<h1 id="编译构建angle">编译构建ANGLE</h1>
+<p>安装 depot_tools</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git</span><br></pre></td></tr></table></figure>
+<p>将 depot_tools 添加到 <code>PATH</code> 路径中。 (最好加入
+<code>~/.bashrc</code> or <code>~/.zshrc</code>)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export PATH=&quot;$PATH:/path/to/depot_tools&quot;</span><br></pre></td></tr></table></figure>
+<p>获取 angle 仓库代码，这里不<a
+target="_blank" rel="noopener" href="https://android.googlesource.com/platform/packages/modules/ANGLE/+/61dfd992f57551663ba4e31cb4f9dabfef2db997/Readme.md">从
+chromium 构建</a>，直接下载 ANGLE 库。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://chromium.googlesource.com/angle/angle</span><br></pre></td></tr></table></figure></p>
+<p>生成 <code>.gclient</code> 文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd angle</span><br><span class="line">python scripts/bootstrap.py</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>确认下 <code>.gclient</code> 文件内容需要有Android依赖
+<code>target_os = [ 'android' ]</code>。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">solutions = [</span><br><span class="line">  &#123; &quot;name&quot;        : &#x27;.&#x27;,</span><br><span class="line">    &quot;url&quot;         : &#x27;https://chromium.googlesource.com/angle/angle.git&#x27;,</span><br><span class="line">    &quot;deps_file&quot;   : &#x27;DEPS&#x27;,</span><br><span class="line">    &quot;managed&quot;     : False,</span><br><span class="line">    &quot;custom_deps&quot; : &#123;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;custom_vars&quot;: &#123;&#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">]</span><br><span class="line">target_os = [ &#x27;android&#x27; ]</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>下载所有源码和packages。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gclient sync</span><br></pre></td></tr></table></figure></p>
+<p>打开 Android Release 构建的 GN args 的文本输入框。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gn args out/Android</span><br></pre></td></tr></table></figure></p>
+<p>保存以下配置 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">target_os = &quot;android&quot;</span><br><span class="line">target_cpu = &quot;arm64&quot;</span><br><span class="line">is_component_build = false</span><br><span class="line">is_debug = false</span><br><span class="line">angle_assert_always_on = true   # Recommended for debugging. Turn off for performance.</span><br></pre></td></tr></table></figure></p>
+<p>Building ANGLE for Android <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">autoninja -C out/Android</span><br></pre></td></tr></table></figure></p>
+<h1 id="using-angle-as-the-android-opengl-es-driver">Using ANGLE as the
+Android OpenGL ES driver</h1>
+<p>自 Android 10 (Q) 起，可以将 ANGLE 作为 OpenGL ES driver。
+<strong>Important Note</strong>: ANGLE需要在 Debuggable APPs 或者
+Root权限 下调用。</p>
+<p>Android APPs 可以一次一个、分组或全局选择加入ANGLE。App必须由 Java
+运行时启动，因为库才能在安装的package中发现，这也意味着ANGLE不能被native
+二进制或者SurfaceFlinger使用。</p>
+<p>Building the ANGLE APK，貌似上一步已经生成好了，生成文件是
+<code>out/Android/apks/AngleLibraries.apk</code> 。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">autoninja -C out/Android angle_apks</span><br></pre></td></tr></table></figure>
+<p>通过adb安装ANGLE APK <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb install -r -d --force-queryable out/Android/apks/AngleLibraries.apk</span><br></pre></td></tr></table></figure></p>
+<p>验证安装成功，查询的包名： <code>org.chromium.angle</code>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell pm path org.chromium.angle</span><br></pre></td></tr></table></figure></p>
+<p>对于 <strong>debuggable app</strong> 或者 <strong>root users</strong>
+而言，选择 ANGLE 作为 OpenGL ES driver：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell settings put global angle_debug_package org.chromium.angle</span><br></pre></td></tr></table></figure>
+<p>ANGLE driver 的可选项可通过查询
+<code>angle_gl_driver_selection_values</code> 获得：</p>
+<ul>
+<li><code>angle</code> : Use ANGLE.</li>
+<li><code>native</code> : Use the native OpenGL ES driver.</li>
+<li><code>default</code> : Use the default driver. This allows the
+platform to decide which driver to use.</li>
+</ul>
+<p>将ANGLE 设置为 当个 OpenGL ES app <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb shell settings put global angle_gl_driver_selection_pkgs &lt;package name&gt;</span><br><span class="line">adb shell settings put global angle_gl_driver_selection_values &lt;driver&gt;</span><br></pre></td></tr></table></figure></p>
+<p>将ANGLE 设置多个 OpenGL ES app <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb shell settings put global angle_gl_driver_selection_pkgs &lt;package name 1&gt;,&lt;package name 2&gt;,&lt;package name 3&gt;,...</span><br><span class="line">adb shell settings put global angle_gl_driver_selection_values &lt;driver 1&gt;,&lt;driver 2&gt;,&lt;driver 3&gt;,...</span><br></pre></td></tr></table></figure></p>
+<p>将 ANGLE 设置为 所有 OpenGL ES app 使用，只有 root user 才能设置。
+Enable: <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell settings put global angle_gl_driver_all_angle 1</span><br></pre></td></tr></table></figure> Disable: <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell settings put global angle_gl_driver_all_angle 0</span><br></pre></td></tr></table></figure></p>
+<p>检查是否设置成功:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">logcat -d | grep ANGLE</span><br></pre></td></tr></table></figure>
+<p>app 成功载入 ANGLE 库：</p>
+<pre><code>V GraphicsEnvironment: ANGLE developer option for &lt;package name&gt;: angle
+I GraphicsEnvironment: ANGLE package enabled: org.chromium.angle
+I ANGLE   : Version (2.1.0.f87fac56d22f), Renderer (Vulkan 1.1.87(Adreno (TM) 615 (0x06010501)))</code></pre>
+<p>实际启动日志，可以看到有一些warning：</p>
+<pre><code>I ANGLE   : Version (2.1.20757 git hash: 9c29f84ce25e), Renderer (Vulkan 1.1.177 (Mali-G610 MC6 (0xA8670000)))
+W libEGL  : ANGLE Warn:Surface.cpp:421 (setSwapBehavior):        ! Unimplemented: setSwapBehavior(../../src/libANGLE/Surface.cpp:421)
+W ANGLE   : WARN: Surface.cpp:421 (setSwapBehavior):     ! Unimplemented: setSwapBehavior(../../src/libANGLE/Surface.cpp:421)
+W libEGL  : ANGLE Warn:Surface.cpp:421 (setSwapBehavior):        ! Unimplemented: setSwapBehavior(../../src/libANGLE/Surface.cpp:421)
+W ANGLE   : WARN: Surface.cpp:421 (setSwapBehavior):     ! Unimplemented: setSwapBehavior(../../src/libANGLE/Surface.cpp:421)</code></pre>
+<p>如果未设置成功，App 载入 ANGLE 库失败：</p>
+<pre><code>V GraphicsEnvironment: ANGLE developer option for &lt;package name&gt;: angle
+E GraphicsEnvironment: Invalid number of ANGLE packages. Required: 1, Found: 0
+E GraphicsEnvironment: Failed to find ANGLE package.</code></pre>
+<p>缺少 ANGLE 库的日志：</p>
+<pre><code>V GraphicsEnvironment: ANGLE Developer option for &#39;&lt;package name&gt;&#39; set to: &#39;angle&#39;
+V GraphicsEnvironment: ANGLE developer option for &lt;package name&gt;: angle
+I GraphicsEnvironment: ANGLE debug package enabled: org.chromium.angle
+W GraphicsEnvironment: ANGLE debug package &#39;org.chromium.angle&#39; not installed</code></pre>
+<p>Clean Up: <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">adb shell settings delete global angle_debug_package</span><br><span class="line">adb shell settings delete global angle_gl_driver_all_angle</span><br><span class="line">adb shell settings delete global angle_gl_driver_selection_pkgs</span><br><span class="line">adb shell settings delete global angle_gl_driver_selection_values</span><br></pre></td></tr></table></figure></p>
+<p>参考： + <a
+target="_blank" rel="noopener" href="https://chromium.googlesource.com/angle/angle/+/HEAD/doc/DevSetupAndroid.md">ANGLE
+for Android instructions</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/opengles/" rel="tag"># opengles</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/06/16/pthread-summary-condition/" rel="prev" title="pthread condition使用">
+                  <i class="fa fa-angle-left"></i> pthread condition使用
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/03/17/vscode-debug/" rel="next" title="vscode debug 笔记">
+                  vscode debug 笔记 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

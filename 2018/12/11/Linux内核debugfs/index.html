@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="debugfs 虚拟文件系统是一种内核空间与用户空间的接口，基于libfs库实现，专用于开发人员调试，便于向用户空间导出内核空间数据。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核debugfs">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/12/11/Linux%E5%86%85%E6%A0%B8debugfs/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="debugfs 虚拟文件系统是一种内核空间与用户空间的接口，基于libfs库实现，专用于开发人员调试，便于向用户空间导出内核空间数据。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-12-11T02:04:56.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.873Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="debugfs">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/12/11/Linux%E5%86%85%E6%A0%B8debugfs/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/12/11/Linux%E5%86%85%E6%A0%B8debugfs/","path":"2018/12/11/Linux内核debugfs/","title":"Linux内核debugfs"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Linux内核debugfs | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8C%82%E8%BD%BDdebugfs%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.</span> <span class="nav-text">挂载debugfs文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E7%9B%AE%E5%BD%95%E5%92%8C%E6%96%87%E4%BB%B6"><span class="nav-number">1.1.</span> <span class="nav-text">创建目录和文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%87%BA%E5%9F%BA%E6%9C%AC%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%8F%98%E9%87%8F"><span class="nav-number">1.2.</span> <span class="nav-text">导出基本的数据类型变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%80%E6%AF%81%E7%9B%AE%E5%BD%95%E5%92%8C%E6%96%87%E4%BB%B6"><span class="nav-number">1.3.</span> <span class="nav-text">销毁目录和文件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">2.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/12/11/Linux%E5%86%85%E6%A0%B8debugfs/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Linux内核debugfs | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux内核debugfs
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-12-11 10:04:56" itemprop="dateCreated datePublished" datetime="2018-12-11T10:04:56+08:00">2018-12-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><code>debugfs</code>
+虚拟文件系统是一种内核空间与用户空间的接口，基于libfs库实现，专用于开发人员调试，便于向用户空间导出内核空间数据。
+<span id="more"></span></p>
+<p>内核开发者经常需要向用户空间应用输出一些调试信息，在稳定的系统中可能根本不需要这些调试信息。
+但是在开发过程中，为了搞清楚内核的行为，调试信息非常必要。
+printk可能是用的最多的，但它并不是最好的，调试信息只是在开发中用于调试，而printk将一直输出，因此开发完毕后需要清除不必要的printk语句。
+另外如果开发者希望用户空间应用能够改变内核行为时，printk就无法实现。
+因此，需要一种新的机制，那只有在需要的时候使用，它在需要时通过在一个虚拟文件系统中创建一个或多个文件来向用户空间应用提供调试信息。</p>
+<p>为了使得开发者更加容易使用这样的机制，Greg
+Kroah-Hartman开发了debugfs（在2.6.11中第一次引入），它是一个虚拟文件系统，专门用于输出调试信息，该文件系统非常小，很容易使用，可以在配置内核时选择是否构件到内核中，在不选择它的情况下，使用它提供的API的内核部分不需要做任何改动。</p>
+<h1 id="挂载debugfs文件系统">挂载debugfs文件系统</h1>
+<p>要使用debugfs，需要在内核编译配置中配置
+<code>CONFIG_DEBUG_FS=y</code>选项，一般的发行版都会默认编译进了内核。通过下面命令查看
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /boot/config-`uname -r` | grep CONFIG_DEBUG_FS</span><br></pre></td></tr></table></figure>
+并且将其自动挂载默认的目录(<code>/sys/kernel/debug</code>)，也可手动挂载到其它位置：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir /debugfs</span><br><span class="line">mount -t debugfs none /debugfs</span><br></pre></td></tr></table></figure> # 操作</p>
+<h2 id="创建目录和文件">创建目录和文件</h2>
+<p>使用debugfs的开发者首先需要在文件系统中创建一个目录，下面函数用于在debugfs文件系统下创建一个目录：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">struct dentry *debugfs_create_dir(const char *name, struct dentry *parent);</span><br></pre></td></tr></table></figure> + <code>name</code>是要创建的目录名， +
+<code>parent</code> 指定创建目录的父目录的
+<code>dentry</code>，如果为NULL，目录将创建在debugfs文件系统的根目录下。如果返回为-ENODEV，表示内核没有把debugfs编译到其中，如果返回为NULL，表示其他类型的创建失败，如果创建目录成功，返回指向该目录对应的dentry条目的指针。</p>
+<p>下面函数用于在debugfs文件系统中创建一个文件： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct dentry *debugfs_create_file(const char *name, mode_t mode,</span><br><span class="line">                               struct dentry *parent, void *data,</span><br><span class="line">                               struct file_operations *fops);</span><br></pre></td></tr></table></figure> +
+参数name指定要创建的文件名， + 参数mode指定该文件的访问许可， +
+参数parent指向该文件所在目录， + 参数data为该文件特定的一些数据， +
+参数fops为实现在该文件上进行文件操作的 <code>file_operations</code>
+结构指针。</p>
+<h2 id="导出基本的数据类型变量">导出基本的数据类型变量</h2>
+<p>当然，在一些情况下，开发者可能仅需要使用用户应用可以控制的变量来调试。
+debugfs可以将内核中基本整数类型的变量导出为单个文件，在用户空间中可以直接对其读写(如使用cat、echo命令)，只要权限允许即可。
+支持的类型有：<code>u8</code>, <code>u16</code>, <code>u32</code>,
+<code>u64</code>, <code>size_t</code>和<code>bool</code>。 其中
+<code>bool</code> 类型在内核中要定义为 <code>u32</code>
+类型，在用户空间中对应的文件内容则显示为 <code>Y</code>
+或<code>N</code>。</p>
+<p>debugfs提供的API为： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct dentry *debugfs_create_u8(const char *name, mode_t mode, </span><br><span class="line">                                     struct dentry *parent, u8 *value);</span><br><span class="line">struct dentry *debugfs_create_u16(const char *name, mode_t mode, </span><br><span class="line">                                      struct dentry *parent, u16 *value);</span><br><span class="line">struct dentry *debugfs_create_u32(const char *name, mode_t mode, </span><br><span class="line">                                      struct dentry *parent, u32 *value);</span><br><span class="line">struct dentry *debugfs_create_bool(const char *name, mode_t mode, </span><br><span class="line">										struct dentry *parent, u32 *value);</span><br></pre></td></tr></table></figure> +
+参数name和mode指定文件名和访问许可， +
+参数value为需要让用户应用控制的内核变量指针。</p>
+<p>示例代码如下： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">static struct dentry *root_d = debugfs_create_dir(&quot;exam_debugfs&quot;, NULL); //在debugfs根目录下创建新目录exam_debugfs，然会新建目录的目录项指针</span><br><span class="line">static u8 var8;</span><br><span class="line">debugfs_create_u8(&quot;var-u8&quot;, 0664, root_d, &amp;var8); //在exam_debugfs中创建变量var8对应的文件，名为var-u8，权限为0664</span><br><span class="line">static u32 varbool;</span><br><span class="line">debugfs_create_bool(&quot;var-bool&quot;, 0664, root_d, &amp;varbool); //bool变量</span><br></pre></td></tr></table></figure></p>
+<h2 id="销毁目录和文件">销毁目录和文件</h2>
+<p>当内核模块卸载时，Debugfs并不会自动清除该模块创建的目录或文件，因此对于创建的每一个文件或目录，开发者必须调用下面函数清除：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void debugfs_remove(struct dentry *dentry);</span><br></pre></td></tr></table></figure> 或者可调用 <code>debugfs_remove_recursive</code>
+递归删除整个目录。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void debugfs_remove_recursive(struct dentry *dentry);</span><br></pre></td></tr></table></figure>
+参数dentry为上面创建文件和目录的函数返回的dentry指针。</p>
+<h1 id="参考">参考</h1>
+<ol type="1">
+<li><a target="_blank" rel="noopener" href="https://github.com/chadversary/debugfs-tutorial">DebugFS
+Tutorial</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/linux/l-kerns-usrs2/index.html">在
+Linux 下用户空间与内核空间数据交换的方式，第 2
+部分-procfs、seq_file、debugfs和relayfs</a></li>
+<li><a
+target="_blank" rel="noopener" href="http://www.embeddedlinux.org.cn/emb-linux/file-system/201704/11-6516.html">Linux内核空间-用户空间通信之debugfs</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://github.com/cirosantilli/linux-kernel-module-cheat/blob/6788a577c394a2fc512d8f3df0806d84dc09f355/kernel_module/debugfs.c">debugfs.c</a>
+和 配套的脚本<a
+target="_blank" rel="noopener" href="https://github.com/cirosantilli/linux-kernel-module-cheat/blob/6788a577c394a2fc512d8f3df0806d84dc09f355/rootfs_overlay/debugfs.sh">debugfs.sh</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/debugfs/" rel="tag"># debugfs</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/12/05/QEMU%E6%BA%90%E7%A0%81%E5%AD%97%E7%AC%A6%E8%AE%BE%E5%A4%87/" rel="prev" title="QEMU源码字符设备">
+                  <i class="fa fa-angle-left"></i> QEMU源码字符设备
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/12/21/CUDA-memory/" rel="next" title="CUDA内存介绍">
+                  CUDA内存介绍 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

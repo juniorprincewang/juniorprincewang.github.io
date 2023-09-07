@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="介绍openssl 软件和库的一些知识点。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="openssl">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/06/11/openssl/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="介绍openssl 软件和库的一些知识点。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-06-11T08:00:14.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.898Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="openssl">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/06/11/openssl/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/06/11/openssl/","path":"2018/06/11/openssl/","title":"openssl"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>openssl | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#hmac"><span class="nav-number">1.</span> <span class="nav-text">hmac</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#hmac-1"><span class="nav-number">1.1.</span> <span class="nav-text">HMAC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E4%BB%A3%E7%A0%81"><span class="nav-number">1.1.1.</span> <span class="nav-text">参考代码：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">2.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/06/11/openssl/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="openssl | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          openssl
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-06-11 16:00:14" itemprop="dateCreated datePublished" datetime="2018-06-11T16:00:14+08:00">2018-06-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>介绍openssl 软件和库的一些知识点。 <span id="more"></span></p>
+<h1 id="hmac">hmac</h1>
+<p>openssl 的摘要和数字签名算法指令可以通过 <code>openssl dgst -</code>
+命令查看。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">max@MAX:~/GPU/code/Curve25519$ openssl dgst -</span><br><span class="line">unknown option &#x27;-&#x27;</span><br><span class="line">options are</span><br><span class="line">-c              to output the digest with separating colons</span><br><span class="line">-r              to output the digest in coreutils format</span><br><span class="line">-d              to output debug info</span><br><span class="line">-hex            output as hex dump 								//以16进制打印输出结果</span><br><span class="line">-binary         output in binary form</span><br><span class="line">-hmac arg       set the HMAC key to arg</span><br><span class="line">-non-fips-allow allow use of non FIPS digest</span><br><span class="line">-sign   file    sign digest using private key in file</span><br><span class="line">-verify file    verify a signature using public key in file</span><br><span class="line">-prverify file  verify a signature using private key in file</span><br><span class="line">-keyform arg    key file format (PEM or ENGINE) 				//指定密钥文件格式，pem或者engine</span><br><span class="line">-out filename   output to filename rather than stdout</span><br><span class="line">-signature file signature to verify</span><br><span class="line">-sigopt nm:v    signature parameter</span><br><span class="line">-hmac key       create hashed MAC with key              		//指定hmac的密钥为key，可以加引号或不加引号</span><br><span class="line">-mac algorithm  create MAC (not neccessarily HMAC)</span><br><span class="line">-macopt nm:v    MAC algorithm parameters or key</span><br><span class="line">-engine e       use engine e, possibly a hardware device.</span><br><span class="line">-md4            to use the md4 message digest algorithm</span><br><span class="line">-md5            to use the md5 message digest algorithm</span><br><span class="line">-ripemd160      to use the ripemd160 message digest algorithm</span><br><span class="line">-sha            to use the sha message digest algorithm</span><br><span class="line">-sha1           to use the sha1 message digest algorithm</span><br><span class="line">-sha224         to use the sha224 message digest algorithm</span><br><span class="line">-sha256         to use the sha256 message digest algorithm</span><br><span class="line">-sha384         to use the sha384 message digest algorithm</span><br><span class="line">-sha512         to use the sha512 message digest algorithm</span><br><span class="line">-whirlpool      to use the whirlpool message digest algorithm</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="hmac-1">HMAC</h2>
+<p>HMAC是密钥相关的哈希运算消息认证码，HMAC运算利用哈希算法，以一个密钥和一个消息为输入，生成一个消息摘要作为输出。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">max@MAX:~/GPU/code/Curve25519$ echo -n &quot;hello world&quot; | openssl dgst -sha256 -hmac 123456</span><br><span class="line">(stdin)= 83b3eb2788457b46a2f17aaa048f795af0d9dabb8e5924dd2fc0ea682d929fe5</span><br></pre></td></tr></table></figure>
+<p><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/7285059/hmac-sha1-in-bash">这里
+<code>echo -n</code> 的目的是将输入的字符串去掉自动换行。</a></p>
+<h3 id="参考代码">参考代码：</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;openssl/hmac.h&gt;  </span><br><span class="line">#include &lt;string.h&gt;  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">int HmacEncode(const char * algo,  </span><br><span class="line">                const char * key, unsigned int key_length,  </span><br><span class="line">                const char * input, unsigned int input_length,  </span><br><span class="line">                unsigned char * &amp;output, unsigned int &amp;output_length) &#123;  </span><br><span class="line">        const EVP_MD * engine =  EVP_sha256();  </span><br><span class="line">        output = (unsigned char*)malloc(EVP_MAX_MD_SIZE);  </span><br><span class="line">  </span><br><span class="line">        HMAC_CTX ctx;  </span><br><span class="line">        HMAC_CTX_init(&amp;ctx);  </span><br><span class="line">        HMAC_Init_ex(&amp;ctx, key, strlen(key), engine, NULL);  </span><br><span class="line">        HMAC_Update(&amp;ctx, (unsigned char*)input, strlen(input));        // input is OK; &amp;input is WRONG !!!  </span><br><span class="line">  </span><br><span class="line">        HMAC_Final(&amp;ctx, output, &amp;output_length);  </span><br><span class="line">        HMAC_CTX_cleanup(&amp;ctx);  </span><br><span class="line">  </span><br><span class="line">        return 0;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<p>还有一种非常简单直接的接口： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HMAC(EVP_sha1(), key, strlen(key), (unsigned char*)data, strlen(data);</span><br></pre></td></tr></table></figure></p>
+<h1 id="参考">参考</h1>
+<p>[1] <a
+target="_blank" rel="noopener" href="http://www.askyb.com/cpp/openssl-sha256-hashing-example-in-cpp/">OpenSSL
+SHA256 Hashing Example in C++</a> [2] <a
+target="_blank" rel="noopener" href="http://nwsmith.blogspot.com/2012/07/using-openssl-to-generate-hmac-using.html">Using
+openssl to generate HMAC using a binary key</a> [3] <a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/gordon0918/p/5382541.html">openssl
+摘要和签名验证指令dgst使用详解</a> [4] <a
+target="_blank" rel="noopener" href="https://blog.csdn.net/jiangheng0535/article/details/41719259">关于openssl加解密文件的几个API</a>
+[5] <a
+target="_blank" rel="noopener" href="https://blog.csdn.net/yasi_xi/article/details/9066003">用OpenSSL
+做HMAC（C++）</a> [6] <a
+target="_blank" rel="noopener" href="http://www.askyb.com/cpp/openssl-hmac-hasing-example-in-cpp/">OpenSSL
+HMAC Hasing Example in C++</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/openssl/" rel="tag"># openssl</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/05/14/linux%E4%B8%8B%E6%96%87%E4%BB%B6%E6%9F%A5%E6%89%BE%E4%B8%8E%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%9F%A5%E6%89%BE/" rel="prev" title="linux下文件查找与文件内容查找">
+                  <i class="fa fa-angle-left"></i> linux下文件查找与文件内容查找
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/06/18/%E7%A1%AC%E4%BB%B6%E6%94%AF%E6%8C%81%E7%9A%84GPU%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF/" rel="next" title="硬件支持的GPU虚拟化技术">
+                  硬件支持的GPU虚拟化技术 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

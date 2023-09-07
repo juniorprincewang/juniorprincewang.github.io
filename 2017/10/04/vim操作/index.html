@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="平时操作vim有些命令经常查，索性都记录在这篇博客里。包括搜索替换，行操作。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vim操作">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/10/04/vim%E6%93%8D%E4%BD%9C/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="平时操作vim有些命令经常查，索性都记录在这篇博客里。包括搜索替换，行操作。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-10-04T04:27:42.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.906Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="vim">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/10/04/vim%E6%93%8D%E4%BD%9C/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2017/10/04/vim%E6%93%8D%E4%BD%9C/","path":"2017/10/04/vim操作/","title":"vim操作"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>vim操作 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E5%85%89%E6%A0%87"><span class="nav-number">1.</span> <span class="nav-text">移动光标</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%90%9C%E7%B4%A2"><span class="nav-number">2.</span> <span class="nav-text">搜索</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8F%92%E5%85%A5%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">插入模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BC%96%E8%BE%91"><span class="nav-number">4.</span> <span class="nav-text">编辑</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%AA%E5%88%87%E5%92%8C%E5%A4%8D%E5%88%B6"><span class="nav-number">5.</span> <span class="nav-text">剪切和复制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9B%BF%E6%8D%A2"><span class="nav-number">6.</span> <span class="nav-text">替换</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#substitute%E5%91%BD%E4%BB%A4"><span class="nav-number">6.1.</span> <span class="nav-text">substitute命令</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%86%E8%A7%89%E6%A8%A1%E5%BC%8F"><span class="nav-number">7.</span> <span class="nav-text">视觉模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BA%B5%E5%90%91%E7%BC%96%E8%BE%91%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.</span> <span class="nav-text">纵向编辑模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A1%8C%E5%8F%B7%E6%93%8D%E4%BD%9C"><span class="nav-number">9.</span> <span class="nav-text">行号操作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%B7%E6%96%B0%E6%96%87%E4%BB%B6reload"><span class="nav-number">10.</span> <span class="nav-text">刷新文件（reload）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%A1%E9%81%93%E6%93%8D%E4%BD%9C"><span class="nav-number">11.</span> <span class="nav-text">管道操作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ctrl-s"><span class="nav-number">12.</span> <span class="nav-text">ctrl + s</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%96%87%E4%BB%B6%E7%BC%96%E7%A0%81"><span class="nav-number">13.</span> <span class="nav-text">查看文件编码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="nav-number">14.</span> <span class="nav-text">查看文件格式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BC%9A%E8%AF%9D%E5%92%8Cviminfo"><span class="nav-number">15.</span> <span class="nav-text">会话和viminfo</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">16.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/10/04/vim%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="vim操作 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          vim操作
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-10-04 12:27:42" itemprop="dateCreated datePublished" datetime="2017-10-04T12:27:42+08:00">2017-10-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/vim/" itemprop="url" rel="index"><span itemprop="name">vim</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>平时操作vim有些命令经常查，索性都记录在这篇博客里。包括搜索替换，行操作。
+<span id="more"></span></p>
+<h1 id="移动光标">移动光标</h1>
+<table>
+<thead>
+<tr class="header">
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>h,j,k,l</td>
+<td>h表示往左，j表示往下，k表示往上，l表示往右</td>
+</tr>
+<tr class="even">
+<td>Ctrl+f</td>
+<td>下一页</td>
+</tr>
+<tr class="odd">
+<td>Ctrl+b</td>
+<td>上一页</td>
+</tr>
+<tr class="even">
+<td>w, e, W, E</td>
+<td>跳到单词的后面，小写包括标点</td>
+</tr>
+<tr class="odd">
+<td>b, B</td>
+<td>以单词为单位往前跳动光标，小写包含标点</td>
+</tr>
+<tr class="even">
+<td>O</td>
+<td>开启新的一行</td>
+</tr>
+<tr class="odd">
+<td>^</td>
+<td>一行的开始</td>
+</tr>
+<tr class="even">
+<td>$</td>
+<td>一行的结尾</td>
+</tr>
+<tr class="odd">
+<td>gg</td>
+<td>文档的第一行</td>
+</tr>
+<tr class="even">
+<td>[N]G</td>
+<td>文档的第N行或者最后一行</td>
+</tr>
+</tbody>
+</table>
+<h1 id="搜索">搜索</h1>
+<table>
+<thead>
+<tr class="header">
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>/pattern</td>
+<td>向后搜索</td>
+</tr>
+<tr class="even">
+<td>?pattern</td>
+<td>向前搜索</td>
+</tr>
+<tr class="odd">
+<td>/</td>
+<td>区分大小写的查找</td>
+</tr>
+<tr class="even">
+<td>/</td>
+<td>不区分大小写的查找</td>
+</tr>
+<tr class="odd">
+<td>:set ic(ignorecase 的缩写)</td>
+<td>通过指令指定设置忽略大小写</td>
+</tr>
+<tr class="even">
+<td>:set noic(noignorecase 的缩写)</td>
+<td>通过指令指定设置不忽略大小写</td>
+</tr>
+<tr class="odd">
+<td><code>/\&lt;pattern\&gt;</code></td>
+<td>全字匹配pattern</td>
+</tr>
+<tr class="even">
+<td>N</td>
+<td>光标到达搜索结果的前一个目标</td>
+</tr>
+<tr class="odd">
+<td>n</td>
+<td>光标到达搜索结果的后一个目标</td>
+</tr>
+<tr class="even">
+<td>:set hlsearch</td>
+<td>搜索的所有匹配项将高亮显示</td>
+</tr>
+</tbody>
+</table>
+<h1 id="插入模式">插入模式</h1>
+<table>
+<thead>
+<tr class="header">
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>i</td>
+<td>插入到光标前面</td>
+</tr>
+<tr class="even">
+<td>I</td>
+<td>插入到行的开始位置</td>
+</tr>
+<tr class="odd">
+<td>a</td>
+<td>插入到光标的后面</td>
+</tr>
+<tr class="even">
+<td>A</td>
+<td>插入到行的最后位置</td>
+</tr>
+<tr class="odd">
+<td>o</td>
+<td>插入到光标所在行的下一行</td>
+</tr>
+<tr class="even">
+<td>O</td>
+<td>插入到光标所在行的上一行</td>
+</tr>
+<tr class="odd">
+<td>Esc</td>
+<td>关闭插入模式</td>
+</tr>
+</tbody>
+</table>
+<h1 id="编辑">编辑</h1>
+<table>
+<thead>
+<tr class="header">
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>r</td>
+<td>在插入模式替换光标所在的一个字符</td>
+</tr>
+<tr class="even">
+<td>J</td>
+<td>合并下一行到上一行</td>
+</tr>
+<tr class="odd">
+<td>s</td>
+<td>删除光标所在的一个字符, 光标还在当行</td>
+</tr>
+<tr class="even">
+<td>S</td>
+<td>删除光标所在的一行，光标还在当行，不同于dd</td>
+</tr>
+<tr class="odd">
+<td><code>u</code></td>
+<td>撤销上一步操作</td>
+</tr>
+<tr class="even">
+<td><code>ctrl+r</code></td>
+<td>恢复上一步操作</td>
+</tr>
+<tr class="odd">
+<td>.</td>
+<td>重复最后一个命令</td>
+</tr>
+<tr class="even">
+<td>~</td>
+<td>变换为大写</td>
+</tr>
+<tr class="odd">
+<td>[N]&gt;&gt;</td>
+<td>一行或N行往右移动一个tab</td>
+</tr>
+<tr class="even">
+<td>[N]&lt;&lt;</td>
+<td>一行或N行往左移动一个tab</td>
+</tr>
+</tbody>
+</table>
+<h1 id="剪切和复制">剪切和复制</h1>
+<table>
+<thead>
+<tr class="header">
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dd</td>
+<td>删除一行</td>
+</tr>
+<tr class="even">
+<td>dw</td>
+<td>删除一个单词</td>
+</tr>
+<tr class="odd">
+<td>x</td>
+<td>删除后一个字符</td>
+</tr>
+<tr class="even">
+<td>X</td>
+<td>删除前一个字符</td>
+</tr>
+<tr class="odd">
+<td>D</td>
+<td>删除一行最后一个字符</td>
+</tr>
+<tr class="even">
+<td>[N]yy</td>
+<td>复制一行或者N行</td>
+</tr>
+<tr class="odd">
+<td>yw</td>
+<td>复制一个单词</td>
+</tr>
+<tr class="even">
+<td>p</td>
+<td>粘贴</td>
+</tr>
+</tbody>
+</table>
+<h1 id="替换">替换</h1>
+<h2 id="substitute命令">substitute命令</h2>
+<p>格式如下： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">:[range]s/&#123;pattern&#125;/&#123;string&#125;/[c|e|g|i]</span><br><span class="line"></span><br><span class="line">参数定义：</span><br><span class="line">	1. range：范围，1,7表示第1-7行，</span><br><span class="line">            1,$表示1-最后一行；</span><br><span class="line">            常用%表示所有行；</span><br><span class="line">            #表示前一次编辑的文章。</span><br><span class="line">	2. /&#123;pattern&#125;/ ：与查找一样，正则表达式</span><br><span class="line">	3. /&#123;string&#125;/ ：需要替换的内容</span><br><span class="line"></span><br><span class="line">	c : 确认替换，每次替换询问</span><br><span class="line">	e : 不显示error</span><br><span class="line">	g : `整行替换`，不加这个开关只会替换一行最开始的匹配项。</span><br><span class="line">	i : 不区分大小写</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>替换域中的特殊字符，可以通过查询 <code>:h sub-replace-special</code>
+获悉。</p>
+<ul>
+<li>全局替换命令<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:%s/&#123;pattern&#125;/&#123;string&#125;/[flag]</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="视觉模式">视觉模式</h1>
+<table>
+<thead>
+<tr class="header">
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>v</td>
+<td>选中一个或多个字符</td>
+</tr>
+<tr class="even">
+<td>V</td>
+<td>选中一行</td>
+</tr>
+</tbody>
+</table>
+<h1 id="纵向编辑模式">纵向编辑模式</h1>
+<table>
+<thead>
+<tr class="header">
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ctrl-v</td>
+<td>进入纵向编辑模式</td>
+</tr>
+<tr class="even">
+<td>r</td>
+<td>进入修改模式</td>
+</tr>
+<tr class="odd">
+<td>I</td>
+<td>进入行首插入模式</td>
+</tr>
+<tr class="even">
+<td>A</td>
+<td>进入行尾插入模式</td>
+</tr>
+</tbody>
+</table>
+<h1 id="行号操作">行号操作</h1>
+<table>
+<thead>
+<tr class="header">
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>:set nu</td>
+<td>显示行号</td>
+</tr>
+<tr class="even">
+<td>:set nonu</td>
+<td>不显示行号</td>
+</tr>
+<tr class="odd">
+<td>12gg</td>
+<td>光标跳到12行</td>
+</tr>
+</tbody>
+</table>
+<h1 id="刷新文件reload">刷新文件（reload）</h1>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">`:e`</span><br></pre></td></tr></table></figure>
+<h1 id="管道操作">管道操作</h1>
+<p><code>%!Shell</code>命令。</p>
+<p><code>%!</code> 符号可以将 <code>VIM</code>
+当前缓冲区中的内容输出到管道中，并启动后面的 <code>Shell</code> 命令</p>
+<p>比如，<code>%!xxd</code>，将文本转换成二进制形式，以十六进制hex格式展示。</p>
+<h1 id="ctrl-s"><code>ctrl + s</code></h1>
+<p>使用vim时，如果你不小心按了
+<code>ctrl + s</code>后，发现不能输入任何东西了，像死掉了一般。<br />
+其实vim并没有死掉，这时vim只是停止向终端输出而已，要想退出这种状态，只需按
+<code>ctrl + q</code> 即可恢复正常。</p>
+<h1 id="查看文件编码">查看文件编码</h1>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:set fileencoding</span><br></pre></td></tr></table></figure>
+<p>即可显示文件编码格式。<br />
+在Vim中直接进行转换文件编码,比如将一个文件转换成utf-8格式。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:set fileencoding=utf-8</span><br></pre></td></tr></table></figure></p>
+<h1 id="查看文件格式">查看文件格式</h1>
+<blockquote>
+<p>/bin/sh^M: bad interpreter: No such file or directory</p>
+</blockquote>
+<p>这是不同系统编码格式引起的：在windows系统中编辑的.sh文件可能有不可见字符，所以在Linux系统下执行会报以上异常信息。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:set fileformat?</span><br></pre></td></tr></table></figure>
+<p>设置文件格式为 unix<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:set fileformat=unix</span><br></pre></td></tr></table></figure></p>
+<h1 id="会话和viminfo">会话和viminfo</h1>
+<p>使用会话(session)和viminfo，可以把你编辑环境保存下来，然后你在下次启动vim后，可以再恢复回这个环境。</p>
+<ul>
+<li>会话信息中保存了所有窗口的视图，外加全局设置。</li>
+<li>viminfo信息中保存了命令行历史(history)、搜索字符串历史(search)、输入行历史、非空的寄存器内容(register)、文件的位置标记(mark)、最近搜索/替换的模式、缓冲区列表、全局变量等信息。</li>
+</ul>
+<p>保存： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">:mksession project.vim               &quot;创建一个会话文件</span><br><span class="line">:wviminfo project.viminfo            &quot;创建一个viminfo文件</span><br><span class="line">:qa    </span><br></pre></td></tr></table></figure></p>
+<p>恢复： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">:source path/to/project.vim  &#x27;载入会话文件</span><br><span class="line">:rviminfo project.viminfo            &#x27;读入viminfo文件</span><br></pre></td></tr></table></figure></p>
+<p>更详细的要参考<a
+target="_blank" rel="noopener" href="https://blog.easwy.com/archives/advanced-vim-skills-session-file-and-viminfo/">vi/vim使用进阶:
+使用会话和viminfo</a>。</p>
+<h1 id="参考">参考</h1>
+<p>[1] <a
+target="_blank" rel="noopener" href="http://pizn.github.io/2012/03/03/vim-commonly-used-command.html">Vim
+常用命令总结</a> [2] <a
+target="_blank" rel="noopener" href="http://brieflyx.me/2015/linux-tools/vim-advanced-1/">VIM进阶笔记(1)
+—— 查找与替换</a> [3] <a target="_blank" rel="noopener" href="https://xwsoul.com/posts/472">vim 技巧 –
+查找的时候忽略大小写</a> [4] <a
+target="_blank" rel="noopener" href="https://www.linux.com/training-tutorials/vim-101-beginners-guide-vim/">Training
+and Tutorials Vim 101: A Beginner’s Guide to Vim</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/vim/" rel="tag"># vim</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/10/03/2015-0ctf-freenote-writeup/" rel="prev" title="2015 0ctf freenote writeup">
+                  <i class="fa fa-angle-left"></i> 2015 0ctf freenote writeup
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/11/01/rCUDA/" rel="next" title="rCUDA">
+                  rCUDA <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

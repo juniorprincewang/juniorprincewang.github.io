@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本文涉及到virtio的规范、原理和使用。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="virtio学习">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/03/01/virtio-docs/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本文涉及到virtio的规范、原理和使用。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/virtio/architecture.gif">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/virtio/virtiolayer.png">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/virtio/structure.gif">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/virtio/datachangeflow1.png">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/virtio/datachangeflow2.png">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/virtio/datachangeflow3.png">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/virtio/datachangeflow4.png">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/virtio/datachangeflow5.png">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/virtio/virtio.jpg">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/virtio/virtiopath.gif">
+<meta property="article:published_time" content="2018-03-01T02:51:38.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.907Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="virtio">
+<meta property="article:tag" content="QEMU">
+<meta property="article:tag" content="libvirt">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://juniorprincewang.github.io/img/virtio/architecture.gif">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/03/01/virtio-docs/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/03/01/virtio-docs/","path":"2018/03/01/virtio-docs/","title":"virtio学习"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>virtio学习 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#virtio%E5%8E%9F%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">virtio原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#virtio%E8%A7%84%E8%8C%83"><span class="nav-number">1.1.</span> <span class="nav-text">virtio规范</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87%E7%8A%B6%E6%80%81%E5%9F%9F"><span class="nav-number">1.1.1.</span> <span class="nav-text">设备状态域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E6%80%A7%E6%A0%87%E5%BF%97%E4%BD%8D"><span class="nav-number">1.1.2.</span> <span class="nav-text">特性标志位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87%E9%85%8D%E7%BD%AE%E7%A9%BA%E9%97%B4"><span class="nav-number">1.1.3.</span> <span class="nav-text">设备配置空间</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#virtio%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="nav-number">1.2.</span> <span class="nav-text">virtio的架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.1.</span> <span class="nav-text">层次结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.2.</span> <span class="nav-text">代码层次结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#virtio_driver"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">virtio_driver</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#virtio_device"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">virtio_device</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#virtio_config_ops"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">virtio_config_ops</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#virtqueue"><span class="nav-number">1.2.2.4.</span> <span class="nav-text">virtqueue</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#host%E4%B8%8Eguest%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%B9%8B%E9%97%B4%E6%95%B0%E6%8D%AE%E4%BA%A4%E6%8D%A2%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.3.</span> <span class="nav-text">host与guest操作系统之间数据交换流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#virtio_ring"><span class="nav-number">1.2.4.</span> <span class="nav-text">virtio_ring</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#struct-vring_virtqueue"><span class="nav-number">1.2.5.</span> <span class="nav-text">struct vring_virtqueue</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#qemu-vring%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.2.5.1.</span> <span class="nav-text">qemu vring实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#virtio-%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.2.5.2.</span> <span class="nav-text">virtio 数据传输实例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#vring-event"><span class="nav-number">1.2.5.3.</span> <span class="nav-text">vring event</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#virtio-pci-notify%E6%9C%BA%E5%88%B6"><span class="nav-number">1.2.5.4.</span> <span class="nav-text">virtio pci notify机制</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#virtio%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">virtio的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#qemu%E6%A8%A1%E6%8B%9Fio%E8%AE%BE%E5%A4%87%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-number">2.1.</span> <span class="nav-text">QEMU模拟I&#x2F;O设备的基本原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8virtio_net"><span class="nav-number">2.1.1.</span> <span class="nav-text">使用virtio_net</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5qemu%E6%98%AF%E5%90%A6%E6%94%AF%E6%8C%81virtio%E7%B1%BB%E5%9E%8B%E7%9A%84%E7%BD%91%E5%8D%A1"><span class="nav-number">2.1.1.1.</span> <span class="nav-text">检查QEMU是否支持virtio类型的网卡</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E8%99%9A%E6%8B%9F%E7%BD%91%E6%A1%A5"><span class="nav-number">2.1.1.2.</span> <span class="nav-text">配置虚拟网桥</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEtap%E8%AE%BE%E5%A4%87%E6%93%8D%E4%BD%9C"><span class="nav-number">2.1.1.3.</span> <span class="nav-text">配置TAP设备操作:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E5%AE%A2%E6%88%B7%E6%9C%BA%E6%8C%87%E5%AE%9A%E5%88%86%E9%85%8Dvirtio%E7%BD%91%E5%8D%A1%E8%AE%BE%E5%A4%87"><span class="nav-number">2.1.1.4.</span> <span class="nav-text">启动客户机，指定分配virtio网卡设备</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#virtio-serial"><span class="nav-number">2.1.2.</span> <span class="nav-text">virtio Serial</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%98%AF%E5%90%A6%E5%90%AF%E7%94%A8-virtio_console.ko"><span class="nav-number">2.1.3.</span> <span class="nav-text">检查客户端是否启用
+virtio_console.ko</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#qemu%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%A8%A1%E5%BC%8F%E7%9A%84-unix-chardev"><span class="nav-number">2.1.4.</span> <span class="nav-text">QEMU客户端模式的 UNIX
+chardev</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#qemu%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%A8%A1%E5%BC%8F%E7%9A%84-unix-chardev"><span class="nav-number">2.1.5.</span> <span class="nav-text">QEMU服务器模式的 UNIX
+chardev</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#qemu%E5%88%9B%E5%BB%BA%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">2.2.</span> <span class="nav-text">qemu创建虚拟机</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#qemu-img%E5%88%9B%E5%BB%BA%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F"><span class="nav-number">2.2.1.</span> <span class="nav-text">qemu-img创建虚拟机镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5kvm%E6%98%AF%E5%90%A6%E5%8F%AF%E7%94%A8"><span class="nav-number">2.2.2.</span> <span class="nav-text">检查KVM是否可用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.2.3.</span> <span class="nav-text">安装操作系统。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">2.2.4.</span> <span class="nav-text">启动虚拟机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#qemu-monitor"><span class="nav-number">2.2.5.</span> <span class="nav-text">qemu monitor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vm-screen-resolution"><span class="nav-number">2.2.6.</span> <span class="nav-text">VM Screen Resolution</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/03/01/virtio-docs/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="virtio学习 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          virtio学习
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-01 10:51:38" itemprop="dateCreated datePublished" datetime="2018-03-01T10:51:38+08:00">2018-03-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/QEMU/" itemprop="url" rel="index"><span itemprop="name">QEMU</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本文涉及到virtio的规范、原理和使用。 <span id="more"></span> # virtio</p>
+<p><code>virtio</code>是半虚拟化的解决方案，对半虚拟化Hypervisor的一组通用I/O设备的抽象。它提供了一套上层应用与各
+Hypervisor
+虚拟化设备（KVM，Xen，VMware等）之间的通信框架和编程接口，减少跨平台所带来的兼容性问题，大大提高驱动程序开发效率。</p>
+<p>在完全虚拟化的解决方案中，guest VM 要使用底层 host 资源，需要
+Hypervisor
+来截获所有的请求指令，然后模拟出这些指令的行为，这样势必会带来很多性能上的开销。半虚拟化通过底层硬件辅助的方式，将部分没必要虚拟化的指令通过硬件来完成，Hypervisor
+只负责完成部分指令的虚拟化，要做到这点，需要 guest 来配合，guest
+完成不同设备的前端驱动程序，Hypervisor 配合 guest
+完成相应的后端驱动程序，这样两者之间通过某种交互机制就可以实现高效的虚拟化过程。</p>
+<p>由于不同 guest
+前端设备其工作逻辑大同小异（如块设备、网络设备、PCI设备、balloon驱动等），单独为每个设备定义一套接口实属没有必要，而且还要考虑扩平台的兼容性问题，另外，不同后端
+Hypervisor
+的实现方式也大同小异（如KVM、Xen等），这个时候，就需要一套通用框架和标准接口（协议）来完成两者之间的交互过程，virtio
+就是这样一套标准，它极大地解决了这些不通用的问题。 virtio spec 由 <a
+target="_blank" rel="noopener" href="https://www.oasis-open.org/standards">OASIS</a>
+维护，目前已经更新到 <a
+target="_blank" rel="noopener" href="https://docs.oasis-open.org/virtio/virtio/v1.1/csprd01/virtio-v1.1-csprd01.html">virtio
+v1.1</a>。</p>
+<h1 id="virtio原理">virtio原理</h1>
+<h2 id="virtio规范">virtio规范</h2>
+<p>VirtIO驱动定义了一组规范，只要guest和host按照此规范进行数据操作，就可以使虚拟机IO绕过内核空间而直接再用户空间的两个进程间传输数据，以此达到提高IO性能的目的。</p>
+<p>VirtIO驱动的实现可以有很多种，最广泛的就是VirtIO Over PCI
+Bus，其它实现：VirtIO Over MMIO和VirtIO Over Channel IO，这里介绍 virtio
+PCI BUS。</p>
+<p>VirtIO设备必须具备以下几个功能组件：</p>
+<pre><code>设备状态域
+特性标志位
+设备配置空间</code></pre>
+<h3 id="设备状态域">设备状态域</h3>
+<p>VirtIO设备的初始化必须按照以下步骤顺序进行才被认为被识别：</p>
+<ul>
+<li>重启设备。</li>
+<li>标记ACKNOWLEDGE状态标志位，表示客户机发现了此设备。</li>
+<li>标记DRIVER状态标志位，表示客户机知道怎么驱动这个设备。</li>
+<li>读取设备特性标志位并给VirtIO设备设置特性标志，在此阶段，驱动可以读取特定设备相关的一些域的数据，驱动依赖检查自己是否支持这些特性，如果支持，就采纳之。</li>
+<li>设置FEATURES_OK状态标志位，此阶段之后，驱动就不能再采纳新的特性了。</li>
+<li>再次读取设备状态，确认FEATURES_OK标志已经被设备成功：如果没有被设置成功，表示这个设备不支持该特性，设备无法就无法使用。</li>
+<li>执行具体设备的设置操作：包括扫描设备关联的virtqueues，总线设置，如果是VirtIO
+over
+PCI还需要写设备的VirtIO配置空间，还有virtqueues的使能以及运用。</li>
+<li>最后标记DRIVER_OK状态标志位，自此VirtIO设备就初始化完成，可以使用了。</li>
+</ul>
+<h3 id="特性标志位">特性标志位</h3>
+<p>每个VirtIO设备都需要支持各种特性。在设备初始化阶段，驱动读取这个特性标志，然后通知VirtIO设备驱动可以接受的特性子集。</p>
+<h3 id="设备配置空间">设备配置空间</h3>
+<p>设备配置空间，通常用于配置不常变动的参数，或者初始化阶段设置的参数。<br />
+特性标志位包含表示配置空间是否存在的bit位，后面的版本会通过在特性标志位的末尾新添新的bit位来扩展配置空间。</p>
+<p><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/huang987246510/article/details/81004603">VirtIO驱动——规范1</a></p>
+<h2 id="virtio的架构">virtio的架构</h2>
+<p>virto由大神Rusty
+Russell编写（现已转向区块链了。。。），是在Hypervisor之上的抽象API接口，客户机需要知道自己运行在虚拟化环境中，进而根据virtio标准和Hypervisor协作，提高客户机的性能（特别是I/O性能）。</p>
+<figure>
+<img src="/img/virtio/architecture.gif" alt="virtio基本架构" />
+<figcaption aria-hidden="true">virtio基本架构</figcaption>
+</figure>
+<p>前端驱动（Front-end
+driver）是在客户机中存在的驱动程序模块，而后端处理器程序（Back-end
+driver）是在QEMU中实现的。</p>
+<p>virtio是半虚拟化驱动的方式，其I/O性能几乎可以达到和native差不多的I/O性能。但是virtio必须要客户机安装特定的virtio驱动使其知道是运行在虚拟化环境中，并按照virtio的规定格式进行数据传输。</p>
+<p>Linux2.6.24及其以上版本的内核都支持virtio。由于virtio的后端处理程序是在位于用户空间的QEMU中实现的，所以宿主机中只需要比较新的内核即可，不需要特别地编译与virtio相关地驱动。但是客户机需要有特定地virtio驱动程序支持，以便客户机处理I/O操作请求时调用virtio驱动。</p>
+<h3 id="层次结构">层次结构</h3>
+<figure>
+<img src="/img/virtio/virtiolayer.png" alt="virtio 层次结构" />
+<figcaption aria-hidden="true">virtio 层次结构</figcaption>
+</figure>
+<p>每一个virtio设备（例如：块设备或网卡），在系统层面看来，都是一个pci设备。<br />
+PCI设备标识的Vendor ID <code>0x1AF4</code>
+(<code>PCI_VENDOR_ID_REDHAT_QUMRANET</code>), and Device ID
+<code>0x1000</code> through <code>0x107F</code> 都是virtio device，其中
+<code>0x1000</code> through <code>0x103F</code> 为legacy device，而
+<code>0x1040</code> through <code>0x107F</code> 为 modern device。分别见
+<em>drivers/virtio/virtio_pci_legacy.c</em> 和
+<em>drivers/virtio/virtio_pci_modern.c</em>。<br />
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* drivers/virtio/virtio_pci_common.c */</span></span><br><span class="line"><span class="comment">/* Qumranet donated their vendor ID for devices 0x1000 thru 0x10FF. */</span></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">pci_device_id</span> <span class="title">virtio_pci_id_table</span>[] =</span> &#123;</span><br><span class="line">    &#123; PCI_DEVICE(PCI_VENDOR_ID_REDHAT_QUMRANET, PCI_ANY_ID) &#125;,</span><br><span class="line">    &#123; <span class="number">0</span> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>这些设备之间，有共性部分，也有差异部分。 1. 共性部分：
+这些设备都需要挂接相应的buffer队列操作 <em>virtqueue_ops</em>
+，都需要申请若干个buffer队列，当执行io输出时，需要向队列写入数据；都需要执行
+<code>pci_iomap()</code>
+将设备配置寄存器区间映射到内存区间；都需要设置中断处理；等中断来了，都需要从队列读出数据，并通知虚拟机系统，数据已入队。</p>
+<ol start="2" type="1">
+<li>差异部分：
+设备中系统中，如何与业务关联起来。各个设备不相同。例如，网卡在内核中是一个net_device，与协议栈系统关联起来。同时，向队列中写入什么数据，数据的含义如何，各个设备不相同。队列中来了数据，是什么含义，如何处理，各个设备不相同。</li>
+</ol>
+<p>如果每个virtio设备都完整实现自己的功能，又会形成浪费。
+针对这个现象，virtio又设计了 <code>virtio_pci</code>
+模块，以处理所有virtio设备的共性部分。这样一来，所有的virtio设备，在系统层面看来，都是一个pci设备，其设备驱动都是virtio_pci。
+但是，<code>virtio_pci</code> 并不能完整的驱动任何一个设备。<br />
+因此，<code>virtio_pci</code>
+在probe（接管）每一个设备时，根据每个pci设备的subsystem device
+id来识别出这具体是哪一种virtio设备，然后相应的向内核注册一个 virtio
+设备。见 <em>include/uapi/linux/virtio_ids.h</em> 。<br />
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_NET       1 <span class="comment">/* virtio net */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_BLOCK     2 <span class="comment">/* virtio block */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_CONSOLE   3 <span class="comment">/* virtio console */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_RNG       4 <span class="comment">/* virtio rng */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_BALLOON   5 <span class="comment">/* virtio balloon */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_RPMSG     7 <span class="comment">/* virtio remote processor messaging */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_SCSI      8 <span class="comment">/* virtio scsi */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_9P        9 <span class="comment">/* 9p virtio console */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_RPROC_SERIAL 11 <span class="comment">/* virtio remoteproc serial link */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_CAIF         12 <span class="comment">/* Virtio caif */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_GPU          16 <span class="comment">/* virtio GPU */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_INPUT        18 <span class="comment">/* virtio input */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_VSOCK        19 <span class="comment">/* virtio vsock transport */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTIO_ID_CRYPTO       20 <span class="comment">/* virtio crypto */</span></span></span><br></pre></td></tr></table></figure> 当然，在注册 virtio 设备之前， virtio_pci
+驱动已经为此设备做了诸多共性的操作。同时，还为设备提供了各种操作的适配接口，例如，一些常用的pci设备操作，还有申请buffer队列的操作。这些操作，都通过
+<code>virtio_config_ops</code> 结构变量来适配。</p>
+<p>在启动virtio device后，Guest OS中不但在 <em>/sys/bus/pci/devices</em>
+中出现一个对应的pci设备，而且在 <em>/sys/bus/virtio/devices</em>
+中也会出现一个virtio类型设备。<br />
+Guest OS在初始化过程中会扫描pci bus num = 0的host
+bridge，也就是北桥，通过它来发现其下挂载的一系列pci设备(包括桥设备)，因此新的virtio设备必须对外展现出一个pci的接口。<br />
+如果QEMU成功模拟了一个挂在host bridge上的pci设备，那么Guest
+OS将会通过PCI总线扫描发现之，继而把该设备添加到系统中，会在
+<em>/sys/bus/pci/devices</em> 目录下出现一个新的pci设备。</p>
+<p>在 <em>virtio-pci</em> PCI设备probe时候，在
+<code>virtio_pci_probe()</code> 函数（源码在
+<em>drivers/virtio/virtio_pci_common.c</em>）中，它将调用
+<code>register_virtio_device()</code>，后者将把一个virtio类型(<code>struct  virtio_device</code>)的设备加入到系统，由于该设备所属的总线是<code>struct bus_type virtio_bus</code>(源码在
+<em>drivers/virtio/virtio.c</em> ), 导致
+<em>/sys/bus/virtio/devices/</em> 目录下出现一个新的设备。</p>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="http://m.blog.chinaunix.net/uid-29827071-id-5821391.html">KVM+QEMU世界中的pci总线与virtio总线</a></li>
+</ul>
+<h3 id="代码层次结构">代码层次结构</h3>
+<p>从虚拟机的角度看，virtio的类层次结构如下图所示。</p>
+<p>在顶级的是 <code>virtio_driver</code>，它在Guest
+OS中表示前端驱动程序Front-End简称FE。与该驱动程序匹配的设备由
+<code>virtio_device</code>（设备在虚拟机操作系统中的表示）封装。这引用
+<code>virtio_config_ops</code> 结构（它定义配置
+<code>virtio device</code>的操作）。 <code>virtio_device</code> 由
+<code>virtqueue</code> 引用。最后，每个 <code>virtqueue</code> 对象引用
+virtqueue_ops 对象，后者定义处理 hypervisor
+的驱动程序的底层队列操作。这里需要说明的是，Linux并没有实现论文中的
+<code>struct virtqueue_ops</code>，但是实现了对于<code>virtqueue</code>操作的函数。下面会讲到。</p>
+<figure>
+<img src="/img/virtio/structure.gif" alt="virtio基本数据结构层次" />
+<figcaption aria-hidden="true">virtio基本数据结构层次</figcaption>
+</figure>
+<h4 id="virtio_driver">virtio_driver</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// https://elixir.bootlin.com/linux/v4.15.4/source/include/linux/virtio.h</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * virtio_driver - operations for a virtio I/O driver</span></span><br><span class="line"><span class="comment"> * @driver: underlying device driver (populate name and owner).</span></span><br><span class="line"><span class="comment"> * @id_table: the ids serviced by this driver.</span></span><br><span class="line"><span class="comment"> * @feature_table: an array of feature numbers supported by this driver.</span></span><br><span class="line"><span class="comment"> * @feature_table_size: number of entries in the feature table array.</span></span><br><span class="line"><span class="comment"> * @feature_table_legacy: same as feature_table but when working in legacy mode.</span></span><br><span class="line"><span class="comment"> * @feature_table_size_legacy: number of entries in feature table legacy array.</span></span><br><span class="line"><span class="comment"> * @probe: the function to call when a device is found.  Returns 0 or -errno.</span></span><br><span class="line"><span class="comment"> * @scan: optional function to call after successful probe; intended</span></span><br><span class="line"><span class="comment"> *    for virtio-scsi to invoke a scan.</span></span><br><span class="line"><span class="comment"> * @remove: the function to call when a device is removed.</span></span><br><span class="line"><span class="comment"> * @config_changed: optional function to call when the device configuration</span></span><br><span class="line"><span class="comment"> *    changes; may be called in interrupt context.</span></span><br><span class="line"><span class="comment"> * @freeze: optional function to call during suspend/hibernation.</span></span><br><span class="line"><span class="comment"> * @restore: optional function to call on resume.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">virtio_driver</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">device_driver</span> <span class="title">driver</span>;</span></span><br><span class="line">    <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">virtio_device_id</span> *<span class="title">id_table</span>;</span></span><br><span class="line">    <span class="type">const</span> <span class="type">unsigned</span> <span class="type">int</span> *feature_table;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> feature_table_size;</span><br><span class="line">    <span class="type">const</span> <span class="type">unsigned</span> <span class="type">int</span> *feature_table_legacy;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> feature_table_size_legacy;</span><br><span class="line">    <span class="type">int</span> (*validate)(<span class="keyword">struct</span> virtio_device *dev);</span><br><span class="line">    <span class="type">int</span> (*probe)(<span class="keyword">struct</span> virtio_device *dev);</span><br><span class="line">    <span class="type">void</span> (*scan)(<span class="keyword">struct</span> virtio_device *dev);</span><br><span class="line">    <span class="type">void</span> (*remove)(<span class="keyword">struct</span> virtio_device *dev);</span><br><span class="line">    <span class="type">void</span> (*config_changed)(<span class="keyword">struct</span> virtio_device *dev);</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_PM</span></span><br><span class="line">    <span class="type">int</span> (*freeze)(<span class="keyword">struct</span> virtio_device *dev);</span><br><span class="line">    <span class="type">int</span> (*restore)(<span class="keyword">struct</span> virtio_device *dev);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>该流程以创建 <code>virtio_driver</code> 并通过
+<code>register_virtio_driver</code> 进行注册开始。<br />
+<code>virtio_driver</code>
+结构定义上层设备驱动程序(<code>struct device_driver driver</code>)、驱动程序支持的设备
+ID
+的列表（<code>struct virtio_device_id *id_table</code>）、一个特性表单（取决于设备类型）（<code>feature_table</code>）和一个回调函数列表。</p>
+<p>当 hypervisor 识别到与设备列表中的设备 ID 相匹配的新设备时，将调用
+<code>probe</code> 函数（由 <code>virtio_driver</code> 对象提供）来传入
+<code>virtio_device</code>
+对象。将这个对象和设备的管理数据缓存起来（以独立于驱动程序的方式缓存）。可能要调用
+<code>virtio_config_ops</code>函数来获取或设置特定于设备的选项，例如，为
+<code>virtio_blk</code> 设备获取磁盘的
+<code>Read/Write</code>状态或设置块设备的块大小，具体情况取决于启动器的类型。</p>
+<h4 id="virtio_device">virtio_device</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// include/linux/virtio.h</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * virtio_device - representation of a device using virtio</span></span><br><span class="line"><span class="comment"> * @index: unique position on the virtio bus</span></span><br><span class="line"><span class="comment"> * @failed: saved value for VIRTIO_CONFIG_S_FAILED bit (for restore)</span></span><br><span class="line"><span class="comment"> * @config_enabled: configuration change reporting enabled</span></span><br><span class="line"><span class="comment"> * @config_change_pending: configuration change reported while disabled</span></span><br><span class="line"><span class="comment"> * @config_lock: protects configuration change reporting</span></span><br><span class="line"><span class="comment"> * @dev: underlying device.</span></span><br><span class="line"><span class="comment"> * @id: the device type identification (used to match it with a driver).</span></span><br><span class="line"><span class="comment"> * @config: the configuration ops for this device.</span></span><br><span class="line"><span class="comment"> * @vringh_config: configuration ops for host vrings.</span></span><br><span class="line"><span class="comment"> * @vqs: the list of virtqueues for this device.</span></span><br><span class="line"><span class="comment"> * @features: the features supported by both driver and device.</span></span><br><span class="line"><span class="comment"> * @priv: private pointer for the driver&#x27;s use.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">virtio_device</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> index;</span><br><span class="line">    <span class="type">bool</span> failed;</span><br><span class="line">    <span class="type">bool</span> config_enabled;</span><br><span class="line">    <span class="type">bool</span> config_change_pending;</span><br><span class="line">    <span class="type">spinlock_t</span> config_lock;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">device</span> <span class="title">dev</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">virtio_device_id</span> <span class="title">id</span>;</span></span><br><span class="line">    <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">virtio_config_ops</span> *<span class="title">config</span>;</span></span><br><span class="line">    <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">vringh_config_ops</span> *<span class="title">vringh_config</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">vqs</span>;</span></span><br><span class="line">    u64 features;</span><br><span class="line">    <span class="type">void</span> *priv;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>注意，<code>virtio_device</code> 不包含到 <code>virtqueue</code>
+的引用（但 <code>virtqueue</code> 确实引用了
+<code>virtio_device</code>）。要识别与该 <code>virtio_device</code>
+相关联的 <code>virtqueue</code>，需要结合使用
+<code>virtio_config_ops</code> 对象和 <code>find_vq</code>
+函数。该对象返回与这个 <code>virtio_device</code>
+实例相关联的虚拟队列。<code>find_vq</code> 函数还允许为
+<code>virtqueue</code> 指定一个回调函数。</p>
+<p><code>virtio_driver</code> 有自己的PCI总线 <code>virtio_bus</code>。
+<code>probe</code>函数用于PCI总线发现设备。比如启动
+<code>virtio_blk</code>
+时，当通过<code>qemu</code>启动<code>guest</code>的时候如果指定<code>-device virtio-blk-device</code>，就会调用<code>virtio_blk</code>的
+<code>virtblk_probe</code> 函数。</p>
+<h4 id="virtio_config_ops">virtio_config_ops</h4>
+<p>对于 <code>virtio device</code>
+需要指定操作函数，包括PCI配置空间设置和读取，status操作，virtqueue操作，和总线bus操作。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* include/linux/virtio_config.h */</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * virtio_config_ops - operations for configuring a virtio device</span></span><br><span class="line"><span class="comment"> * @get: read the value of a configuration field</span></span><br><span class="line"><span class="comment"> *  vdev: the virtio_device</span></span><br><span class="line"><span class="comment"> *  offset: the offset of the configuration field</span></span><br><span class="line"><span class="comment"> *  buf: the buffer to write the field value into.</span></span><br><span class="line"><span class="comment"> *  len: the length of the buffer</span></span><br><span class="line"><span class="comment"> * @set: write the value of a configuration field</span></span><br><span class="line"><span class="comment"> *  vdev: the virtio_device</span></span><br><span class="line"><span class="comment"> *  offset: the offset of the configuration field</span></span><br><span class="line"><span class="comment"> *  buf: the buffer to read the field value from.</span></span><br><span class="line"><span class="comment"> *  len: the length of the buffer</span></span><br><span class="line"><span class="comment"> * @generation: config generation counter</span></span><br><span class="line"><span class="comment"> *  vdev: the virtio_device</span></span><br><span class="line"><span class="comment"> *  Returns the config generation counter</span></span><br><span class="line"><span class="comment"> * @get_status: read the status byte</span></span><br><span class="line"><span class="comment"> *  vdev: the virtio_device</span></span><br><span class="line"><span class="comment"> *  Returns the status byte</span></span><br><span class="line"><span class="comment"> * @set_status: write the status byte</span></span><br><span class="line"><span class="comment"> *  vdev: the virtio_device</span></span><br><span class="line"><span class="comment"> *  status: the new status byte</span></span><br><span class="line"><span class="comment"> * @reset: reset the device</span></span><br><span class="line"><span class="comment"> *  vdev: the virtio device</span></span><br><span class="line"><span class="comment"> *  After this, status and feature negotiation must be done again</span></span><br><span class="line"><span class="comment"> *  Device must not be reset from its vq/config callbacks, or in</span></span><br><span class="line"><span class="comment"> *  parallel with being added/removed.</span></span><br><span class="line"><span class="comment"> * @find_vqs: find virtqueues and instantiate them.</span></span><br><span class="line"><span class="comment"> *  vdev: the virtio_device</span></span><br><span class="line"><span class="comment"> *  nvqs: the number of virtqueues to find</span></span><br><span class="line"><span class="comment"> *  vqs: on success, includes new virtqueues</span></span><br><span class="line"><span class="comment"> *  callbacks: array of callbacks, for each virtqueue</span></span><br><span class="line"><span class="comment"> *      include a NULL entry for vqs that do not need a callback</span></span><br><span class="line"><span class="comment"> *  names: array of virtqueue names (mainly for debugging)</span></span><br><span class="line"><span class="comment"> *      include a NULL entry for vqs unused by driver</span></span><br><span class="line"><span class="comment"> *  Returns 0 on success or error status</span></span><br><span class="line"><span class="comment"> * @del_vqs: free virtqueues found by find_vqs().</span></span><br><span class="line"><span class="comment"> * @get_features: get the array of feature bits for this device.</span></span><br><span class="line"><span class="comment"> *  vdev: the virtio_device</span></span><br><span class="line"><span class="comment"> *  Returns the first 32 feature bits (all we currently need).</span></span><br><span class="line"><span class="comment"> * @finalize_features: confirm what device features we&#x27;ll be using.</span></span><br><span class="line"><span class="comment"> *  vdev: the virtio_device</span></span><br><span class="line"><span class="comment"> *  This gives the final feature bits for the device: it can change</span></span><br><span class="line"><span class="comment"> *  the dev-&gt;feature bits if it wants.</span></span><br><span class="line"><span class="comment"> *  Returns 0 on success or error status</span></span><br><span class="line"><span class="comment"> * @bus_name: return the bus name associated with the device</span></span><br><span class="line"><span class="comment"> *  vdev: the virtio_device</span></span><br><span class="line"><span class="comment"> *      This returns a pointer to the bus name a la pci_name from which</span></span><br><span class="line"><span class="comment"> *      the caller can then copy.</span></span><br><span class="line"><span class="comment"> * @set_vq_affinity: set the affinity for a virtqueue.</span></span><br><span class="line"><span class="comment"> * @get_vq_affinity: get the affinity for a virtqueue (optional).</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span> <span class="title function_">vq_callback_t</span><span class="params">(<span class="keyword">struct</span> virtqueue *)</span>;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">virtio_config_ops</span> &#123;</span></span><br><span class="line">    <span class="type">void</span> (*get)(<span class="keyword">struct</span> virtio_device *vdev, <span class="type">unsigned</span> offset,</span><br><span class="line">            <span class="type">void</span> *buf, <span class="type">unsigned</span> len);</span><br><span class="line">    <span class="type">void</span> (*<span class="built_in">set</span>)(<span class="keyword">struct</span> virtio_device *vdev, <span class="type">unsigned</span> offset,</span><br><span class="line">            <span class="type">const</span> <span class="type">void</span> *buf, <span class="type">unsigned</span> len);</span><br><span class="line">    u32 (*generation)(<span class="keyword">struct</span> virtio_device *vdev);</span><br><span class="line">    u8 (*get_status)(<span class="keyword">struct</span> virtio_device *vdev);</span><br><span class="line">    <span class="type">void</span> (*set_status)(<span class="keyword">struct</span> virtio_device *vdev, u8 status);</span><br><span class="line">    <span class="type">void</span> (*reset)(<span class="keyword">struct</span> virtio_device *vdev);</span><br><span class="line">    <span class="type">int</span> (*find_vqs)(<span class="keyword">struct</span> virtio_device *, <span class="type">unsigned</span> nvqs,</span><br><span class="line">            <span class="keyword">struct</span> virtqueue *vqs[], <span class="type">vq_callback_t</span> *callbacks[],</span><br><span class="line">            <span class="type">const</span> <span class="type">char</span> * <span class="type">const</span> names[], <span class="type">const</span> <span class="type">bool</span> *ctx,</span><br><span class="line">            <span class="keyword">struct</span> irq_affinity *desc);</span><br><span class="line">    <span class="type">void</span> (*del_vqs)(<span class="keyword">struct</span> virtio_device *);</span><br><span class="line">    u64 (*get_features)(<span class="keyword">struct</span> virtio_device *vdev);</span><br><span class="line">    <span class="type">int</span> (*finalize_features)(<span class="keyword">struct</span> virtio_device *vdev);</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *(*bus_name)(<span class="keyword">struct</span> virtio_device *vdev);</span><br><span class="line">    <span class="type">int</span> (*set_vq_affinity)(<span class="keyword">struct</span> virtqueue *vq, <span class="type">int</span> cpu);</span><br><span class="line">    <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">cpumask</span> *(*<span class="title">get_vq_affinity</span>)(<span class="keyword">struct</span> <span class="title">virtio_device</span> *<span class="title">vdev</span>,</span></span><br><span class="line"><span class="class">            <span class="title">int</span> <span class="title">index</span>);</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="virtqueue">virtqueue</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* include/linux/linux/virtio.h */</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * virtqueue - a queue to register buffers for sending or receiving.</span></span><br><span class="line"><span class="comment"> * @list: the chain of virtqueues for this device</span></span><br><span class="line"><span class="comment"> * @callback: the function to call when buffers are consumed (can be NULL).</span></span><br><span class="line"><span class="comment"> * @name: the name of this virtqueue (mainly for debugging)</span></span><br><span class="line"><span class="comment"> * @vdev: the virtio device this queue was created for.</span></span><br><span class="line"><span class="comment"> * @priv: a pointer for the virtqueue implementation to use.</span></span><br><span class="line"><span class="comment"> * @index: the zero-based ordinal number for this queue.</span></span><br><span class="line"><span class="comment"> * @num_free: number of elements we expect to be able to fit.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * A note on @num_free: with indirect buffers, each buffer needs one</span></span><br><span class="line"><span class="comment"> * element in the queue, otherwise a buffer will need one element per</span></span><br><span class="line"><span class="comment"> * sg element.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">virtqueue</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">list</span>;</span></span><br><span class="line">	<span class="type">void</span> (*callback)(<span class="keyword">struct</span> virtqueue *vq);</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *name;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">virtio_device</span> *<span class="title">vdev</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> index;</span><br><span class="line">    <span class="comment">// desc table中free的数量，初始值为 Queue Size</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> num_free;</span><br><span class="line">	<span class="type">void</span> *priv;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>virtqueue</code> 是
+<strong>Guest操作系统内存的一部分</strong>，用作Guest和Host的数据传输缓存。<br />
+Host可以在Userspace实现（QEMU），也可以在内核态实现（vHost）。<br />
+它包括了一个可选的回调函数（在 hypervisor 使用缓冲池时调用）、一个到
+<code>virtio_device</code>
+的引用、队列的索引，以及一个引用要使用的底层实现的特殊 <code>priv</code>
+引用。虽然 <code>callback</code>
+是可选的，但是它能够动态地启用或禁用回调。<br />
+<code>virtqueue</code>数量由设备实现确定，比如网卡有两个virtqueue，一个用于接收数据，另一个用于发送数据。</p>
+<p>针对 virtqueue
+的操作包括<code>add_buf</code>、<code>kick</code>、<code>get_buf</code>、<code>disable_cb</code>、<code>enable_cb</code>等，定义了在guest操作系统和
+hypervisor 之间移动命令和数据的方式：</p>
+<ul>
+<li><code>add_buf</code></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* drivers/virtio/virtio_ring.c */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">virtqueue_add</span><span class="params">(<span class="keyword">struct</span> virtqueue *_vq,</span></span><br><span class="line"><span class="params">	<span class="keyword">struct</span> scatterlist *sgs[],</span></span><br><span class="line"><span class="params">	<span class="type">unsigned</span> <span class="type">int</span> total_sg,</span></span><br><span class="line"><span class="params">	<span class="type">unsigned</span> <span class="type">int</span> out_sgs,</span></span><br><span class="line"><span class="params">	<span class="type">unsigned</span> <span class="type">int</span> in_sgs,</span></span><br><span class="line"><span class="params">	<span class="type">void</span> *data,</span></span><br><span class="line"><span class="params">	<span class="type">void</span> *ctx,</span></span><br><span class="line"><span class="params">	<span class="type">gfp_t</span> gfp)</span></span><br></pre></td></tr></table></figure>
+<p>add_buf()用于向 queue 中添加一个新的 buffer，参数 data
+是一个非空的令牌，用于识别 buffer，当 buffer 内容被消耗后，data
+会返回。</p>
+<p>该请求以散集列表（scatter-gather list）的形式存在。对于
+<code>add_buf</code>，guest操作系统提供用于将请求添加到队列的
+<code>virtqueue</code>、散集列表（地址和长度数组）、用作输出条目（目标是底层
+hypervisor）的缓冲池数量，以及用作输入条目（hypervisor
+将为它们储存数据并返回到guest操作系统）的缓冲池数量，以及数据。</p>
+<ul>
+<li>kick &amp; notify <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * virtqueue_kick - update after add_buf</span></span><br><span class="line"><span class="comment"> * @vq: the struct virtqueue</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * After one or more virtqueue_add_* calls, invoke this to kick</span></span><br><span class="line"><span class="comment"> * the other side.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">bool</span> <span class="title function_">virtqueue_kick</span><span class="params">(<span class="keyword">struct</span> virtqueue *vq)</span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * virtqueue_kick_prepare - first half of split virtqueue_kick call.</span></span><br><span class="line"><span class="comment"> * @vq: the struct virtqueue</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Instead of virtqueue_kick(), you can do:</span></span><br><span class="line"><span class="comment"> *  if (virtqueue_kick_prepare(vq))</span></span><br><span class="line"><span class="comment"> *      virtqueue_notify(vq);</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * This is sometimes useful because the virtqueue_kick_prepare() needs</span></span><br><span class="line"><span class="comment"> * to be serialized, but the actual virtqueue_notify() call does not.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">bool</span> <span class="title function_">virtqueue_kick_prepare</span><span class="params">(<span class="keyword">struct</span> virtqueue *_vq)</span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * virtqueue_notify - second half of split virtqueue_kick call.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">bool</span> <span class="title function_">virtqueue_notify</span><span class="params">(<span class="keyword">struct</span> virtqueue *vq)</span>;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>当通过 add_buf 向 hypervisor 发出请求时，guest操作系统能够通过
+<code>kick</code> 函数通知 hypervisor
+新的请求。为了获得最佳的性能，guest操作系统应该在通过 kick
+发出通知之前将尽可能多的缓冲池装载到 virtqueue。Guest 再调用
+<code>virtqueue_notify()</code>来通知 host。</p>
+<ul>
+<li>get_buf()</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * virtqueue_get_buf - get the next used buffer</span></span><br><span class="line"><span class="comment"> * @vq: the struct virtqueue we&#x27;re talking about.</span></span><br><span class="line"><span class="comment"> * @len: the length written into the buffer</span></span><br><span class="line"><span class="comment"> * Returns NULL if there are no used buffers, or the &quot;data&quot; token</span></span><br><span class="line"><span class="comment"> * handed to virtqueue_add_*().</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">virtqueue_get_buf</span><span class="params">(<span class="keyword">struct</span> virtqueue *_vq, <span class="type">unsigned</span> <span class="type">int</span> *len)</span></span><br></pre></td></tr></table></figure>
+<p>Guest OS仅需调用该函数或通过提供的 <code>virtqueue callback</code>
+函数等待通知就可以实现轮询。当Guest OS知道缓冲区可用时，调用 get_buf
+返回完成的缓冲区。</p>
+<p>该函数返回使用过的 buffer，len 为写入到 buffer
+中数据的长度。获取数据，释放 buffer，更新 vring 描述符表格中的
+index。</p>
+<ul>
+<li>virtqueue_disable_cb()</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * virtqueue_disable_cb - disable callbacks</span></span><br><span class="line"><span class="comment"> * @vq: the struct virtqueue we&#x27;re talking about.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">virtqueue_disable_cb</span><span class="params">(<span class="keyword">struct</span> virtqueue *vq)</span>;</span><br></pre></td></tr></table></figure>
+<p>示意 guest 不再需要再知道一个 buffer 已经使用了，也就是关闭 device
+的中断。<br />
+驱动会在初始化时注册一个回调函数（在 virtqueue 中由 virtqueue 初始化的
+callback 函数），disable_cb()通常在这个 virtqueue
+回调函数中使用，用于关闭再次的回调发生。</p>
+<ul>
+<li>virtqueue_enable_cb()</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * virtqueue_enable_cb - restart callbacks after disable_cb.</span></span><br><span class="line"><span class="comment"> * @vq: the struct virtqueue we&#x27;re talking about.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">bool</span> <span class="title function_">virtqueue_enable_cb</span><span class="params">(<span class="keyword">struct</span> virtqueue *vq)</span>;</span><br></pre></td></tr></table></figure>
+<p>与 disable_cb()刚好相反，用于重新开启设备中断的上报。</p>
+<h3
+id="host与guest操作系统之间数据交换流程">host与guest操作系统之间数据交换流程</h3>
+<ol type="1">
+<li>guest 添加数据 <img src="/img/virtio/datachangeflow1.png"
+alt="virtio 数据交换流-guest add buf" /></li>
+<li>guest 通知 host <img src="/img/virtio/datachangeflow2.png"
+alt="virtio 数据交换流-guest 通知 host" /></li>
+<li>host读取缓存数据 <img src="/img/virtio/datachangeflow3.png"
+alt="virtio 数据交换流-host读取缓存数据" /></li>
+<li>host写入缓存数据 <img src="/img/virtio/datachangeflow4.png"
+alt="virtio 数据交换流-host写入缓存数据" /></li>
+<li>guest读取返回数据 <img src="/img/virtio/datachangeflow5.png"
+alt="virtio 数据交换流-guest get buf" /></li>
+</ol>
+<h3 id="virtio_ring">virtio_ring</h3>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/huang987246510/article/details/103739592">VirtIO实现原理——vring数据结构</a><br />
+</li>
+<li>Virtual I/O Device (VIRTIO) Version 1.0</li>
+</ul>
+<p>guest 操作系统（前端）驱动程序通过<code>virtqueue</code>与 hypervisor
+交互，实现数据的共享。对于 I/O，guest
+操作系统提供一个或多个表示请求的缓冲池。</p>
+<p><code>vring</code> 是 <code>virtqueue</code>
+的具体实现方式，在host和guest操作系统之间作内存映射，针对
+<code>vring</code> 会有相应的描述符表格进行描述。<br />
+前后端驱动通过 <code>vring</code> 直接通信，这就绕过了经过 KVM
+内核模块的过程，达到提高 I/O 性能的目的。<br />
+框架如下图所示：</p>
+<figure>
+<img src="/img/virtio/virtio.jpg" alt="virtqueue实现" />
+<figcaption aria-hidden="true">virtqueue实现</figcaption>
+</figure>
+<p>virtio_ring 是 virtio 传输机制的实现，<code>vring</code> 引入
+<code>ring buffers</code> 来作为数据传输的载体。</p>
+<p>从结构上看，virtio_ring 包含 3 部分：<br />
+- Descriptor Table - Available Ring - Used Ring</p>
+<ol type="1">
+<li>Descriptor Table</li>
+</ol>
+<p>描述符数组（descriptor
+table）用于存储真正的buffer，每个描述符都是一个对 buffer
+的描述，包含一个 address/length
+的配对、下个buffer的指针、两个标志位（下个buffer是否有效和当前buffer是可读/写）。
+每个buffer在内部被表示为一个散集列表（scatter-gather），列表中的每个条目表示一个地址和一个长度。<br />
+每个条目的结构体为 <code>struct vring_desc</code>，desc table数组大小为
+Queue Size。<br />
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* include/uapi/linux/virtio_ring.h*/</span></span><br><span class="line"><span class="comment">/* Virtio ring descriptors: 16 bytes.  These can chain together via &quot;next&quot;. */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vring_desc</span> &#123;</span></span><br><span class="line">    <span class="comment">/* Address (guest-physical). */</span></span><br><span class="line">    __virtio64 addr;</span><br><span class="line">    <span class="comment">/* Length. */</span></span><br><span class="line">    __virtio32 len;</span><br><span class="line">    <span class="comment">/* This marks a buffer as continuing via the next field. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTQ_DESC_F_NEXT 1</span></span><br><span class="line"><span class="comment">/* This marks a buffer as device write-only (otherwise device read-only). */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTQ_DESC_F_WRITE 2</span></span><br><span class="line"><span class="comment">/* This means the buffer contains a list of buffer descriptors. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> VIRTQ_DESC_F_INDIRECT 4</span></span><br><span class="line">    <span class="comment">/* The flags as indicated above. */</span></span><br><span class="line">    __virtio16 flags;</span><br><span class="line">    <span class="comment">/* We chain unused descriptors via this, too */</span></span><br><span class="line">    <span class="comment">/* next desc idx */</span></span><br><span class="line">    __virtio16 next;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<ol start="2" type="1">
+<li>available ring</li>
+</ol>
+<p>available ring用于 guest 端表示哪些描述符链（descriptor
+chain）当前是可用的。<br />
+available ring由 driver 写，device 读。<br />
+<code>idx</code> 表示driver把下一个 descriptor entry
+放在ring中的位置。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">virtq_avail</span> &#123;</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> VIRTQ_AVAIL_F_NO_INTERRUPT 1</span></span><br><span class="line">    le16 flags;</span><br><span class="line">    le16 idx;</span><br><span class="line">    le16 ring[ <span class="comment">/* Queue Size */</span> ];</span><br><span class="line">    le16 used_event; <span class="comment">/* Only if VIRTIO_F_EVENT_IDX */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>flags</code>：用于指示Host当它处理完buffer，将Descriptor
+index写入Used
+Ring之后，是否通过注入中断通知Guest。如果flags设置为0，Host每处理完一次buffer就会中断通知Guest；如果flags为1，不通知Guest。
+如果<code>VIRTIO_F_EVENT_IDX</code>该特性开启，那么flags的意义将会改变，Guest必须把flags设置为0，然后通过
+<em>used_event</em> 机制实现通知。 <code>idx</code> :
+指示Guest下一次添加buffer时，在<code>ring[]</code>中取的位置，从0开始。<br />
+<code>ring[]</code>：是一个大小为 Queue Size
+的数组，entry是存放Descriptor Table Chain的head。<br />
+<em>used_event</em>
+用作Event方式通知机制，此值用于控制Guest的virtqueue数据发送速度，是QEMU处理avail
+ring 后的last_avail_idx。</p>
+<p><code>struct vring_avail</code> 的定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*include/uapi/linux/virtio_ring.h*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vring_avail</span> &#123;</span></span><br><span class="line">	__virtio16 flags;</span><br><span class="line">	__virtio16 idx;</span><br><span class="line">	__virtio16 ring[];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>Used Ring</li>
+</ol>
+<p>used ring表示 device记录哪些描述符已经使用。<br />
+used ring 由device 写，driver读取。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">virtq_used</span> &#123;</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> VIRTQ_USED_F_NO_NOTIFY 1</span></span><br><span class="line">    le16 flags;</span><br><span class="line">    le16 idx;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">virtq_used_elem</span> <span class="title">ring</span>[ /* <span class="title">Queue</span> <span class="title">Size</span> */];</span></span><br><span class="line">    le16 avail_event; <span class="comment">/* Only if VIRTIO_F_EVENT_IDX */</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">virtq_used_elem</span> &#123;</span></span><br><span class="line">    <span class="comment">/* Index of start of used descriptor chain. */</span></span><br><span class="line">    le32 id;</span><br><span class="line">    <span class="comment">/* Total length of the descriptor chain which was used (written to) */</span></span><br><span class="line">    le32 len;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>每个used ring中条目 <code>struct virtq_used_elem</code> 中
+<em>id</em> 指定了在 descriptor chain 中的 head 条目，而 <em>len</em>
+指定了要写入buffer的字节数。<br />
+而 <code>struct virtq_used</code> 中的 <em>flags</em>
+用于指示Guest当它添加完buffer，将Descriptor index写入Avail
+Ring之后，是否发送notification通知Host。如果flags设置为0，Guest每增加一次buffer就会通知Host，如果flags为1，不通知Host。<br />
+当 <code>VIRTIO_F_EVENT_IDX</code>
+特性开启时，flags必须被设置成0，Guest使用avail_event方式通知Host。<br />
+<code>idx</code> 用于指示Host下一次处理的buffer在Used
+Ring所的位置。<br />
+<code>ring[]</code>：是一个大小为 Queue Size
+的数组，entry是存放Descriptor Table Chain的head。<br />
+<em>avail_event</em> 用作Event方式通知机制。</p>
+<p>而 <code>struct vring_used</code> 定义并不包括
+<em>avail_event</em>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*include/uapi/linux/virtio_ring.h*/</span></span><br><span class="line"><span class="comment">/* u32 is used here for ids for padding reasons. */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vring_used_elem</span> &#123;</span></span><br><span class="line">	<span class="comment">/* Index of start of used descriptor chain. */</span></span><br><span class="line">	__virtio32 id;</span><br><span class="line">	<span class="comment">/* Total length of the descriptor chain which was used (written to) */</span></span><br><span class="line">	__virtio32 len;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vring_used</span> &#123;</span></span><br><span class="line">	__virtio16 flags;</span><br><span class="line">	__virtio16 idx;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vring_used_elem</span> <span class="title">ring</span>[];</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ol start="4" type="1">
+<li>vring</li>
+</ol>
+<p>需要注意的是，vring的具体内存分布和定义不同，真实内存分布也包括了Descriptor
+Table，Avail Ring和Used Ring，为了对齐还包括padding，具体为：<br />
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vring</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">   <span class="comment">// The actual descriptors (16 bytes each)</span></span><br><span class="line">   <span class="class"><span class="keyword">struct</span> <span class="title">vring_desc</span> <span class="title">desc</span>[<span class="title">num</span>];</span></span><br><span class="line"> </span><br><span class="line">   <span class="comment">// A ring of available descriptor heads with free-running index.</span></span><br><span class="line">   __virtio16 avail_flags;</span><br><span class="line">   __virtio16 avail_idx;</span><br><span class="line">   __virtio16 available[num];</span><br><span class="line">   __virtio16 used_event_idx;</span><br><span class="line"> </span><br><span class="line">   <span class="comment">// Padding to the next align boundary.</span></span><br><span class="line">   <span class="type">char</span> pad[];</span><br><span class="line"> </span><br><span class="line">   <span class="comment">// A ring of used descriptor heads with free-running index.</span></span><br><span class="line">   __virtio16 used_flags;</span><br><span class="line">   __virtio16 used_idx;</span><br><span class="line">   <span class="class"><span class="keyword">struct</span> <span class="title">vring_used_elem</span> <span class="title">used</span>[<span class="title">num</span>];</span></span><br><span class="line">   __virtio16 avail_event_idx;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>缓冲区的格式、顺序和内容仅对前端和后端驱动程序有意义，FE和BE必须按此分布。</p>
+<p><code>struct vring</code>定义与真实内存分布不同，仅仅记录了queue
+size和各自得指针。<br />
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*include/uapi/linux/virtio_ring.h*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vring</span> &#123;</span></span><br><span class="line">    <span class="comment">// qeueue size</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> num; <span class="comment">// ring num is a power of 2</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vring_desc</span> *<span class="title">desc</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vring_avail</span> *<span class="title">avail</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vring_used</span> *<span class="title">used</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>从 <code>vring_init()</code> 和 <code>vring_size()</code>
+两个函数可以清楚得得出vring内存分布。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">void</span> <span class="title function_">vring_init</span><span class="params">(<span class="keyword">struct</span> vring *vr, <span class="type">unsigned</span> <span class="type">int</span> num, <span class="type">void</span> *p,</span></span><br><span class="line"><span class="params">                  <span class="type">unsigned</span> <span class="type">long</span> align)</span></span><br><span class="line">&#123;</span><br><span class="line">    vr-&gt;num = num;</span><br><span class="line">    vr-&gt;desc = p;</span><br><span class="line">    vr-&gt;avail = p + num*<span class="keyword">sizeof</span>(<span class="keyword">struct</span> vring_desc);</span><br><span class="line">    vr-&gt;used = (<span class="type">void</span> *)(((<span class="type">uintptr_t</span>)&amp;vr-&gt;avail-&gt;ring[num] + <span class="keyword">sizeof</span>(__virtio16)</span><br><span class="line">        + align<span class="number">-1</span>) &amp; ~(align - <span class="number">1</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">unsigned</span> <span class="title function_">vring_size</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> num, <span class="type">unsigned</span> <span class="type">long</span> align)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> ((<span class="keyword">sizeof</span>(<span class="keyword">struct</span> vring_desc) * num + <span class="keyword">sizeof</span>(__virtio16) * (<span class="number">3</span> + num)</span><br><span class="line">         + align - <span class="number">1</span>) &amp; ~(align - <span class="number">1</span>))</span><br><span class="line">        + <span class="keyword">sizeof</span>(__virtio16) * <span class="number">3</span> + <span class="keyword">sizeof</span>(<span class="keyword">struct</span> vring_used_elem) * num;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="struct-vring_virtqueue"><code>struct vring_virtqueue</code></h3>
+<p>Driver和Device看到的只是<code>virtqueue</code>，而<code>vring</code>是<code>virtqueue</code>的具体实现，<code>vring_virtqueue</code>
+将<code>vring</code>的实现隐藏在了<code>virtqueue</code>下面。</p>
+<p><code>vring_virtqueue</code> 关联了 <code>virtqueue</code> 和
+<code>vring</code>，并记录了ring的head和last_used_id等。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vring_desc_state</span> &#123;</span></span><br><span class="line">    <span class="type">void</span> *data;         <span class="comment">/* Data for callback. */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vring_desc</span> *<span class="title">indir_desc</span>;</span>  <span class="comment">/* Indirect descriptor, if any. */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vring_virtqueue</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">virtqueue</span> <span class="title">vq</span>;</span></span><br><span class="line">    <span class="comment">/* Actual memory layout for this queue */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vring</span> <span class="title">vring</span>;</span></span><br><span class="line">    <span class="comment">/* Can we use weak barriers? */</span></span><br><span class="line">    <span class="type">bool</span> weak_barriers;</span><br><span class="line">    <span class="comment">/* Other side has made a mess, don&#x27;t try any more. */</span></span><br><span class="line">    <span class="type">bool</span> broken;</span><br><span class="line">    <span class="comment">/* Host supports indirect buffers */</span></span><br><span class="line">    <span class="type">bool</span> indirect;</span><br><span class="line">    <span class="comment">/* Host publishes avail event idx */</span></span><br><span class="line">    <span class="type">bool</span> event;</span><br><span class="line">    <span class="comment">/* Head of free buffer list. */</span></span><br><span class="line">    <span class="comment">// 当前Descriptor Table中空闲buffer的起始位置</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> free_head;</span><br><span class="line">    <span class="comment">/* Number we&#x27;ve added since last sync. </span></span><br><span class="line"><span class="comment">     * 上一次通知Host后，Guest往VRing上添加了多少次buffer</span></span><br><span class="line"><span class="comment">     * 每添加一次buffer，num_added加1，每kick一次Host清空</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> num_added;</span><br><span class="line">    <span class="comment">/* Last used index we&#x27;ve seen. </span></span><br><span class="line"><span class="comment">     * 记录的 used ring中上次使用的的idx。  </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    u16 last_used_idx;</span><br><span class="line">    <span class="comment">/* Last written value to avail-&gt;flags */</span></span><br><span class="line">    u16 avail_flags_shadow;</span><br><span class="line">    <span class="comment">/* Last written value to avail-&gt;idx in guest byte order </span></span><br><span class="line"><span class="comment">     * 记录的 avail ring中下次添加buffer时应该放的idx。  </span></span><br><span class="line"><span class="comment">     * Guest每添加一次buffer，avail_idx_shadow加1指向</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    u16 avail_idx_shadow;</span><br><span class="line">    <span class="comment">/* How to notify other side. <span class="doctag">FIXME:</span> commonalize hcalls! */</span></span><br><span class="line">    <span class="type">bool</span> (*notify)(<span class="keyword">struct</span> virtqueue *vq);</span><br><span class="line">    <span class="comment">/* DMA, allocation, and size information */</span></span><br><span class="line">    <span class="type">bool</span> we_own_ring;</span><br><span class="line">    <span class="type">size_t</span> queue_size_in_bytes;</span><br><span class="line">    <span class="type">dma_addr_t</span> queue_dma_addr;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> DEBUG</span></span><br><span class="line">    <span class="comment">/* They&#x27;re supposed to lock for us. */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> in_use;</span><br><span class="line">    <span class="comment">/* Figure out if their kicks are too delayed. */</span></span><br><span class="line">    <span class="type">bool</span> last_add_time_valid;</span><br><span class="line">    <span class="type">ktime_t</span> last_add_time;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="comment">/* Per-descriptor state. */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vring_desc_state</span> <span class="title">desc_state</span>[];</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> to_vvq(_vq) container_of(_vq, struct vring_virtqueue, vq)</span></span><br></pre></td></tr></table></figure>
+<p><code>VIRTIO_RING_F_INDIRECT_DESC</code> 决定了
+<code>struct vring_virtqueue</code>-&gt;indirect，即Description
+Table使用二级索引来记录buffer。<br />
+即申请并构建Description Chain来保存buffer，再将此Description
+Chain的地址和大小添加到vring中的条目。</p>
+<h4 id="qemu-vring实现">qemu vring实现</h4>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://oenhan.com/virtio-vring">VIRTIO
+VRING工作机制分析</a></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vm_setup_vq()</span><br></pre></td></tr></table></figure>
+<p>一个逻辑buffer可能不是物理内存连续的，因此可能由多个内存块组成。<br />
+qemu中用 <code>VirtQueueElement</code> 结构表示一个逻辑buffer。<br />
+涉及到VRing，用 <code>VRingDesc</code>
+结构描述一个物理内存块，用一个描述符数组集中管理所有的描述符。而前后端的配合通过两个ring来实现：<code>VRingAvail</code>和
+<code>VRingUsed</code>，与FE的VRing描述一致。</p>
+<p><strong>过程</strong>：<br />
+当HOST需要向客户机发送数据时，先从对应的virtqueue获取客户机设置好的buffer空间（实际的buffer空间由客户机添加到virtqueue）,每次取出一个buffer，相关信息记录到
+<code>VirtQueueElement</code>
+结构中，然后对其进行地址映射，因为这里记录的buffer信息是客户机的物理地址，需要映射成HOST的虚拟地址才可以对其进行访问。每完成一个
+<code>VirtQueueElement</code> 即buffer的的写入,就需要记录
+<code>VirtQueueElement</code>相关信息到<code>VRingUsed</code>，并撤销地址映射。一个buffer写入完成后会设置<code>VRingUsed</code>的<code>idx</code>字段并对客户机注入软件中断以通知客户机。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* hw/virtio/virtio.c */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">VRingDesc</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">uint64_t</span> addr; <span class="comment">//buffer 的地址</span></span><br><span class="line">    <span class="type">uint32_t</span> len;</span><br><span class="line">    <span class="type">uint16_t</span> flags;</span><br><span class="line">    <span class="type">uint16_t</span> next;</span><br><span class="line">&#125; VRingDesc;</span><br></pre></td></tr></table></figure>
+<p>Descriptor Table记录的某一buffer占用VRingDesc
+entry可以通过<code>len</code>计算，即
+<code>len/sizeof(VRingDesc)</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">VRingAvail</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">uint16_t</span> flags;</span><br><span class="line">    <span class="type">uint16_t</span> idx;</span><br><span class="line">    <span class="type">uint16_t</span> ring[<span class="number">0</span>];</span><br><span class="line">&#125; VRingAvail;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">VRingUsedElem</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">uint32_t</span> id;</span><br><span class="line">    <span class="type">uint32_t</span> len;</span><br><span class="line">&#125; VRingUsedElem;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">VRingUsed</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">uint16_t</span> flags;</span><br><span class="line">    <span class="type">uint16_t</span> idx;</span><br><span class="line">    VRingUsedElem ring[<span class="number">0</span>];</span><br><span class="line">&#125; VRingUsed;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">VRingMemoryRegionCaches</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rcu_head</span> <span class="title">rcu</span>;</span></span><br><span class="line">    MemoryRegionCache desc;</span><br><span class="line">    MemoryRegionCache avail;</span><br><span class="line">    MemoryRegionCache used;</span><br><span class="line">&#125; VRingMemoryRegionCaches;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">VRing</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> num;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> num_default;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> align;</span><br><span class="line">    hwaddr desc;</span><br><span class="line">    hwaddr avail;</span><br><span class="line">    hwaddr used;</span><br><span class="line">    VRingMemoryRegionCaches *caches;</span><br><span class="line">&#125; VRing;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">VirtQueue</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    VRing vring;</span><br><span class="line">    <span class="comment">/* Next head to pop </span></span><br><span class="line"><span class="comment">     * 上次写入的最后一个avail_ring的索引</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="type">uint16_t</span> last_avail_idx;</span><br><span class="line">    <span class="comment">/* Last avail_idx read from VQ. */</span></span><br><span class="line">    <span class="type">uint16_t</span> shadow_avail_idx;</span><br><span class="line">    <span class="comment">/* Used Ring 中的idx，表示下次需要使用的ring[]中的index */</span></span><br><span class="line">    <span class="type">uint16_t</span> used_idx;</span><br><span class="line">    <span class="comment">/* Last used index value we have signalled on */</span></span><br><span class="line">    <span class="type">uint16_t</span> signalled_used;</span><br><span class="line">    <span class="comment">/* Last used index value we have signalled on */</span></span><br><span class="line">    <span class="type">bool</span> signalled_used_valid;</span><br><span class="line">    <span class="comment">/* Notification enabled? */</span></span><br><span class="line">    <span class="type">bool</span> notification;</span><br><span class="line">    <span class="type">uint16_t</span> queue_index;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> inuse;</span><br><span class="line"></span><br><span class="line">    <span class="type">uint16_t</span> <span class="built_in">vector</span>;</span><br><span class="line">    VirtIOHandleOutput handle_output;</span><br><span class="line">    VirtIOHandleAIOOutput handle_aio_output;</span><br><span class="line">    VirtIODevice *vdev;</span><br><span class="line">    EventNotifier guest_notifier;</span><br><span class="line">    EventNotifier host_notifier;</span><br><span class="line">    QLIST_ENTRY(VirtQueue) node;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>需要重点关注的字段，<code>last_avail_index</code> 对应 VRingAvail中
+<code>ring[]</code>数组的下标，表示上次最后使用的一个buffer首个desc对应的ring[]中的下标。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">VirtQueueElement</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> index;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> out_num;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> in_num;</span><br><span class="line">    hwaddr *in_addr;</span><br><span class="line">    hwaddr *out_addr;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> *<span class="title">in_sg</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> *<span class="title">out_sg</span>;</span></span><br><span class="line">&#125; VirtQueueElement;</span><br></pre></td></tr></table></figure>
+<p>其中，<code>in_addr</code> 和 <code>out_addr</code>
+两个数组保存的是客户机的物理地址，而 <code>in_sg</code> 和
+<code>out_sg</code> 中的地址是host的虚拟地址，两者之间需要映射。<br />
+<code>index</code>
+记录该逻辑buffer块的首个物理内存块对应的描述符在描述符表中的下标，<code>out_num</code>和
+<code>in_num</code> 是指输出（可读）和输入（可写）块的数量。</p>
+<ul>
+<li><code>virtqueue_pop()</code></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* hw\virtio\virtio.c */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">virtqueue_pop</span><span class="params">(VirtQueue *vq, <span class="type">size_t</span> sz)</span></span><br><span class="line">&#123;</span><br><span class="line">    hwaddr addr[VIRTQUEUE_MAX_SIZE];</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> <span class="title">iov</span>[<span class="title">VIRTQUEUE_MAX_SIZE</span>];</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/* When we start there are none of either input nor output. */</span></span><br><span class="line">    out_num = in_num = elem_entries = <span class="number">0</span>;</span><br><span class="line">    max = vq-&gt;vring.num;</span><br><span class="line">    ...</span><br><span class="line">    i = head;</span><br><span class="line">    vring_desc_read(vdev, &amp;desc, desc_cache, i);</span><br><span class="line">    <span class="comment">/* Collect all the descriptors */</span></span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="type">bool</span> map_ok;</span><br><span class="line">        <span class="keyword">if</span> (desc.flags &amp; VRING_DESC_F_WRITE) &#123;</span><br><span class="line">            map_ok = virtqueue_map_desc(vdev, &amp;in_num, addr + out_num,</span><br><span class="line">                                        iov + out_num,</span><br><span class="line">                                        VIRTQUEUE_MAX_SIZE - out_num, <span class="literal">true</span>,</span><br><span class="line">                                        desc.addr, desc.len);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (in_num) &#123;</span><br><span class="line">                virtio_error(vdev, <span class="string">&quot;Incorrect order for descriptors&quot;</span>);</span><br><span class="line">                <span class="keyword">goto</span> err_undo_map;</span><br><span class="line">            &#125;</span><br><span class="line">            map_ok = virtqueue_map_desc(vdev, &amp;out_num, addr, iov,</span><br><span class="line">                                        VIRTQUEUE_MAX_SIZE, <span class="literal">false</span>,</span><br><span class="line">                                        desc.addr, desc.len);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!map_ok) &#123;</span><br><span class="line">            <span class="keyword">goto</span> err_undo_map;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* If we&#x27;ve got too many, that implies a descriptor loop. */</span></span><br><span class="line">        <span class="keyword">if</span> (++elem_entries &gt; max) &#123;</span><br><span class="line">            virtio_error(vdev, <span class="string">&quot;Looped descriptor&quot;</span>);</span><br><span class="line">            <span class="keyword">goto</span> err_undo_map;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        rc = virtqueue_read_next_desc(vdev, &amp;desc, desc_cache, max, &amp;i);</span><br><span class="line">    &#125; <span class="keyword">while</span> (rc == VIRTQUEUE_READ_DESC_MORE);</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/* Now copy what we have collected and mapped */</span></span><br><span class="line">    elem = virtqueue_alloc_element(sz, out_num, in_num);</span><br><span class="line">    elem-&gt;index = head;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; out_num; i++) &#123;</span><br><span class="line">        elem-&gt;out_addr[i] = addr[i];</span><br><span class="line">        elem-&gt;out_sg[i] = iov[i];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; in_num; i++) &#123;</span><br><span class="line">        elem-&gt;in_addr[i] = addr[out_num + i];</span><br><span class="line">        elem-&gt;in_sg[i] = iov[out_num + i];</span><br><span class="line">    &#125;</span><br><span class="line">    vq-&gt;inuse++;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">bool</span> <span class="title function_">virtqueue_map_desc</span><span class="params">(VirtIODevice *vdev, <span class="type">unsigned</span> <span class="type">int</span> *p_num_sg,</span></span><br><span class="line"><span class="params">                               hwaddr *addr, <span class="keyword">struct</span> iovec *iov,</span></span><br><span class="line"><span class="params">                               <span class="type">unsigned</span> <span class="type">int</span> max_num_sg, <span class="type">bool</span> is_write,</span></span><br><span class="line"><span class="params">                               hwaddr pa, <span class="type">size_t</span> sz)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> num_sg = *p_num_sg;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">while</span> (sz) &#123;</span><br><span class="line">        hwaddr len = sz;</span><br><span class="line">        ...</span><br><span class="line">        iov[num_sg].iov_base = dma_memory_map(vdev-&gt;dma_as, pa, &amp;len,</span><br><span class="line">                                              is_write ?</span><br><span class="line">                                              DMA_DIRECTION_FROM_DEVICE :</span><br><span class="line">                                              DMA_DIRECTION_TO_DEVICE);</span><br><span class="line">        <span class="keyword">if</span> (!iov[num_sg].iov_base) &#123;</span><br><span class="line">            virtio_error(vdev, <span class="string">&quot;virtio: bogus descriptor or out of resources&quot;</span>);</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        iov[num_sg].iov_len = len;</span><br><span class="line">        addr[num_sg] = pa;</span><br><span class="line"></span><br><span class="line">        sz -= len;</span><br><span class="line">        pa += len;</span><br><span class="line">        num_sg++;</span><br><span class="line">    &#125;</span><br><span class="line">    *p_num_sg = num_sg;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* include\sysemu\dma.h */</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">void</span> *<span class="title function_">dma_memory_map</span><span class="params">(AddressSpace *as,</span></span><br><span class="line"><span class="params">                                   <span class="type">dma_addr_t</span> addr, <span class="type">dma_addr_t</span> *len,</span></span><br><span class="line"><span class="params">                                   DMADirection dir)</span></span><br><span class="line">&#123;</span><br><span class="line">    hwaddr xlen = *len;</span><br><span class="line">    <span class="type">void</span> *p;</span><br><span class="line"></span><br><span class="line">    p = address_space_map(as, addr, &amp;xlen, dir == DMA_DIRECTION_FROM_DEVICE);</span><br><span class="line">    *len = xlen;</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* exec.c */</span></span><br><span class="line"><span class="comment">/* Map a physical memory region into a host virtual address.</span></span><br><span class="line"><span class="comment"> * May map a subset of the requested range, given by and returned in *plen.</span></span><br><span class="line"><span class="comment"> * May return NULL if resources needed to perform the mapping are exhausted.</span></span><br><span class="line"><span class="comment"> * Use only for reads OR writes - not for read-modify-write operations.</span></span><br><span class="line"><span class="comment"> * Use cpu_register_map_client() to know when retrying the map operation is</span></span><br><span class="line"><span class="comment"> * likely to succeed.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">address_space_map</span><span class="params">(AddressSpace *as,</span></span><br><span class="line"><span class="params">                        hwaddr addr,</span></span><br><span class="line"><span class="params">                        hwaddr *plen,</span></span><br><span class="line"><span class="params">                        <span class="type">bool</span> is_write)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>virtqueue_push()</code></li>
+</ul>
+<p><code>virtqueue_push()</code> 将 <code>VirtQueueElement *elem</code>
+添加到VQ中然后再刷新 Used Ring。<br />
+分成了 fill 和 flush 两部分。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">virtqueue_push</span><span class="params">(VirtQueue *vq, <span class="type">const</span> VirtQueueElement *elem,</span></span><br><span class="line"><span class="params">                    <span class="type">unsigned</span> <span class="type">int</span> len)</span></span><br><span class="line">&#123;</span><br><span class="line">    rcu_read_lock();</span><br><span class="line">    virtqueue_fill(vq, elem, len, <span class="number">0</span>);</span><br><span class="line">    virtqueue_flush(vq, <span class="number">1</span>);</span><br><span class="line">    rcu_read_unlock();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>virtqueue_fill()</code>
+将取消VirtQueueElement映射的buffer，并将VirtQueueElement写入Used
+Ring中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">virtqueue_fill</span><span class="params">(VirtQueue *vq, <span class="type">const</span> VirtQueueElement *elem,</span></span><br><span class="line"><span class="params">                    <span class="type">unsigned</span> <span class="type">int</span> len, <span class="type">unsigned</span> <span class="type">int</span> idx)</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">     virtqueue_unmap_sg(vq, elem, len);</span><br><span class="line">     ...</span><br><span class="line">     idx = (idx + vq-&gt;used_idx) % vq-&gt;vring.num;</span><br><span class="line"></span><br><span class="line">    uelem.id = elem-&gt;index;</span><br><span class="line">    uelem.len = len;</span><br><span class="line">    vring_used_write(vq, &amp;uelem, idx);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>virtqueue_flush()</code> 重新设置Used
+Ring的idx，<code>vq-&gt;signalled_used</code> 在
+<code>virtqueue_notify()</code>
+中设置，记录的是<code>vq-&gt;used_idx</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">virtqueue_flush</span><span class="params">(VirtQueue *vq, <span class="type">unsigned</span> <span class="type">int</span> count)</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    old = vq-&gt;used_idx;</span><br><span class="line">    new = old + count;</span><br><span class="line">    vring_used_idx_set(vq, new);</span><br><span class="line">    vq-&gt;inuse -= count;</span><br><span class="line">    <span class="keyword">if</span> (unlikely((<span class="type">int16_t</span>)(new - vq-&gt;signalled_used) &lt; (<span class="type">uint16_t</span>)(new - old)))</span><br><span class="line">        vq-&gt;signalled_used_valid = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="virtio-数据传输实例">virtio 数据传输实例</h4>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/huang987246510/article/details/103708461#_2">VirtIO实现原理——数据传输演示</a></li>
+</ul>
+<p>这篇博客图文并茂，讲解的非常详细了。</p>
+<h4 id="vring-event">vring event</h4>
+<p><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/leoufung/article/details/53584970">VIRTIO中的前后端配合限速分析</a><br />
+<a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/ck1020/p/6066007.html">virtIO前后端notify机制详解
+2016-11-15</a></p>
+<ul>
+<li>Guest 2 Host</li>
+</ul>
+<p>在Guest <code>virtqueue_kick_prepare()</code> 中<br />
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">old = vq-&gt;avail_idx_shadow - vq-&gt;num_added;</span><br><span class="line">new = vq-&gt;avail_idx_shadow;</span><br><span class="line">vq-&gt;num_added = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (vq-&gt;event) &#123;</span><br><span class="line">    needs_kick = vring_need_event(virtio16_to_cpu(_vq-&gt;vdev, vring_avail_event(&amp;vq-&gt;vring)), new, old);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    needs_kick = !(vq-&gt;vring.used-&gt;flags &amp; cpu_to_virtio16(_vq-&gt;vdev, VRING_USED_F_NO_NOTIFY));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>new</code> 表示avail
+ring中下一次添加buffer的idx，而<code>old</code>表示avail
+ring中上一次添加buffer的idx。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* include/uapi/linux/virtio_ring.h */</span></span><br><span class="line"><span class="comment">/* We publish the used event index at the end of the available ring, and vice</span></span><br><span class="line"><span class="comment"> * versa. They are at the end for backwards compatibility. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> vring_used_event(vr) ((vr)-&gt;avail-&gt;ring[(vr)-&gt;num])</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> vring_avail_event(vr) (*(__virtio16 *)&amp;(vr)-&gt;used-&gt;ring[(vr)-&gt;num])</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* The following is used with USED_EVENT_IDX and AVAIL_EVENT_IDX */</span></span><br><span class="line"><span class="comment">/* Assuming a given event_idx value from the other side, if</span></span><br><span class="line"><span class="comment"> * we have just incremented index from old to new_idx,</span></span><br><span class="line"><span class="comment"> * should we trigger an event? */</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">int</span> <span class="title function_">vring_need_event</span><span class="params">(__u16 event_idx, __u16 new_idx, __u16 old)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/* Note: Xen has similar logic for notification hold-off</span></span><br><span class="line"><span class="comment">     * in include/xen/interface/io/ring.h with req_event and req_prod</span></span><br><span class="line"><span class="comment">     * corresponding to event_idx + 1 and new_idx respectively.</span></span><br><span class="line"><span class="comment">     * Note also that req_event and req_prod in Xen start at 1,</span></span><br><span class="line"><span class="comment">     * event indexes in virtio start at 0. */</span></span><br><span class="line">    <span class="keyword">return</span> (__u16)(new_idx - event_idx - <span class="number">1</span>) &lt; (__u16)(new_idx - old);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>event_idx</code>是从 Used Ring获取的
+<code>avail_event</code>，<code>avail_event</code> 是QEMU处理完avail
+ring之后通知Guest其处理的进度。</p>
+<p>如果<code>event_idx</code>超前于上次添加avail
+ring的位置，说明后端处理较快，如下图所示，则进行通知（<code>kick</code>），否则，不通知。</p>
+<p>|---|old|-----|event_idx|----|new_idx|------|</p>
+<p><code>avail_event</code>在QEMU中的 <code>virtqueue_pop()</code>
+设置，将VQ中上次处理的Avail Ring中的idx写回Used Ring中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* qemu/hw/virtio/virtio.c */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">virtqueue_pop</span><span class="params">(VirtQueue *vq, <span class="type">size_t</span> sz)</span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (virtio_vdev_has_feature(vdev, VIRTIO_RING_F_EVENT_IDX)) &#123;</span><br><span class="line">        vring_set_avail_event(vq, vq-&gt;last_avail_idx);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Host 2 Guest</li>
+</ul>
+<p>首先，如果队列为空即当前没有可用buffer了，那么必然会notify前端。<br />
+其次判断是否支持这样事件触发式的方式即
+<code>VIRTIO_RING_F_EVENT_IDX</code>，如果不支持，就通过flags字段来判断。而如果支持，就通过事件触发来通知。<br />
+最后，判断 <code>v = vq-&gt;signalled_used_valid</code> 和
+<code>vring_need_event(vring_get_used_event(vq), new, old)</code>。<br />
+<code>v = vq-&gt;signalled_used_valid</code>
+在初始化的时候被设置成false，表示还没有向前端做任何通知，而后再每次的
+<code>virtio_should_notify()</code>中就会设置成<code>true</code>，并更新<code>vq-&gt;signalled_used = vq-&gt;used_idx</code>；</p>
+<p><code>old</code> 是上次调用notify更新的
+<code>vq-&gt;used_idx</code>值；<br />
+<code>new</code> 是在 <code>virtqueue_flush()</code> 之后更新的Used
+Ring的idx。<br />
+<code>vring_get_used_event(vq)</code>获取了Avail
+Ring中保存的used_event，该值在客户机driver中<code>virtqueue_get_buf_ctx()</code>被设置。<br />
+<code>vring_need_event()</code> 与 Guest2Host中的判断方式一致。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">bool</span> <span class="title function_">virtio_should_notify</span><span class="params">(VirtIODevice *vdev, VirtQueue *vq)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">uint16_t</span> old, new;</span><br><span class="line">    <span class="type">bool</span> v;</span><br><span class="line">    <span class="comment">/* We need to expose used array entries before checking used event. */</span></span><br><span class="line">    smp_mb();</span><br><span class="line">    <span class="comment">/* Always notify when queue is empty (when feature acknowledge) */</span></span><br><span class="line">    <span class="keyword">if</span> (virtio_vdev_has_feature(vdev, VIRTIO_F_NOTIFY_ON_EMPTY) &amp;&amp;</span><br><span class="line">        !vq-&gt;inuse &amp;&amp; virtio_queue_empty(vq)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!virtio_vdev_has_feature(vdev, VIRTIO_RING_F_EVENT_IDX)) &#123;</span><br><span class="line">        <span class="keyword">return</span> !(vring_avail_flags(vq) &amp; VRING_AVAIL_F_NO_INTERRUPT);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    v = vq-&gt;signalled_used_valid;</span><br><span class="line">    vq-&gt;signalled_used_valid = <span class="literal">true</span>;</span><br><span class="line">    old = vq-&gt;signalled_used;</span><br><span class="line">    new = vq-&gt;signalled_used = vq-&gt;used_idx;</span><br><span class="line">    <span class="keyword">return</span> !v || vring_need_event(vring_get_used_event(vq), new, old);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在 Guest 中，<code>virtqueue_get_buf_ctx()</code> 会处理Used
+Ring，每次取出buffer后将 <code>vq-&gt;last_used_idx</code> 写入到 Used
+Ring的event中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* drivers/virtio/virtio_ring.c */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">virtqueue_get_buf_ctx</span><span class="params">(<span class="keyword">struct</span> virtqueue *_vq, <span class="type">unsigned</span> <span class="type">int</span> *len,</span></span><br><span class="line"><span class="params">                <span class="type">void</span> **ctx)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/* If we expect an interrupt for the next entry, tell host</span></span><br><span class="line"><span class="comment">     * by writing event index and flush out the write before</span></span><br><span class="line"><span class="comment">     * the read in the next get_buf call. */</span></span><br><span class="line">    <span class="keyword">if</span> (!(vq-&gt;avail_flags_shadow &amp; VRING_AVAIL_F_NO_INTERRUPT))</span><br><span class="line">        virtio_store_mb(vq-&gt;weak_barriers,</span><br><span class="line">                &amp;vring_used_event(&amp;vq-&gt;vring),</span><br><span class="line">                cpu_to_virtio16(_vq-&gt;vdev, vq-&gt;last_used_idx));</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="virtio-pci-notify机制">virtio pci notify机制</h4>
+<ul>
+<li>Guest 2 Host</li>
+</ul>
+<p>Guest若要通知QEMU，会调用
+<code>virtqueue_kick-&gt;virtqueue_notify</code>，而virtqueue结构中绑定的notify函数是<code>vp_notify</code>，在创建virtqueue是通过实参传递。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* drivers/virtio/virtio_pci_legacy.c */</span></span><br><span class="line">setup_vq()</span><br><span class="line">&#123;</span><br><span class="line">    vq = vring_create_virtqueue(index, num,</span><br><span class="line">                    SMP_CACHE_BYTES, &amp;vp_dev-&gt;vdev,</span><br><span class="line">                    <span class="literal">true</span>, <span class="literal">true</span>, ctx,</span><br><span class="line">                    vp_notify, callback, name);</span><br><span class="line">    ...</span><br><span class="line">    vq-&gt;priv = (<span class="type">void</span> __force *)vp_dev-&gt;ioaddr + VIRTIO_PCI_QUEUE_NOTIFY;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* drivers/virtio/virtio_pci_common.c */</span></span><br><span class="line"><span class="comment">/* the notify function used when creating a virt queue */</span></span><br><span class="line"><span class="type">bool</span> <span class="title function_">vp_notify</span><span class="params">(<span class="keyword">struct</span> virtqueue *vq)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/* we write the queue&#x27;s selector into the notification register to</span></span><br><span class="line"><span class="comment">     * signal the other end */</span></span><br><span class="line">    iowrite16(vq-&gt;index, (<span class="type">void</span> __iomem *)vq-&gt;priv);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通知方式通过PCI IO寄存器<code>VIRTIO_PCI_QUEUE_NOTIFY</code> 写入了
+VQ的id。<br />
+再后端QEMU处理此PCI IO寄存器：<br />
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* hw/virtio/virtio-pci.c */</span> </span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">virtio_ioport_write</span><span class="params">(<span class="type">void</span> *opaque, <span class="type">uint32_t</span> addr, <span class="type">uint32_t</span> val)</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">case</span> VIRTIO_PCI_QUEUE_PFN:</span><br><span class="line">        pa = (hwaddr)val &lt;&lt; VIRTIO_PCI_QUEUE_ADDR_SHIFT;</span><br><span class="line">        <span class="keyword">if</span> (pa == <span class="number">0</span>) &#123;</span><br><span class="line">            virtio_pci_reset(DEVICE(proxy));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            virtio_queue_set_addr(vdev, vdev-&gt;queue_sel, pa);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> VIRTIO_PCI_QUEUE_SEL:</span><br><span class="line">        <span class="keyword">if</span> (val &lt; VIRTIO_QUEUE_MAX)</span><br><span class="line">            vdev-&gt;queue_sel = val;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> VIRTIO_PCI_QUEUE_NOTIFY:</span><br><span class="line">        <span class="keyword">if</span> (val &lt; VIRTIO_QUEUE_MAX) &#123;</span><br><span class="line">            virtio_queue_notify(vdev, val);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* hw/virtio/virtio.c */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">virtio_queue_notify</span><span class="params">(VirtIODevice *vdev, <span class="type">int</span> n)</span></span><br><span class="line">&#123;</span><br><span class="line">    VirtQueue *vq = &amp;vdev-&gt;vq[n];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (unlikely(!vq-&gt;vring.desc || vdev-&gt;broken)) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    trace_virtio_queue_notify(vdev, vq - vdev-&gt;vq, vq);</span><br><span class="line">    <span class="keyword">if</span> (vq-&gt;handle_aio_output) &#123;</span><br><span class="line">        event_notifier_set(&amp;vq-&gt;host_notifier);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (vq-&gt;handle_output) &#123;</span><br><span class="line">        vq-&gt;handle_output(vdev, vq);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>此处仅仅调用了VirtQueue结构中绑定的处理函数handle_output，而handle_output通过<code>virtio_add_queue()</code>
+进行的绑定。<br />
+该<code>handle_output()</code>函数根据不同的设备有不同的实现，比如网卡有网卡的实现，而块设备有块设备的实现。<br />
+以 virtio-serial-bus.c
+为例，对于数据传输的VQ，<code>handle_output()</code> 调用了
+<code>do_flush_queued_data()</code>，此函数对数据进行pop，push,notify。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* hw/virtio/virtio.c */</span></span><br><span class="line">VirtQueue *<span class="title function_">virtio_add_queue</span><span class="params">(VirtIODevice *vdev, <span class="type">int</span> queue_size,</span></span><br><span class="line"><span class="params">                            VirtIOHandleOutput handle_output)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> i;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; VIRTIO_QUEUE_MAX; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (vdev-&gt;vq[i].vring.num == <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (i == VIRTIO_QUEUE_MAX || queue_size &gt; VIRTQUEUE_MAX_SIZE)</span><br><span class="line">        <span class="built_in">abort</span>();</span><br><span class="line"></span><br><span class="line">    vdev-&gt;vq[i].vring.num = queue_size;</span><br><span class="line">    vdev-&gt;vq[i].vring.num_default = queue_size;</span><br><span class="line">    vdev-&gt;vq[i].vring.align = VIRTIO_PCI_VRING_ALIGN;</span><br><span class="line">    vdev-&gt;vq[i].handle_output = handle_output;</span><br><span class="line">    vdev-&gt;vq[i].handle_aio_output = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &amp;vdev-&gt;vq[i];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* hw/char/virtio-serial-bus.c */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">virtio_serial_device_realize</span><span class="params">(DeviceState *dev, Error **errp)</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/* Add a queue for host to guest transfers for port 0 (backward compat) */</span></span><br><span class="line">    vser-&gt;ivqs[<span class="number">0</span>] = virtio_add_queue(vdev, <span class="number">128</span>, handle_input);</span><br><span class="line">    <span class="comment">/* Add a queue for guest to host transfers for port 0 (backward compat) */</span></span><br><span class="line">    vser-&gt;ovqs[<span class="number">0</span>] = virtio_add_queue(vdev, <span class="number">128</span>, handle_output);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Guest wrote something to some port. */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">handle_output</span><span class="params">(VirtIODevice *vdev, VirtQueue *vq)</span></span><br><span class="line">&#123;</span><br><span class="line">    VirtIOSerial *vser;</span><br><span class="line">    VirtIOSerialPort *port;</span><br><span class="line"></span><br><span class="line">    vser = VIRTIO_SERIAL(vdev);</span><br><span class="line">    port = find_port_by_vq(vser, vq);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!port || !port-&gt;host_connected) &#123;</span><br><span class="line">        discard_vq_data(vq, vdev);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!port-&gt;throttled) &#123;</span><br><span class="line">        do_flush_queued_data(port, vq, vdev);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Host 2 Guest</li>
+</ul>
+<p><code>virtqueue_notify()</code> 先判断是否需要更新，如果需要则通过
+<code>virtio_irq()</code> 通知。</p>
+<p><code>virtio_should_notify()</code>涉及到了前后端配合限速更新，与Guest中的限速相似，但是也略有不同。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* hw/virtio/virtio.c */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">virtio_notify</span><span class="params">(VirtIODevice *vdev, VirtQueue *vq)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">bool</span> should_notify;</span><br><span class="line">    should_notify = virtio_should_notify(vdev, vq);</span><br><span class="line">    <span class="keyword">if</span> (!should_notify) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    virtio_irq(vq);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">virtio_irq</span><span class="params">(VirtQueue *vq)</span></span><br><span class="line">&#123;</span><br><span class="line">    virtio_set_isr(vq-&gt;vdev, <span class="number">0x1</span>);</span><br><span class="line">    virtio_notify_vector(vq-&gt;vdev, vq-&gt;<span class="built_in">vector</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">virtio_notify_vector</span><span class="params">(VirtIODevice *vdev, <span class="type">uint16_t</span> <span class="built_in">vector</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    BusState *qbus = qdev_get_parent_bus(DEVICE(vdev));</span><br><span class="line">    VirtioBusClass *k = VIRTIO_BUS_GET_CLASS(qbus);</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (k-&gt;notify) &#123;</span><br><span class="line">        k-&gt;notify(qbus-&gt;parent, <span class="built_in">vector</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而 <code>VirtioBusClass *k-&gt;notify</code> 关联的函数为
+<code>virtio_pci_notify()</code> 。<br />
+在 <code>virtio_pci_bus_class_init()</code> 初始化。 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* hw/virtio/virtio-pci.c */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">virtio_pci_bus_class_init</span><span class="params">(ObjectClass *klass, <span class="type">void</span> *data)</span></span><br><span class="line">&#123;</span><br><span class="line">    BusClass *bus_class = BUS_CLASS(klass);</span><br><span class="line">    VirtioBusClass *k = VIRTIO_BUS_CLASS(klass);</span><br><span class="line">    k-&gt;notify = virtio_pci_notify;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">virtio_pci_notify</span><span class="params">(DeviceState *d, <span class="type">uint16_t</span> <span class="built_in">vector</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    VirtIOPCIProxy *proxy = to_virtio_pci_proxy_fast(d);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (msix_enabled(&amp;proxy-&gt;pci_dev))</span><br><span class="line">        msix_notify(&amp;proxy-&gt;pci_dev, <span class="built_in">vector</span>);</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        VirtIODevice *vdev = virtio_bus_get_device(&amp;proxy-&gt;bus);</span><br><span class="line">        pci_set_irq(&amp;proxy-&gt;pci_dev, <span class="type">atomic_read</span>(&amp;vdev-&gt;isr) &amp; <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<code>virtio_pci_notify()</code> 设置中断来通知Guest。</p>
+<h1 id="virtio的使用">virtio的使用</h1>
+<p>由于传统的QEMU/KVM方式是使用QEMU纯软件模拟I/O设备（网卡、磁盘、显卡），导致效率并不高。在KVM中，可以在客户机使用半虚拟化（paravirtualized
+drivers）来提高客户机的性能。</p>
+<h2 id="qemu模拟io设备的基本原理">QEMU模拟I/O设备的基本原理</h2>
+<p>当客户机的设备驱动程序（Device
+Driver）发起I/O请求时，KVM模块中的I/O操作捕获代码会拦截这次I/O请求，然后经过处理后将本次I/O请求的信息存放到I/O共享页（sharing
+page），并通知用户控件的QEMU程序。QEMU模拟程序获得I/O操作的具体信息后，交给硬件模拟代码（Emulation
+Code）来模拟出本次的I/O操作，完成后把结果放回I/O共享页中，并通知KVM模块中的I/O操作捕获代码。最后由KVM模块中的捕获代码读取I/O共享页中的操作结果，把结果返回给客户机中。当然，这个操作过程中客户机作为一个QEMU进程在等待I/O时也可能被阻塞。</p>
+<p>另外，当客户机通过DMA访问大块I/O时，QEMU模拟程序不会把操作结果放到I/O共享页中，而是通过内存映射的方法将结果直接写到客户机的内存去，然后通过KVM模块高速客户机DMA操作已经完成。</p>
+<p>QEMU模拟I/O设备不需要修改客户端操作系统，可以模拟各种各样的硬件设备，但是每次I/O操作的路径比较长，有太多的VMEntry和VMExit发生，需要多次上下文切换（context
+switch），多次的数据复制。性能方面很差。</p>
+<p>virtio 有分为guest 中的前端程序和qemu中的后端程序。
+virtio中的五种前端程序为</p>
+<blockquote>
+<p>virtio-blk:/drivers/block/virtio-blk.c
+virtio-net:/drivers/net/virtio-net.c
+virtio-pci:/drivers/virtio/virtio-pci.c
+virtio-ballon:/drivers/virtio/virtio-ballon.c
+virtio-console:/drivers/virtio/virtio-console.c</p>
+</blockquote>
+<p>这五种往下调用<code>/drivers/virtio/virtio.c</code> -&gt;
+<code>/drivers/virtio/virtio_ring.c</code></p>
+<p>总结一下virtio的flow：<code>guest-&gt;qemu-&gt;host kernel -&gt;hw</code>，如下图所示。</p>
+<figure>
+<img src="/img/virtio/virtiopath.gif" alt="virtio 通信架构" />
+<figcaption aria-hidden="true">virtio 通信架构</figcaption>
+</figure>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://projectacrn.github.io/latest/developer-guides/hld/hld-virtio-devices.html">Virtio
+devices high-level design</a></li>
+</ul>
+<h3 id="使用virtio_net">使用virtio_net</h3>
+<p>为了让虚拟机能够与外界通信，QEMU为虚拟机提供了网络设备，支持的网络设备为：<code>ne2k_pci,i82551,i82557b,i82559er,rtl8139,e1000,pcnet,virtio</code>。
+虚拟机的网络设备连接在QEMU虚拟的VLAN中。每个QEMU的运行实例是宿主机中的一个进程，而每个这样的进程中可以虚拟一些VLAN，虚拟机网络设备接入这些VLAN中。当某个VLAN上连接的网络设备发送数据帧，与它在同一个VLAN中的其它网路设备都能接收到数据帧。对虚拟机的网卡没有指定其连接的VLAN号时，QEMU默认会将该网卡连入vlan0。</p>
+<p>使用virtio_net半虚拟化驱动，可以提高网络吞吐量（throughput）和降低网络延迟（latency），达到原生网卡的性能。</p>
+<p>使用virtio_net需要宿主机中的QEMU工具和客户机的virtio_net驱动支持。</p>
+<h4
+id="检查qemu是否支持virtio类型的网卡">检查QEMU是否支持virtio类型的网卡</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># qemu-system-x86_64 -net nic,model=?</span><br><span class="line">qemu: Supported NIC models: ne2k_pci,i82551,i82557b,i82559er,rtl8139,e1000,pcnet,virtio</span><br></pre></td></tr></table></figure>
+<p>从输出的支持网卡类型可知，当前qemu-kvm支持virtio网卡类型。</p>
+<h4 id="配置虚拟网桥">配置虚拟网桥</h4>
+<p>本系统的网卡为enp4s0，启动了DHCP。[6]</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sudo ifconfig enp4s0 down # 关闭enp4s0接口，之后ifconfig命令不显示enp4s0接口</span><br><span class="line">sudo brctl addbr br0	# 增加一个虚拟网桥br0</span><br><span class="line">sudo brctl addif br0 enp4s0	# 在br0中添加一个接口enp4s0</span><br><span class="line">sudo brctl stp br0 off	# 由于只有一个网桥，所以关闭生成树协议</span><br><span class="line">sudo brctl setfd br0 1	#设置br0的转发延迟</span><br><span class="line">sudo brctl sethello br0 1	#设置br0的hello时间</span><br><span class="line">sudo ifconfig br0 0.0.0.0 promisc up	# 打开br0接口</span><br><span class="line">sudo ifconfig enp4s0 0.0.0.0 promisc up	# 打开enp4s0接口</span><br><span class="line">sudo dhclient br0	# 从dhcp服务器获得br0的IP地址</span><br></pre></td></tr></table></figure>
+<p>查看虚拟网桥列表 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo brctl show br0	</span><br></pre></td></tr></table></figure></p>
+<pre><code>bridge name bridge id       STP enabled interfaces
+br0     8000.60a44ce7203e   no      enp4s0</code></pre>
+<p>查看br0的各个接口信息 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo brctl showstp br0	</span><br></pre></td></tr></table></figure> br0 bridge id 8000.60a44ce7203e
+designated root 8000.60a44ce7203e root port 0 path cost 0 max age 20.00
+bridge max age 20.00 hello time 1.00 bridge hello time 1.00 forward
+delay 1.00 bridge forward delay 1.00 ageing time 300.00 hello timer 0.00
+tcn timer 0.00 topology change timer 0.00 gc timer 232.85 flags</p>
+<pre><code>enp4s0 (1)
+ port id        8001            state            forwarding
+ designated root    8000.60a44ce7203e   path cost          4
+ designated bridge  8000.60a44ce7203e   message age timer      0.00
+ designated port    8001            forward delay timer    0.00
+ designated cost       0            hold timer         0.00
+ flags          </code></pre>
+<h4 id="配置tap设备操作">配置TAP设备操作:</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo tunctl -t tap1	# 创建一个tap1接口，默认允许root用户访问</span><br><span class="line">sudo brctl addif br0 tap1	 # 在虚拟网桥中增加一个tap1接口</span><br><span class="line">sudo ifconfig tap1 0.0.0.0 promisc up	# 打开tap1接口</span><br></pre></td></tr></table></figure>
+<p>显示br0的各个接口 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo brctl showstp br0</span><br></pre></td></tr></table></figure></p>
+<pre><code>br0
+ bridge id      8000.46105353cee8
+ designated root    8000.46105353cee8
+ root port         0            path cost          0
+ max age          20.00         bridge max age        20.00
+ hello time        1.00         bridge hello time      1.00
+ forward delay         1.00         bridge forward delay       1.00
+ ageing time         300.00
+ hello timer           0.00         tcn timer          0.00
+ topology change timer     0.00         gc timer          98.28
+ flags          
+
+
+enp4s0 (1)
+ port id        8001            state            forwarding
+ designated root    8000.46105353cee8   path cost          4
+ designated bridge  8000.46105353cee8   message age timer      0.00
+ designated port    8001            forward delay timer    0.00
+ designated cost       0            hold timer         0.00
+ flags          
+
+tap1 (2)
+ port id        8002            state              disabled
+ designated root    8000.46105353cee8   path cost        100
+ designated bridge  8000.46105353cee8   message age timer      0.00
+ designated port    8002            forward delay timer    0.00
+ designated cost       0            hold timer         0.00
+ flags      </code></pre>
+<p>为了在系统启动时能够自动配置虚拟网桥和TAP设备，需要重新编辑<code>/etc/network/interfaces</code>。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">auto enp4s0</span><br><span class="line">iface enp4s0 inet dhcp                  </span><br><span class="line">auto br0</span><br><span class="line">iface br0 inet dhcp</span><br><span class="line">#iface br0 inet static</span><br><span class="line">#address 192.168.0.1</span><br><span class="line">#netmask 255.255.255.0 </span><br><span class="line">#gateway 192.168.0.254 </span><br><span class="line">#dns-nameserver 8.8.8.8</span><br><span class="line">bridge_ports enp4s0</span><br><span class="line">bridge_fd 1</span><br><span class="line">bridge_hello 1</span><br><span class="line">bridge_stp off</span><br><span class="line">                                                                                                                                       </span><br><span class="line">auto tap0</span><br><span class="line">iface tap0 inet manual</span><br><span class="line">#iface tap0 inet static</span><br><span class="line">#address 192.168.0.2 </span><br><span class="line">#netmask 255.255.255.0 </span><br><span class="line">#gateway 192.168.0.254                                                                                                               </span><br><span class="line">#dns-nameserver 8.8.8.8</span><br><span class="line">pre-up tunctl -t tap0 -u root </span><br><span class="line">pre-up ifconfig tap0 0.0.0.0 promisc up</span><br><span class="line">post-up brctl addif br0 tap0 </span><br></pre></td></tr></table></figure></p>
+<p>当然还可以参考<a
+target="_blank" rel="noopener" href="https://www.linux-kvm.org/page/Networking">7</a>，写脚本来设置网络。</p>
+<h4
+id="启动客户机指定分配virtio网卡设备">启动客户机，指定分配virtio网卡设备</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo qemu-system-x86_64 -enable-kvm -boot c -drive file=ubuntu16.04.qcow2,if=virtio -m 1024 -netdev type=tap,ifname=tap1,script=no,id=net0 -device virtio-net-pci,netdev=net0</span><br></pre></td></tr></table></figure>
+<p>qemu-system-x86-64命令行解释</p>
+<ul>
+<li><code>–enable-kvm</code>
+创建x86的虚拟机需要用到qemu-system-x86_64这个命令，并需要加上<code>–enable-kvm</code>来支持kvm加速，不适用KVM加速虚拟机会非常缓慢。</li>
+<li><code>boot</code>
+磁盘相关参数，设置客户机启动时的各种选项。<code>c</code>表示第一个硬盘。</li>
+<li><code>drive</code>
+配置驱动。使用<code>file</code>文件作为镜像文件加载到客户机的驱动器中。<code>if</code>指定驱动器使用的接口类型，包括了virtio在内。</li>
+<li><code>m</code>
+设置客户机内存大小，单位默认为<code>MB</code>。也可以用<code>G</code>为单位。</li>
+<li><code>netdev</code>
+新型的网络配置方法，在宿主机中建立一个网络后端驱动。<code>TAP</code>是虚拟网络设备，它仿真了一个数据链路层设备。<code>TAP</code>用于创建一个网络桥，使用网桥连接和NAT模式网络的客户机都会用到<code>TAP</code>参数。<code>ifname</code>指接口名称。<code>script</code>用于设置宿主机在启动客户机时自动执行的网络配置脚本，如果不指定，默认为<code>/etc/qemu-ifup</code>，如果不需要执行脚本，则设置<code>script=no</code>。<code>id</code>用于在宿主机中指定的TAP虚拟设备的<code>ID</code>。</li>
+<li><code>device</code>
+为虚拟机添加设备。这里添加了<code>virtio-net-pci</code>设备，使用了<code>net0</code>的TAP虚拟网卡。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">-device driver[,prop[=value][,...]]</span><br><span class="line">                add device (based on driver)</span><br><span class="line">                prop=value,... sets driver properties</span><br><span class="line">                use &#x27;-device help&#x27; to print all possible drivers</span><br><span class="line">                use &#x27;-device driver,help&#x27; to print all possible properties</span><br><span class="line"></span><br><span class="line">name &quot;virtio-net-pci&quot;, bus PCI, alias &quot;virtio-net&quot;</span><br><span class="line"></span><br><span class="line">-netdev tap,id=str[,fd=h][,fds=x:y:...:z][,ifname=name][,script=file][,downscript=dfile]</span><br><span class="line">         [,helper=helper][,sndbuf=nbytes][,vnet_hdr=on|off][,vhost=on|off]</span><br><span class="line">         [,vhostfd=h][,vhostfds=x:y:...:z][,vhostforce=on|off][,queues=n]</span><br><span class="line">                configure a host TAP network backend with ID &#x27;str&#x27;</span><br><span class="line">                use network scripts &#x27;file&#x27; (default=/etc/qemu-ifup)</span><br><span class="line">                to configure it and &#x27;dfile&#x27; (default=/etc/qemu-ifdown)</span><br><span class="line">                to deconfigure it</span><br><span class="line">                use &#x27;[down]script=no&#x27; to disable script execution</span><br><span class="line">                use network helper &#x27;helper&#x27; (default=/usr/lib/qemu/qemu-bridge-helper) to</span><br><span class="line">                configure it</span><br><span class="line">                use &#x27;fd=h&#x27; to connect to an already opened TAP interface</span><br><span class="line">                use &#x27;fds=x:y:...:z&#x27; to connect to already opened multiqueue capable TAP interfaces</span><br><span class="line">                use &#x27;sndbuf=nbytes&#x27; to limit the size of the send buffer (the</span><br><span class="line">                default is disabled &#x27;sndbuf=0&#x27; to enable flow control set &#x27;sndbuf=1048576&#x27;)</span><br><span class="line">                use vnet_hdr=off to avoid enabling the IFF_VNET_HDR tap flag</span><br><span class="line">                use vnet_hdr=on to make the lack of IFF_VNET_HDR support an error condition</span><br><span class="line">                use vhost=on to enable experimental in kernel accelerator</span><br><span class="line">                    (only has effect for virtio guests which use MSIX)</span><br><span class="line">                use vhostforce=on to force vhost on for non-MSIX virtio guests</span><br><span class="line">                use &#x27;vhostfd=h&#x27; to connect to an already opened vhost net device</span><br><span class="line">                use &#x27;vhostfds=x:y:...:z to connect to multiple already opened vhost net devices</span><br><span class="line">                use &#x27;queues=n&#x27; to specify the number of queues to be created for multiqueue TAP</span><br></pre></td></tr></table></figure>
+<h3 id="virtio-serial">virtio Serial</h3>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="http://web.archive.org/web/20150921130005/http://nairobi-embedded.org/qemu_character_devices.html">Using
+QEMU Character Devices</a></li>
+</ul>
+<p>串口通信的样例代码是： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-device virtio-serial-pci \</span><br><span class="line">-chardev socket,path=/tmp/foo,server,nowait,id=foo \</span><br><span class="line">-device virtserialport,chardev=foo,name=org.fedoraproject.port.0</span><br></pre></td></tr></table></figure></p>
+<p>QEMU的chardev分为backend和frontend。这会向guest创建设备并暴露出串口端口。
+<code>-device virtio-serial</code> 选项向虚拟机添加了
+<code>virtio-serial-pci</code>
+设备，<code>-chardev socket,path=/tmp/foo,server,nowait,id=foo</code>
+创建了backend，以 <code>/tmp/foo</code> 为path的 UNIX
+SOCKET用于通信，id为 foo。
+<code>-device virtserialport,chardev=foo,name=org.fedoraproject.port.0</code>
+创建了frontend，它打开了为此设备打开了一个端口，端口名称为“org.fedoraproject.port.0”，并且将foo的chardev
+添加到那个port。 来自<a
+target="_blank" rel="noopener" href="https://wiki.archlinux.org/index.php/QEMU_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)">QEMU
+(简体中文) #Copy and paste</a></p>
+<p>客户端需要载入 <code>virtio_console.ko</code> 内核模块并将端口
+<code>/dev/vport0p1</code> 提供给用户态程序。 文件系统属性的位置在
+<code>/sys/class/virtio-ports/vport0p1/name</code> ，它包含了文本
+“org.fedoraproject.port.0”。 添加udev规则，在
+<code>/dev/virtio-ports</code>
+中添加一条链接，<code>/dev/virtio-ports/org.fedoraproject.port.0 -&gt; /dev/vport0p1</code>
+，写入主机 <code>/tmp/foo</code>
+的数据会被转发到虚拟机，虚拟机中的应用程序就能够从
+<code>/dev/vport0p1</code> 或者
+<code>/dev/virtio-ports/org.fedoraproject.port.0</code> 中读数据。
+<code>/dev/vportNp0</code> 为首个 <code>virtio console</code> 预留。</p>
+<p>从<a target="_blank" rel="noopener" href="https://www.cleancss.com/explain-command/kvm/108550">kvm
+-chardev</a>中可以得到<code>-chardev</code> 的选项。
+或者从<code>help</code> 选项获取，如下 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-chardev socket,id=id[,host=host],port=port[,to=to][,ipv4][,ipv6][,nodelay][,reconnect=seconds]</span><br><span class="line">         [,server][,nowait][,telnet][,reconnect=seconds][,mux=on|off]</span><br><span class="line">         [,logfile=PATH][,logappend=on|off][,tls-creds=ID] (tcp)</span><br><span class="line">-chardev socket,id=id,path=path[,server][,nowait][,telnet][,reconnect=seconds]</span><br><span class="line">         [,mux=on|off][,logfile=PATH][,logappend=on|off] (unix)</span><br></pre></td></tr></table></figure>
+创建双向socket流，可以是TCP或者UNIX socket，这取决与 <code>path</code>
+路径是否设置。</p>
+<h3 id="检查客户端是否启用-virtio_console.ko">检查客户端是否启用
+virtio_console.ko</h3>
+<p>检查内核模块是否包含virtio。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -i virtio /boot/config-$(uname -r)</span><br></pre></td></tr></table></figure></p>
+<pre><code>CONFIG_NET_9P_VIRTIO=m
+CONFIG_VIRTIO_BLK=y
+CONFIG_SCSI_VIRTIO=m
+CONFIG_VIRTIO_NET=y
+CONFIG_CAIF_VIRTIO=m
+CONFIG_VIRTIO_CONSOLE=y
+CONFIG_HW_RANDOM_VIRTIO=m
+CONFIG_DRM_VIRTIO_GPU=m
+CONFIG_VIRTIO=y
+# Virtio drivers
+CONFIG_VIRTIO_PCI=y
+CONFIG_VIRTIO_PCI_LEGACY=y
+CONFIG_VIRTIO_BALLOON=y
+CONFIG_VIRTIO_INPUT=m
+CONFIG_VIRTIO_MMIO=y
+CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES=y</code></pre>
+<p><code>CONFIG_VIRTIO_CONSOLE=y</code> 表示
+<code>virtio_console.ko</code>
+已经编译到内核中，默认启动，不用作为可加载模块载入。</p>
+<h3 id="qemu客户端模式的-unix-chardev">QEMU客户端模式的 UNIX
+chardev</h3>
+<p>启动的参数为： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">-chardev socket,path=/tmp/foo,id=foo \</span><br><span class="line">-device virtio-serial-pci </span><br><span class="line">-device virtserialport,chardev=foo,name=maxwell,nr=2 \</span><br></pre></td></tr></table></figure></p>
+<p>需要先在host上启动监听进程： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">socat UNIX-LISTEN:/tmp/foo  -</span><br></pre></td></tr></table></figure> 否则会报错 &gt;
+qemu-system-x86_64: -chardev socket,path=/tmp/foo,id=foo: Failed to
+connect socket /tmp/foo: No such file or directory</p>
+<p>启动guest之后，在guest中向设备输入字符串： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo foo &gt; /dev/virtio-ports/maxwell</span><br></pre></td></tr></table></figure>
+host上会得到消息“foo”。</p>
+<h3 id="qemu服务器模式的-unix-chardev">QEMU服务器模式的 UNIX
+chardev</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">-chardev socket,path=/tmp/foo,server,nowait,id=foo \</span><br><span class="line">-device virtio-serial-pci </span><br><span class="line">-device virtserialport,chardev=foo,name=maxwell,nr=2 \</span><br></pre></td></tr></table></figure>
+<p>需要先在host上启动监听进程，这里使用 <code>ipython</code> 交互程序：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import socket</span><br><span class="line"> </span><br><span class="line">sock = socket.socket(socket.AF_UNIX)</span><br><span class="line">sock.connect(&quot;/tmp/foo&quot;)</span><br><span class="line">print sock.recv(1024) </span><br></pre></td></tr></table></figure> 在guest中，向virtio-serial port写数据： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printf &#x27;abcd&#x27; | dd bs=4 status=none of=/dev/virtio-ports/maxwell count=1 seek=0</span><br></pre></td></tr></table></figure>
+这样即可在host上收到消息“abcd”。</p>
+<p><a
+target="_blank" rel="noopener" href="https://wiki.qemu.org/Features/ChardevFlowControl">这里</a>还提到用管道的方式传输数据，我就不在这里实验了。</p>
+<p><a
+target="_blank" rel="noopener" href="https://fedoraproject.org/wiki/Features/VirtioSerial#How_To_Test">Features/VirtioSerial</a>
+<a
+target="_blank" rel="noopener" href="https://wiki.qemu.org/Features/ChardevFlowControl">Features/ChardevFlowControl
+字符设备控制流</a> <a
+target="_blank" rel="noopener" href="https://www.linux-kvm.org/page/Virtio-serial_API">KVM中Virtio-serial_API</a></p>
+<h2 id="qemu创建虚拟机">qemu创建虚拟机</h2>
+<h3 id="qemu-img创建虚拟机镜像">qemu-img创建虚拟机镜像</h3>
+<p>虚拟机镜像用来模拟虚拟机的硬盘，在启动虚拟机之前需要创建镜像文件。qemu-img是QEMU的磁盘管理工具，可以用qemu-img创建虚拟机镜像。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img create -f qcow2 ubuntu.qcow2 20G</span><br></pre></td></tr></table></figure></p>
+<p><code>-f</code>选项用于指定镜像的格式，<code>qcow2</code>格式是QEMU最常用的镜像格式，采用来写时复制技术来优化性能。<code>ubuntu.qcow2</code>是镜像文件的名字，<code>20G</code>是镜像文件大小。镜像文件创建完成后，可使用<code>qemu-system-x86</code>来启动<code>x86</code>架构的虚拟机</p>
+<h3 id="检查kvm是否可用">检查KVM是否可用</h3>
+<p>QEMU使用KVM来提升虚拟机性能，如果不启用KVM会导致性能损失。要使用KVM，首先要检查硬件是否有虚拟化支持：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -E &#x27;vmx|svm&#x27; /proc/cpuinfo</span><br></pre></td></tr></table></figure>
+如果有输出则表示硬件有虚拟化支持。其次要检查kvm模块是否已经加载：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsmod | grep kvm</span><br></pre></td></tr></table></figure> kvm_intel 1429990 kvm 4443141 kvm_intel
+如果kvm_intel/kvm_amd、kvm模块被显示出来，则kvm模块已经加载。最好要确保qemu在编译的时候使能了KVM，即在执行configure脚本的时候加入了–enable-kvm选项。</p>
+<p>如果没有 <code>kvm_intel</code>
+模块，再使用kvm功能启动QEMU客户端会报错： &gt; Could not access KVM
+kernel module: No such file or directory &gt; qemu-system-x86_64: failed
+to initialize KVM: No such file or directory</p>
+<p>安装模块 <code>modprobe kvm-intel</code> 得到错误信息： &gt;
+modprobe: ERROR: could not insert 'kvm_intel': Operation not
+supported</p>
+<p>对于内核错误，通过查看日志文件找问题。 <code>dmesg</code> &gt; kvm:
+disabled by bios</p>
+<p>那么好，关机，启动后设置BIOS，设置完成后一定要关机，再启动。万万不可重启。</p>
+<h3 id="安装操作系统">安装操作系统。</h3>
+<p>准备好虚拟机操作系统ISO镜像。执行下面的命令启动带有cdrom的虚拟机：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -m 2048 -enable-kvm ubuntu.qcow2 -cdrom ubuntu.iso</span><br></pre></td></tr></table></figure> - <code>-m</code>指定虚拟机内存大小，默认单位是MB， -
+<code>-enable-kvm</code>使用KVM进行加速， -
+<code>-cdrom</code>添加<code>ubuntu</code>的安装镜像。</p>
+<p>可在弹出的窗口中操作虚拟机，安装操作系统，安装完成后重起虚拟机便会从硬盘(ubuntu.qcow2
+)启动。</p>
+<h3 id="启动虚拟机">启动虚拟机</h3>
+<p>启动虚拟机只需要执行: <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -m 2048 -enable-kvm ubuntu.qcow2 </span><br></pre></td></tr></table></figure> 即可。</p>
+<h3 id="qemu-monitor">qemu monitor</h3>
+<p>QEMU
+监控器是终端窗口，可以执行一些命令来查看当前启动的操作系统一些配置和运行状况。
+可以通过 <code>-monitor stdio</code> 参数启动。
+或者在QEMU窗口中使用快捷键 <code>Ctrl+Alt+2</code>， 使用
+<code>Ctrl+Alt+1</code> 切换回普通的客户机。</p>
+<h3 id="vm-screen-resolution">VM Screen Resolution</h3>
+<p>在启动项中添加 <code>-vga virtio</code>，
+提供了很高的resolution，然后 <code>Ctrl + Alt + F</code>
+或者在启动项中添加 <code>-full-screen</code> 即可。<br />
+<a
+target="_blank" rel="noopener" href="https://superuser.com/questions/132322/how-to-increase-the-visualized-screen-resolution-on-qemu-kvm">How
+to increase the visualized screen resolution on QEMU / KVM?</a></p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://www.linux-kvm.org/page/Virtio">Virtio</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://tthtlc.wordpress.com/2015/10/21/qemu-how-to-setup-tuntap-bridge-networking/%5D">QEMU
+how to setup Tun/Tap + bridge networking</a></li>
+<li><a target="_blank" rel="noopener" href="https://my.oschina.net/kelvinxupt/blog/265108">QEMU 1:
+使用QEMU创建虚拟机</a></li>
+<li>Virtio: towards a de factor standard for virtual I/O devices</li>
+<li><a
+target="_blank" rel="noopener" href="http://blog.csdn.net/richardysteven/article/details/54807927">访问qemu虚拟机的五种姿势</a></li>
+<li><a
+target="_blank" rel="noopener" href="http://blog.csdn.net/shendl/article/details/9468227">qemu虚拟机与外部网络的通信</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.linux-kvm.org/page/Networking">Configuring
+Guest Networking</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/linux/l-virtio/">Virtio：针对
+Linux 的 I/O 虚拟化框架</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/linux/1402_caobb_virtio/">Virtio
+基本概念和设备操作</a></li>
+<li>virtio: Towards a De-Facto Standard For Virtual I/O Devices</li>
+<li><a target="_blank" rel="noopener" href="https://wiki.osdev.org/Virtio">Virtio</a></li>
+<li><a target="_blank" rel="noopener" href="https://kernelgo.org/virtio-overview.html">Virtio Spec
+Overview</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/virtio/" rel="tag"># virtio</a>
+              <a href="/tags/QEMU/" rel="tag"># QEMU</a>
+              <a href="/tags/libvirt/" rel="tag"># libvirt</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/02/08/python%E4%B9%8Bpickle%E7%9A%84%E4%BB%BB%E6%84%8F%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/" rel="prev" title="python之pickle的任意代码执行漏洞">
+                  <i class="fa fa-angle-left"></i> python之pickle的任意代码执行漏洞
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/03/01/%E8%A7%A3%E5%86%B3windows%E4%B8%8B%E7%9A%84git-bash%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%AD%E6%96%87%E4%B9%B1%E7%A0%81/" rel="next" title="解决windows下的git bash客户端中文乱码">
+                  解决windows下的git bash客户端中文乱码 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Linux 下文件查找主要使用 find 命令，而根据文件内容查找主要使用 grep 命令。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux下文件查找与文件内容查找">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/05/14/linux%E4%B8%8B%E6%96%87%E4%BB%B6%E6%9F%A5%E6%89%BE%E4%B8%8E%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%9F%A5%E6%89%BE/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="Linux 下文件查找主要使用 find 命令，而根据文件内容查找主要使用 grep 命令。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-05-14T08:52:15.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.895Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="find">
+<meta property="article:tag" content="grep">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/05/14/linux%E4%B8%8B%E6%96%87%E4%BB%B6%E6%9F%A5%E6%89%BE%E4%B8%8E%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%9F%A5%E6%89%BE/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/05/14/linux%E4%B8%8B%E6%96%87%E4%BB%B6%E6%9F%A5%E6%89%BE%E4%B8%8E%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%9F%A5%E6%89%BE/","path":"2018/05/14/linux下文件查找与文件内容查找/","title":"linux下文件查找与文件内容查找"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>linux下文件查找与文件内容查找 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#find"><span class="nav-number">1.</span> <span class="nav-text">find</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E9%A1%B9"><span class="nav-number">1.1.</span> <span class="nav-text">选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90"><span class="nav-number">1.2.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#grep"><span class="nav-number">2.</span> <span class="nav-text">grep</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E9%A1%B9-1"><span class="nav-number">2.1.</span> <span class="nav-text">选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90-1"><span class="nav-number">2.2.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/05/14/linux%E4%B8%8B%E6%96%87%E4%BB%B6%E6%9F%A5%E6%89%BE%E4%B8%8E%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%9F%A5%E6%89%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="linux下文件查找与文件内容查找 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux下文件查找与文件内容查找
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-05-14 16:52:15" itemprop="dateCreated datePublished" datetime="2018-05-14T16:52:15+08:00">2018-05-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><code>Linux</code> 下文件查找主要使用 <code>find</code>
+命令，而根据文件内容查找主要使用 <code>grep</code> 命令。
+<span id="more"></span></p>
+<h1 id="find">find</h1>
+<p><code>find</code> 命令用来在指定目录下查找文件。
+任何位于参数之前的字符串都将被视为欲查找的目录名。如果使用该命令时，不设置任何参数，则
+<code>find</code>
+命令将在当前目录下查找子目录与文件。并且将查找到的子目录和文件全部进行显示。</p>
+<h2 id="选项">选项</h2>
+<p><code>find</code> 命令在 <a
+href="/2017/08/13/linux操作/#find">linux操作</a>中详细介绍了。</p>
+<h2 id="例子">例子</h2>
+<p>表示当前目录下查找文件名开头是字符串 'lib' 的文件 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -name &#x27;srm*&#x27; 　　</span><br></pre></td></tr></table></figure></p>
+<h1 id="grep">grep</h1>
+<p>使用了那么久的 <code>grep</code> 命令，就会一个
+<code>grep 'helloworld'</code> ，竟然不知道可以利用 <code>grep</code>
+来搜索文件内容。总结下 <code>grep</code> 的用法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep [OPTIONS] PATTERN [FILE...]</span><br></pre></td></tr></table></figure>
+<p>或者使用 <code>正则表达式</code>： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep [OPTIONS] [-e PATTERN]...  [-f FILE]...  [FILE...]</span><br></pre></td></tr></table></figure></p>
+<h2 id="选项-1">选项</h2>
+<blockquote>
+<p>-a 不要忽略二进制数据。 -A <显示列数>
+除了显示符合范本样式的那一行之外，并显示该行之后的内容。 -b
+在显示符合范本样式的那一行之外，并显示该行之前的内容。 -c
+计算符合范本样式的列数。 -C <显示列数>或-<显示列数>
+除了显示符合范本样式的那一列之外，并显示该列之前后的内容。 -d <进行动作>
+当指定要查找的是目录而非文件时，必须使用这项参数，否则grep命令将回报信息并停止动作。
+<code>-e &lt;范本样式&gt; 指定字符串作为查找文件内容的范本样式。</code>
+-E 将范本样式为延伸的普通表示法来使用，意味着使用能使用扩展正则表达式。
+-f <范本文件>
+指定范本文件，其内容有一个或多个范本样式，让grep查找符合范本条件的文件内容，格式为每一列的范本样式。
+-F 将范本样式视为固定字符串的列表。 -G
+将范本样式视为普通的表示法来使用。
+<code>-h 在显示符合范本样式的那一列之前，不标示该列所属的文件名称。</code>
+-H 在显示符合范本样式的那一列之前，标示该列的文件名称。
+<code>-i 忽略字符大小写的差别。</code> -l
+列出文件内容符合指定的范本样式的文件名称。 -L
+列出文件内容不符合指定的范本样式的文件名称。
+<code>-n 在显示符合范本样式的那一列之前，标示出该列的编号。</code> -q
+不显示任何信息。 -R/-r 此参数的效果和指定“-d recurse”参数相同。
+<code>-s 不显示错误信息。</code> <code>-v 反转查找。</code>
+<code>-w 只显示全字符合的列。</code> -x 只显示全列符合的列。 -y
+此参数效果跟 "-i" 相同。 -o 只输出文件中匹配到的部分。</p>
+</blockquote>
+<p>pattern正则表达式主要参数：</p>
+<blockquote>
+<p>： 忽略正则表达式中特殊字符的原有含义。 ^： 匹配正则表达式的开始行。
+$: 匹配正则表达式的结束行。 &lt;： 从匹配正则表达 式的行开始。 \&gt;：
+到匹配正则表达式的行结束。 [ ]： 单个字符，如[A]即A符合要求 。 [ - ]：
+范围，如[A-Z]，即A、B、C一直到Z都符合要求 。 <strong>.</strong> :
+所有的单个字符。 * : 有字符，长度可以为0。</p>
+</blockquote>
+<h2 id="例子-1">例子</h2>
+<p>显示/usr/src目录下的文件(不含子目录)包含magic的行 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep magic /usr/src　　</span><br></pre></td></tr></table></figure>
+显示/usr/src目录下的文件(包含子目录)包含magic的行 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -r magic /usr/src　　</span><br></pre></td></tr></table></figure></p>
+<p>只匹配整个单词，而不是字符串的一部分(如匹配 'magic'，而不是 'magical'
+)， <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -w pattern files </span><br></pre></td></tr></table></figure></p>
+<h1 id="参考">参考</h1>
+<p>[1] <a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/xudong-bupt/archive/2013/03/23/2976793.html">linux下的find文件查找命令与grep文件内容查找命令</a>
+[2] <a target="_blank" rel="noopener" href="http://man.linuxde.net/grep">grep命令</a> [3] <a
+target="_blank" rel="noopener" href="http://man.linuxde.net/find">find命令</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/find/" rel="tag"># find</a>
+              <a href="/tags/grep/" rel="tag"># grep</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/05/14/CUDA-API-Remoting/" rel="prev" title="CUDA API Remoting技术">
+                  <i class="fa fa-angle-left"></i> CUDA API Remoting技术
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/06/11/openssl/" rel="next" title="openssl">
+                  openssl <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

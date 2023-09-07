@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本文介绍的内容包括Intel、NVIDIA、AMD提供的对GPU虚拟化的硬件支持。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="硬件支持的GPU虚拟化技术">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/06/18/%E7%A1%AC%E4%BB%B6%E6%94%AF%E6%8C%81%E7%9A%84GPU%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本文介绍的内容包括Intel、NVIDIA、AMD提供的对GPU虚拟化的硬件支持。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-06-18T08:55:38.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.911Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="CUDA">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/06/18/%E7%A1%AC%E4%BB%B6%E6%94%AF%E6%8C%81%E7%9A%84GPU%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/06/18/%E7%A1%AC%E4%BB%B6%E6%94%AF%E6%8C%81%E7%9A%84GPU%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF/","path":"2018/06/18/硬件支持的GPU虚拟化技术/","title":"硬件支持的GPU虚拟化技术"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>硬件支持的GPU虚拟化技术 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%95%86%E7%94%A8gpu%E8%99%9A%E6%8B%9F%E5%8C%96%E6%96%B9%E6%A1%88"><span class="nav-number">1.</span> <span class="nav-text">商用GPU虚拟化方案</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#gpu-passthrough"><span class="nav-number">2.</span> <span class="nav-text">GPU Passthrough</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#iommu"><span class="nav-number">3.</span> <span class="nav-text">IOMMU</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#gpu%E5%88%86%E7%89%87%E8%99%9A%E6%8B%9F%E5%8C%96-mediated-passthrough-mdev"><span class="nav-number">4.</span> <span class="nav-text">GPU分片虚拟化 Mediated
+passthrough (mdev)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#intels-graphics-virtualization-technology-gvt"><span class="nav-number">4.1.</span> <span class="nav-text">Intel&#39;s Graphics
+Virtualization Technology (GVT)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nvidia-grid"><span class="nav-number">4.2.</span> <span class="nav-text">NVIDIA GRID</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#gpu-sr-iov"><span class="nav-number">5.</span> <span class="nav-text">GPU SR-IOV</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#amd-multiuser-gpu-mxgpu"><span class="nav-number">5.1.</span> <span class="nav-text">AMD Multiuser GPU (MxGPU)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/06/18/%E7%A1%AC%E4%BB%B6%E6%94%AF%E6%8C%81%E7%9A%84GPU%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="硬件支持的GPU虚拟化技术 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          硬件支持的GPU虚拟化技术
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-06-18 16:55:38" itemprop="dateCreated datePublished" datetime="2018-06-18T16:55:38+08:00">2018-06-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/" itemprop="url" rel="index"><span itemprop="name">GPU</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/GPU%E8%99%9A%E6%8B%9F%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">GPU虚拟化</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本文介绍的内容包括Intel、NVIDIA、AMD提供的对GPU虚拟化的硬件支持。
+<span id="more"></span></p>
+<p>强烈建议先看一遍 18年阿里云郑晓，龙欣推出的 《浅谈GPU虚拟化技术》
+系列博客，很系统的总结了Intel、Nvidia、AMD三大厂商的硬件虚拟化技术。</p>
+<p><a
+target="_blank" rel="noopener" href="https://developer.aliyun.com/article/578724">阿里云郑晓：浅谈GPU虚拟化技术（第一章）-GPU虚拟化发展史</a><br />
+<a
+target="_blank" rel="noopener" href="https://developer.aliyun.com/article/590910">阿里云郑晓：浅谈GPU虚拟化技术（第二章）-GPU直通模式</a><br />
+<a target="_blank" rel="noopener" href="https://developer.aliyun.com/article/590916">第三章
+浅谈GPU虚拟化技术（三）GPU SRIOV及vGPU调度</a><br />
+<a
+target="_blank" rel="noopener" href="https://developer.aliyun.com/article/599189">浅谈GPU虚拟化技术（四）-
+GPU分片虚拟化</a><br />
+<a
+target="_blank" rel="noopener" href="https://developer.aliyun.com/article/591405">浅谈GPU虚拟化技术（五）：GPU图形渲染虚拟化的业界难题-VDI的用户体验</a></p>
+<h1 id="商用gpu虚拟化方案">商用GPU虚拟化方案</h1>
+<p>在虚拟化环境中，GPU使用目前可以分为以下几类：</p>
+<ul>
+<li>GPU pass-through 直通模式，即GPU透传。<br />
+</li>
+<li>GPU SR-IOV，目前主要是AMD在采用此种方案<br />
+</li>
+<li>GPU分片虚拟化 mdev，包括Intel GVT-g和NVIDIA GRID vGPU</li>
+<li>GPU全虚拟化（VMWare的 vSGA）</li>
+<li>GPU半虚拟化 virtio-gpu</li>
+</ul>
+<p>下面重点介绍硬件支持的 GPU虚拟化方案： passthrough、mediated
+passthrough、SR-IOV。</p>
+<h1 id="gpu-passthrough">GPU Passthrough</h1>
+<p>该模式是最早也是最流行的GPU虚拟化方案。<br />
+直通模式下性能损失最小，硬件驱动无需修改。<br />
+缺点包括不支持热迁移（Live
+Migration）；不支持GPU资源分割；绕过了hypervisor，因此不能被hypervisor监控</p>
+<p>其实现依赖 IOMMU。</p>
+<pre><code>PCI 直通的技术实现：所有直通设备的PCI 配置空间都是模拟的。而且基本上都只模拟256 Bytes的传统PCI设备，很少有模拟PCIE设备整个4KB大小的。  
+而对PCI设备的PCI bars则绝大部分被mmap到qemu进程空间，并在虚拟机首次访问设备PCI bars的时候建立EPT 页表映射，从而保证了设备访问的高性能。</code></pre>
+<h1 id="iommu">IOMMU</h1>
+<p>IOMMU 可以看作 Device 的
+MMU，提供DMA地址转换、对设备读取和写入的权限检查。这样驱动程序可以直接访问外设，而不需要通过VMM。</p>
+<p>IOMMU需要CPU支持（Intel VT-d/ AMD Vi），并在主板中启用。</p>
+<p><a target="_blank" rel="noopener" href="https://www.kernel.org/doc/Documentation/vfio.txt">Linux
+kernel document: vfio.txt</a></p>
+<h1 id="gpu分片虚拟化-mediated-passthrough-mdev">GPU分片虚拟化 Mediated
+passthrough (mdev)</h1>
+<p>mediated passthrough
+把会影响性能的访问（如DMA）直接passthrough给虚拟机，把性能无关，功能性的MMIO访问做拦截并在mdev模块内做模拟。
+Mediated是指对MMIO 访问的拦截和emulation，而对DMA
+transfer的提交通过VFIO的passthrough 直接映射到 VM内部。<br />
+该点子最早来自于 ATC 的论文： A Full GPU Virtualization Solution with
+Mediated Pass-Through。</p>
+<p>但是 VFIO的mdev框架是由Nvidia为了GRID vGPU 产品线而引入。 mdev
+（Mediated devices）的概念由Nvidia率先提出的，并合并到了Linux
+内核4.10。</p>
+<p>这里不展开对 vfio-mdev 的总结，详见<a
+target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/28111201">vfio-mdev逻辑空间分析</a>
+和 <a
+target="_blank" rel="noopener" href="https://www.mjmwired.net/kernel/Documentation/vfio-mediated-device.txt">Documentation
+/ vfio-mediated-device.txt</a>。</p>
+<p>GPU分片模式不依赖于
+IOMMU，vGPU的cmd提交（内含GPA地址）并不能直接运行于GPU硬件之上，至少需要有一个GPA到HPA的翻译过程。该过程可以通过host端的cmd扫描来修复（KVMGT），NVIDIA
+GRID vGPU每一个context有其内部page table，会通过修改page
+table来实现。<br />
+GPU可以被hypervisor监控。</p>
+<p>GPU分片虚拟化的方案被 NVIDIA 与 Intel两家GPU厂家所采用。NVIDIA GRID
+vGPU系列与Intel的GVT-g（XenGT or KVMGT）。<br />
+若要搭建起来，需要 内核 4.10之后的版本、qemu v2.0 以及GPU
+mdev驱动（也就是对GPU MMIO访问的模拟）。</p>
+<h2 id="intels-graphics-virtualization-technology-gvt">Intel's Graphics
+Virtualization Technology (GVT)</h2>
+<p>Intel提供 <code>GVT-g</code> 方案：针对不同的hypervisor，在KVM上，叫
+<code>KVMGT</code>；而在Xen上，称为 <code>XenGT</code>。</p>
+<p>Intel 开源大部分集成显卡GPU的运行机理和软硬件规范。 <a
+target="_blank" rel="noopener" href="https://01.org/linuxgraphics/documentation/hardware-specification-prms"
+class="uri">https://01.org/linuxgraphics/documentation/hardware-specification-prms</a>
+GVT-g 方案是开源的，可以为任何带集显的Intel
+CPU（HSW，BDW，SKL系列CPU）提供vGPU，并且也被应用到IoT领域（ARCN
+hypervisor）。</p>
+<p>GVT-g 的 kernel和mdev驱动源码：<a
+target="_blank" rel="noopener" href="https://github.com/intel/gvt-linux"
+class="uri">https://github.com/intel/gvt-linux</a><br />
+GVT-g QEMU源码 <a target="_blank" rel="noopener" href="https://github.com/intel/IGVTg-qemu"
+class="uri">https://github.com/intel/IGVTg-qemu</a></p>
+<h2 id="nvidia-grid">NVIDIA GRID</h2>
+<p>GRID vGPU 是NVIDIA 支持虚拟化的GPU技术，NVIDIA
+vGPU在特定的GPU卡上支持。<br />
+NVIDIA 最早引入GRID技术的GPU 是 NVIDIA GRID K1，K2，NVIDIA Tesla M6, and
+M60。</p>
+<p><a
+target="_blank" rel="noopener" href="https://www.nvidia.com/content/grid/resources/White_paper_graphics_accelerated_VDI_v1.pdf">白皮书
+NVIDIA GRID: GRAPHICS ACCELERATED VDI WITH THE VISUAL PERFORMANCE OF A
+WORKSTATION,White Paper | May 2014</a> 介绍 GRID 技术是GPU的 MMU
+将Host的虚拟地址转换的device的物理地址是隔离的，维护了 256个独立的input
+buffer，将每个VM提交的命令流隔离到独自的context中。</p>
+<p>GRID技术使用到了hypervisor调度，来自VM的命令流分配到独自的vGPU
+driver，每个vGPU driver通过隔离的input
+channel将命令和控制发送到物理GPU上；渲染完成后再传输回remote host。</p>
+<p>现在需要用到的GPU卡，比如Tesla GPUs 产品。<br />
+并且NVIDIA vGPU 需要GPU
+mdev驱动支持，但是NVIDIA没有开源。使用者需要license激活使用它的完整功能，否则只能使用阉割版。</p>
+<p>GRID vGPU分片虚拟化的方案相对GPU passthrough来说部署比较困难。<br />
+<a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/grid/5.0/grid-vgpu-user-guide/index.html">Virtual
+GPU Software User
+Guide：vGPU使用安装流程</a>，但是里面提到了一点：单个VM不支持多个vGPUs。<br />
+&gt; Note: Multiple vGPUs in a VM are not supported.</p>
+<p>NVIDIA vGPU 目前基于 <a
+target="_blank" rel="noopener" href="https://www.nvidia.com/en-us/data-center/volta-gpu-architecture/">Turing
+架构</a>、 <a
+target="_blank" rel="noopener" href="https://www.nvidia.com/en-us/data-center/volta-gpu-architecture/">Volta</a>、
+<a
+target="_blank" rel="noopener" href="https://www.nvidia.com/en-us/data-center/pascal-gpu-architecture/">Pascal</a>
+、 <a
+target="_blank" rel="noopener" href="https://developer.nvidia.com/maxwell-compute-architecture">Maxwell架构</a>
+。</p>
+<p>vGPU应用在以下四个场景：<br />
+NVIDIA Virtual Compute Server (vCS)<br />
+NVIDIA Quadro Virtual Data Center Workstation (Quadro vDWS)<br />
+NVIDIA GRID Virtual PC (GRID vPC)<br />
+NVIDIA GRID Virtual Applications (GRID vApps)</p>
+<p>通常支持vGPU的NVIDIA产品包括 NVIDIA A100、V100S、RTX 8000、RTX
+6000、T4、M10、P6还包括NVIDIA V100, Quadro RTX 8000 (active), Quadro RTX
+6000 (active), P40 等。</p>
+<p>vGPU 性能会比 bare metal 低 10% 以内，通常少于 5%。<br />
+<a
+target="_blank" rel="noopener" href="https://www.nvidia.com/en-us/data-center/virtual-gpu-technology/">NVIDIA
+VIRTUAL GPU TECHNOLOGY</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.awcloud.com/3714.html">如何在产品中使用NVIDIA
+vGPU</a><br />
+<a
+target="_blank" rel="noopener" href="https://www.nvidia.com/en-us/data-center/graphics-cards-for-virtualization/">NVIDIA
+GPUs FOR VIRTUALIZATION</a><br />
+<a
+target="_blank" rel="noopener" href="https://images.nvidia.com/content/pdf/grid/data-sheet/nvidia-virtualization-gpu-linecard.pdf">nvidia
+virtualization gpu linecard</a></p>
+<h1 id="gpu-sr-iov">GPU SR-IOV</h1>
+<p>标准的PCIe的标准 Single Root I/O Virtualization（SR-IOV）。<br />
+SR-IOV 实现依赖 IOMMU，IOMMU的作用是完成GFN到PFN的地址转换。</p>
+<h2 id="amd-multiuser-gpu-mxgpu">AMD Multiuser GPU (MxGPU)</h2>
+<p>产品： 针对图形渲染的AMD Firepro S7150 、 针对机器学习的 MI25。<br />
+目前支持 VMware ESXi, KVM and Xen hypervisors。</p>
+<p><a
+target="_blank" rel="noopener" href="https://www.amd.com/zh-hans/graphics/workstation-virtual-graphics">面向虚拟化的
+Radeon Pro</a><br />
+<a
+target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/windows-hardware/drivers/network/overview-of-single-root-i-o-virtualization--sr-iov-">Overview
+of Single Root I/O Virtualization (SR-IOV)</a></p>
+<p>构成分两部分：<br />
++ A PCIe Physical Function (<strong>PF</strong>)
+宿主机的GPU驱动安装到PF上，它管理了所有VF设备的生命周期和调度。<br />
++ One or more PCIe Virtual Functions (<strong>VFs</strong>)<br />
+QEMU在启动时候通过VFIO模块将VF作为PCI直通设备交给虚拟机。</p>
+<p>SRIOV 通过 IOMMU 对DMA请求进行保护，实现GPA到 HPA 的转换。</p>
+<p>SRIOV 对GPU的虚拟在Host端的GPU硬件，固件和GIM驱动。</p>
+<h1 id="参考资料">参考资料</h1>
+<p><a target="_blank" rel="noopener" href="https://blog.51cto.com/tasnrh/1833289">XenGT为什么会比GRID
+vGPU先实现基于vGPU的在线迁移呢？</a><br />
+<a
+target="_blank" rel="noopener" href="https://patentimages.storage.googleapis.com/f1/8e/b3/4a390abd50cb0f/WO2018192160A1.pdf">设备内存管理单元的虚拟化方法</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/06/11/openssl/" rel="prev" title="openssl">
+                  <i class="fa fa-angle-left"></i> openssl
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/07/09/NVIDIA-GPU-VMM-NV50/" rel="next" title="NVIDIA GPU虚拟内存（NV50）">
+                  NVIDIA GPU虚拟内存（NV50） <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

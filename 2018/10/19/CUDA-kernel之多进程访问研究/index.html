@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="探究多进程或者多线程并发执行多个CUDA Kernel。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CUDA kernel之多进程访问研究">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/10/19/CUDA-kernel%E4%B9%8B%E5%A4%9A%E8%BF%9B%E7%A8%8B%E8%AE%BF%E9%97%AE%E7%A0%94%E7%A9%B6/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="探究多进程或者多线程并发执行多个CUDA Kernel。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-10-19T06:40:13.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.864Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="GPU">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/10/19/CUDA-kernel%E4%B9%8B%E5%A4%9A%E8%BF%9B%E7%A8%8B%E8%AE%BF%E9%97%AE%E7%A0%94%E7%A9%B6/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/10/19/CUDA-kernel%E4%B9%8B%E5%A4%9A%E8%BF%9B%E7%A8%8B%E8%AE%BF%E9%97%AE%E7%A0%94%E7%A9%B6/","path":"2018/10/19/CUDA-kernel之多进程访问研究/","title":"CUDA kernel之多进程访问研究"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CUDA kernel之多进程访问研究 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/10/19/CUDA-kernel%E4%B9%8B%E5%A4%9A%E8%BF%9B%E7%A8%8B%E8%AE%BF%E9%97%AE%E7%A0%94%E7%A9%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="CUDA kernel之多进程访问研究 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CUDA kernel之多进程访问研究
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-10-19 14:40:13" itemprop="dateCreated datePublished" datetime="2018-10-19T14:40:13+08:00">2018-10-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/" itemprop="url" rel="index"><span itemprop="name">GPU</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/CUDA/" itemprop="url" rel="index"><span itemprop="name">CUDA</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>探究多进程或者多线程并发执行多个CUDA Kernel。 <span id="more"></span></p>
+<p><a
+target="_blank" rel="noopener" href="http://www.c-s-a.org.cn/csa/ch/reader/create_pdf.aspx?file_no=6096&amp;flag=1&amp;year_id=12&amp;quarter_id=">GPU
+虚拟化相关技术研究综述</a>
+里面提到今后GPU的可能的研究方向其中一点：可抢占性。</p>
+<pre><code>由于 GPU 核数较多, 抢占 GPU 需要保存大量的上下文信息, 开销较大, 所以目前市场上 GPU 都不支持抢占特性. 只用当前任务完成之后, GPU 才能被下个应用程序使用。 在 GPU 虚拟化的环境中, 多用户使用的场景会导致 GPU 进行频繁的任务切换, 可抢占的 GPU 能够防止恶意用户长期占用, 并且 能够实现用户优先级权限管理。</code></pre>
+<p>一个答案</p>
+<pre><code>A CUDA context is a virtual execution space that holds the code and data owned by a host thread or process. Only one context can ever be active on a GPU with all current hardware.
+
+So to answer your first question, if you have seven separate threads or processes all trying to establish a context and run on the same GPU simultaneously, they will be serialised and any process waiting for access to the GPU will be blocked until the owner of the running context yields. There is, to the best of my knowledge, no time slicing and the scheduling heuristics are not documented and (I would suspect) not uniform from operating system to operating system.
+
+You would be better to launch a single worker thread holding a GPU context and use messaging from the other threads to push work onto the GPU. Alternatively there is a context migration facility available in the CUDA driver API, but that will only work with threads from the same process, and the migration mechanism has latency and host CPU overhead.</code></pre>
+<p>这里涉及到 CUDA 上下文（CUDA context）。</p>
+<p>尝试建立context并且同时运行在同一GPU设备上的不同的线程或进程，它们会被串行化而且任何等待访问GPU的进程将会被阻塞直到运行的context的进程退出。
+据“答主”了解，并没有文档来介绍时间分片还有调度算法。
+答主建议最好先启动包含着GPU上下文的单 worker
+线程，使用来自别的线程的消息来将工作推给GPU。或者，CUDA driver
+API有个上下文迁移工具，它也能与来自同一进程的线程配合，但是迁移机制有延迟，对CPU带来负荷。</p>
+<pre><code>CUDA activity from independent host processes will normally create independent CUDA contexts, one for each process. Thus, the CUDA activity launched from separate host processes will take place in separate CUDA contexts, on the same device.</code></pre>
+<p>独立主机进程的CUDA程序正常创建独立的CUDA上下文，每个进程一个CUDA
+context。从隔离主机进程启动的CUDA程序将在不同的CUDA上下文执行。</p>
+<pre><code>CUDA activity in separate contexts will be serialized. The GPU will execute the activity from one process, and when that activity is idle, it can and will context-switch to another context to complete the CUDA activity launched from the other process. The detailed inter-context scheduling behavior is not specified. (Running multiple contexts on a single GPU also cannot normally violate basic GPU limits, such as memory availability for device allocations.)</code></pre>
+<p>在不同上下文的CUDA程序将被串行化。GPU将执行来自一个进程的程序，并且当此程序空闲时，它将上下文切换到另外的上下文来完成从另一个进程启动的CUDA程序。详细的上下文内部调度行为并不具体。（在单GPU上运行多上下文同样不能正常违背基本的GPU限制，比如设备分配时的内存获取）</p>
+<pre><code>The &quot;exception&quot; to this case (serialization of GPU activity from independent host processes) would be the CUDA Multi-Process Server. In a nutshell, the MPS acts as a &quot;funnel&quot; to collect CUDA activity emanating from several host processes, and run that activity as if it emanated from a single host process. The principal benefit is to avoid the serialization of kernels which might otherwise be able to run concurrently. The canonical use-case would be for launching multiple MPI ranks that all intend to use a single GPU resource.</code></pre>
+<p>CUDA Multi-Process Server简称
+MPS，它扮演着一个漏斗的角色，来收集来自几个host进程的CUDA程序，并运行它们就好像来自一个host进程。主要的好处是避免kernel的串行化。</p>
+<pre><code>Note that the above description applies to GPUs which are in the &quot;Default&quot; compute mode. GPUs in &quot;Exclusive Process&quot; or &quot;Exclusive Thread&quot; compute modes will reject any attempts to create more than one process/context on a single device. In one of these modes, attempts by other processes to use a device already in use will result in a CUDA API reported failure. The compute mode is modifiable in some cases using the nvidia-smi utility.</code></pre>
+<p>GPU在 "Exclusive Process" 或者 "Exclusive Thread"
+计算模式将不允许任何在单设备上创建超过一个进程或上下文的操作请求。在上述模式下，其他进程的任何使用被占用的设备的尝试将会造成CUDA
+API 调用失败。计算模式可以在某些情况下通过 nvidia-smi 工具修改。</p>
+<h1 id="参考">参考</h1>
+<p><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/14895034/multiple-processes-launching-cuda-kernels-in-parallel">Multiple
+processes launching CUDA kernels in parallel</a> <a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/31643570/running-more-than-one-cuda-applications-on-one-gpu">Running
+more than one CUDA applications on one GPU</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/tags/GPU/" rel="tag"># GPU</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/10/14/alf-nu-alert1%E6%80%BB%E7%BB%93/" rel="prev" title="alf.nu/alert1总结">
+                  <i class="fa fa-angle-left"></i> alf.nu/alert1总结
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/10/22/alf-nu-ReturnTrue-%E6%80%BB%E7%BB%93/" rel="next" title="alf.nu/ReturnTrue 总结">
+                  alf.nu/ReturnTrue 总结 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

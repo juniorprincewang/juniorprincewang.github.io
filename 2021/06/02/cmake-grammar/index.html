@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="总结CMakeLists.txt中的语法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cmake-grammar">
+<meta property="og:url" content="http://juniorprincewang.github.io/2021/06/02/cmake-grammar/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="总结CMakeLists.txt中的语法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-06-02T03:32:27.000Z">
+<meta property="article:modified_time" content="2023-08-16T04:48:05.461Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="cmake">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2021/06/02/cmake-grammar/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2021/06/02/cmake-grammar/","path":"2021/06/02/cmake-grammar/","title":"cmake-grammar"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>cmake-grammar | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#demo"><span class="nav-number">1.</span> <span class="nav-text">demo</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">2.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2021/06/02/cmake-grammar/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="cmake-grammar | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          cmake-grammar
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-06-02 11:32:27" itemprop="dateCreated datePublished" datetime="2021-06-02T11:32:27+08:00">2021-06-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-08-16 12:48:05" itemprop="dateModified" datetime="2023-08-16T12:48:05+08:00">2023-08-16</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>总结CMakeLists.txt中的语法。</p>
+<span id="more"></span>
+<h1 id="demo">demo</h1>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.9)</span><br><span class="line">project(mylib VERSION 1.0.1 DESCRIPTION &quot;mylib description&quot;)</span><br><span class="line">include(GNUInstallDirs)</span><br><span class="line">add_library(mylib SHARED src/mylib.c)</span><br><span class="line">set_target_properties(mylib PROPERTIES</span><br><span class="line">    VERSION $&#123;PROJECT_VERSION&#125;</span><br><span class="line">    SOVERSION 1</span><br><span class="line">    PUBLIC_HEADER api/mylib.h)</span><br><span class="line">configure_file(mylib.pc.in mylib.pc @ONLY)</span><br><span class="line">target_include_directories(mylib PRIVATE .)</span><br><span class="line">install(TARGETS mylib</span><br><span class="line">    LIBRARY DESTINATION $&#123;CMAKE_INSTALL_LIBDIR&#125;</span><br><span class="line">    PUBLIC_HEADER DESTINATION $&#123;CMAKE_INSTALL_INCLUDEDIR&#125;)</span><br><span class="line">install(FILES $&#123;CMAKE_BINARY_DIR&#125;/mylib.pc</span><br><span class="line">    DESTINATION $&#123;CMAKE_INSTALL_DATAROOTDIR&#125;/pkgconfig)</span><br></pre></td></tr></table></figure>
+<p>语法解析：</p>
+<p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/manual/cmake-commands.7.html"><strong>cmake命令</strong></a>可以分为脚本命令与项目命令。</p>
+<p>脚本命令包括一些命令流控制（if、else、elseif、endif、break、continue...）、循环（while、endwhile、foreach、endforeach...）、设置（set、set_property、set_directory_properties...）、cmake相关（cmake_language、cmake_minimum_required...）、查找（find_file、find_library、find_package、find_path、find_program...）等等。</p>
+<p>项目命令是涉及编译链接的命令。包括头文件目录、编译选项、编译生成目标文件、链接等。</p>
+<ul>
+<li><p>指定cmake最小版本</p>
+<ul>
+<li><code>cmake_minimum_required(VERSION 3.9)</code></li>
+</ul></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/command/project.html"><code>project</code></a>:定义项目名称</p>
+<ul>
+<li><code>project(&lt;PROJECT-NAME&gt;  [VERSION &lt;major&gt;[.&lt;minor&gt;[.&lt;patch&gt;[.&lt;tweak&gt;]]]] ...)</code></li>
+<li>还可以设置版本VERSION 、项目描述 DESCRIPTION 、编程语言 LANGUAGES
+等。</li>
+</ul></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/command/set.html"><code>set</code></a>:设置变量，包括normal、cache和environment。</p>
+<ul>
+<li><code>set(&lt;variable&gt; &lt;value&gt;... [PARENT_SCOPE])</code></li>
+</ul></li>
+<li><p><code>OPTION</code>：Provide an option that the user can
+optionally select.Provides an option for the user to select as ON or
+OFF. If no initial <value> is provided, OFF is used.</p>
+<ul>
+<li><code>option(&lt;variable&gt; "&lt;help_text&gt;" [value])</code></li>
+</ul></li>
+<li><p><code>string(TOUPPER &lt;string&gt; &lt;output_variable&gt;)</code>:转换成大写</p></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/command/configure_file.html"><code>configure_file</code></a>:Copy
+a file to another location and modify its contents.</p>
+<ul>
+<li><code>configure_file(&lt;input&gt; &lt;output&gt;...)</code></li>
+</ul></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/command/include_directories.html"><code>inlcude_directories</code></a>：向编译工程引入头文件目录。</p>
+<ul>
+<li><code>include_directories([AFTER|BEFORE] [SYSTEM] dir1 [dir2 ...])</code></li>
+</ul></li>
+<li><p><code>add_subdirectory</code>:Add a subdirectory to the
+build.</p>
+<ul>
+<li><code>add_subdirectory(source_dir [binary_dir] [EXCLUDE_FROM_ALL])</code></li>
+</ul></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/command/target_link_libraries.html"><code>target_link_libraries</code></a>:当链接目标文件时指定相关的库或者flag。</p>
+<ul>
+<li><code>target_link_libraries(&lt;target&gt; ... &lt;item&gt;... ...)</code></li>
+</ul></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/command/add_library.html#command:add_library"><code>add_library</code></a>:
+使用指定的源文件添加或生成一个库文件，生成静态或者动态共享库。</p>
+<ul>
+<li><code>add_library(&lt;name&gt; [STATIC | SHARED | MODULE] [EXCLUDE_FROM_ALL] [source1] [source2 ...])</code></li>
+</ul></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/command/add_executable.html#command:add_executable"><code>add_executable</code></a>:使用指定的源文件来<strong>生成可执行文件</strong></p>
+<ul>
+<li><code>add_executable(&lt;name&gt; [WIN32] [MACOSX_BUNDLE] [EXCLUDE_FROM_ALL] [source1] [source2 ...])</code></li>
+</ul></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/command/target_include_directories.html"><code>target_include_directories</code></a>：为目标文件编译指定头文件目录，目标文件必须是通过
+<code>add_executable()</code> 和 <code>add_library()</code> 创建的。</p>
+<ul>
+<li><code>target_include_directories(&lt;target&gt; [SYSTEM] [BEFORE] &lt;INTERFACE|PUBLIC|PRIVATE&gt; [items1...]</code></li>
+</ul></li>
+<li><p><code>file(GLOB ...)</code>:
+按指定格式搜索文件并将搜索结果存入变量中 <code>&lt;variable&gt;</code>
+。</p>
+<ul>
+<li><code>file(GLOB &lt;variable&gt; [LIST_DIRECTORIES true|false] [RELATIVE &lt;path&gt;] [CONFIGURE_DEPENDS] [&lt;globbing-expressions&gt;...])</code></li>
+</ul></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/command/install.html"><code>install</code></a>:在项目安装时候指定规则.</p>
+<ul>
+<li><code>TARGETS</code> ，安装的目的地
+<ul>
+<li><code>LIBRARY</code> 指定库被当作library</li>
+<li><code>DESTINATION</code> 安装目录</li>
+</ul></li>
+<li><code>FILES</code> 指定了安装file的规则。用于头文件的安装<br />
+</li>
+</ul></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.19/command/set_target_properties.html"><code>set_target_properties</code></a>:指定properties指示如何编译</p>
+<ul>
+<li><code>set_target_properties(target1 target2 ... PROPERTIES prop1 value1 prop2 value2 ...)</code></li>
+<li>targets的properties见<a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/manual/cmake-properties.7.html#target-properties"
+class="uri">https://cmake.org/cmake/help/latest/manual/cmake-properties.7.html#target-properties</a>
+<ul>
+<li>shared library必须指定 <a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/prop_tgt/VERSION.html">VERSION
+和 SOVERSION</a>
+<ul>
+<li><code>VERSION</code>：指定build version</li>
+<li><code>SOVERSION</code>：指定API version</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><p><code>find_package</code>:Finds and loads settings from an
+external project.</p></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/manual/cmake-variables.7.html">CMake内部变量
+cmake-variables(7)</a></p>
+<ul>
+<li><code>CMAKE_BUILD_TYPE</code>:
+指定项目的编译类型，Debug，Release等。</li>
+<li><code>PROJECT_BINARY_DIR</code>：运行cmake命令的目录，通常为
+<code>$&#123;PROJECT_SOURCE_DIR&#125;/build</code> 。</li>
+<li><code>PROJECT_SOURCE_DIR</code>：当前工程的根目录，<code>project()</code>命令所在的目录。</li>
+<li><code>CMAKE_CURRENT_BINARY_DIR</code>:target 编译目录。</li>
+<li><code>CMAKE_CURRENT_SOURCE_DIR</code>:当前处理的源文件所在目录。</li>
+</ul></li>
+</ul>
+<h1 id="参考资料">参考资料</h1>
+<p>系统学习CMake资料：</p>
+<ul>
+<li>CMake Practice</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Akagi201/learning-cmake">learning
+cmake</a><br />
+</li>
+<li><a
+target="_blank" rel="noopener" href="http://derekmolloy.ie/hello-world-introductions-to-cmake/">Introduction
+to CMake by Example</a></li>
+</ul>
+<p>其他具体的参考资料：</p>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/17511496/how-to-create-a-shared-library-with-cmake/45843676#45843676">How
+to create a shared library with cmake?</a></li>
+</ul>
+<p>每个subdirectory下面都有CMakeLists.txt。</p>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/a/48510440">cmake-add-subdirectory-vs-include</a><br />
+</li>
+<li><a
+target="_blank" rel="noopener" href="https://cmake.org/pipermail/cmake/2007-November/017897.html">[CMake]
+Difference between ADD_SUBDIRECTORY and INCLUDE</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cmake/" rel="tag"># cmake</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/04/09/gcc-options/" rel="prev" title="gcc options">
+                  <i class="fa fa-angle-left"></i> gcc options
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/06/16/pthread-summary-condition/" rel="next" title="pthread condition使用">
+                  pthread condition使用 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

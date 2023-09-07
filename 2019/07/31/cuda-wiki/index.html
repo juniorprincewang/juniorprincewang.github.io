@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本片博客收录了cuda学习过程中的遇到的知识点总结。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cuda wiki">
+<meta property="og:url" content="http://juniorprincewang.github.io/2019/07/31/cuda-wiki/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本片博客收录了cuda学习过程中的遇到的知识点总结。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-07-31T11:16:45.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.885Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="CUDA">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2019/07/31/cuda-wiki/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2019/07/31/cuda-wiki/","path":"2019/07/31/cuda-wiki/","title":"cuda wiki"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>cuda wiki | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#cuda-reading-list"><span class="nav-number">1.</span> <span class="nav-text">CUDA Reading List</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cuda-programming"><span class="nav-number">2.</span> <span class="nav-text">CUDA Programming</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#modular-arithmetic"><span class="nav-number">2.1.</span> <span class="nav-text">modular arithmetic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cuda-structure"><span class="nav-number">2.2.</span> <span class="nav-text">CUDA structure</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#volatile"><span class="nav-number">2.2.1.</span> <span class="nav-text">volatile</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#warp"><span class="nav-number">2.3.</span> <span class="nav-text">warp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cuda-runtime-api"><span class="nav-number">2.4.</span> <span class="nav-text">CUDA runtime API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#cudamemcpyasync"><span class="nav-number">2.4.1.</span> <span class="nav-text">cudaMemcpyAsync</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mps"><span class="nav-number">2.5.</span> <span class="nav-text">MPS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mps%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.5.1.</span> <span class="nav-text">MPS介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mps%E4%BD%BF%E7%94%A8"><span class="nav-number">2.5.2.</span> <span class="nav-text">MPS使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ipc"><span class="nav-number">2.6.</span> <span class="nav-text">IPC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pthreadmigration"><span class="nav-number">2.7.</span> <span class="nav-text">pthreadMigration</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#get-sm-id-in-cuda-thread"><span class="nav-number">2.8.</span> <span class="nav-text">get SM-ID in cuda thread</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dynamic-parallelism"><span class="nav-number">2.9.</span> <span class="nav-text">Dynamic Parallelism</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ptx"><span class="nav-number">3.</span> <span class="nav-text">PTX</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cuda-snippets"><span class="nav-number">4.</span> <span class="nav-text">CUDA Snippets</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#review"><span class="nav-number">5.</span> <span class="nav-text">review</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2019/07/31/cuda-wiki/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="cuda wiki | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          cuda wiki
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-07-31 19:16:45" itemprop="dateCreated datePublished" datetime="2019-07-31T19:16:45+08:00">2019-07-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/" itemprop="url" rel="index"><span itemprop="name">GPU</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/CUDA/" itemprop="url" rel="index"><span itemprop="name">CUDA</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/wiki/" itemprop="url" rel="index"><span itemprop="name">wiki</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本片博客收录了cuda学习过程中的遇到的知识点总结。</p>
+<span id="more"></span>
+<p>主要参考 <a target="_blank" rel="noopener" href="https://github.com/yszheda/wiki/wiki/CUDA"
+class="uri">https://github.com/yszheda/wiki/wiki/CUDA</a>
+的形式，以链接的形式记录，如果有需要便去链接的网页搜索。</p>
+<h1 id="cuda-reading-list">CUDA Reading List</h1>
+<p>跟着 <a target="_blank" rel="noopener" href="https://github.com/yszheda/wiki/wiki/CUDA-Reading-List"
+class="uri">https://github.com/yszheda/wiki/wiki/CUDA-Reading-List</a>
+学就完了。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://docs.nvidia.com/cuda/cuda-c-best-practices-guide"
+class="uri">http://docs.nvidia.com/cuda/cuda-c-best-practices-guide</a></li>
+</ul>
+<h1 id="cuda-programming">CUDA Programming</h1>
+<h2 id="modular-arithmetic">modular arithmetic</h2>
+<p>formule like <em>(a</em>b - c<em>d) mod m or (a</em>b + c) mod m
+*.<br />
+use double-precision arithmetic to avoid expensive div and mod
+operations.</p>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/12252826/modular-arithmetic-on-the-gpu">modular
+arithmetic on the gpu</a><br />
+</li>
+<li><a
+target="_blank" rel="noopener" href="https://www.beechwood.eu/using-the-modulo-operator-in-cuda-65536/">Using
+the modulo (%) operator in CUDA 65536</a></li>
+</ul>
+<p>这里总结了单双精度浮点数的区别： + <a
+target="_blank" rel="noopener" href="https://stackoverflow.com/a/801146">What's the difference between
+a single precision and double precision floating point
+operation?</a><br />
++</p>
+<h2 id="cuda-structure">CUDA structure</h2>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="http://www.cudahandbook.com/2013/08/why-does-cuda-cudeviceptr-use-unsigned-int-instead-of-void/">Why
+does CUDA CUdeviceptr use unsigned int instead of void?</a><br />
+</li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/18141906">Why does CUDA
+CUdeviceptr use unsigned int instead of void?</a><br />
+&gt; CUdeviceptr is a handle to an allocation in device memory and not
+an address in device memory.</li>
+</ul>
+<h3 id="volatile">volatile</h3>
+<p>编译器会自动优化对global和shared
+memory的读写，比如将global内存变量缓存到register或者 L1 Cache。<br />
+volatile关键字阻止编译器优化，编译器会认为被volatile声明过的变量可能随时会被其他线程访问或修改。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/15331158">When to use volatile
+with shared CUDA Memory</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://baiweiblog.wordpress.com/2017/12/06/cuda-reduce-unroll-the-last-warp%E7%9A%84%E4%B8%80%E4%B8%AA%E6%98%93%E7%8A%AF%E7%9A%84%E9%94%99%E8%AF%AF/">一个volatile引发的CUDA程序的血案</a></li>
+<li><a
+target="_blank" rel="noopener" href="http://www.cudahandbook.com/2017/05/warp-synchrony-and-the-first-law-of-cuda-development/">Warp
+Synchrony and The First Law of CUDA Development</a></li>
+</ul>
+<h2 id="warp">warp</h2>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/10460742/how-do-cuda-blocks-warps-threads-map-onto-cuda-cores">How
+do CUDA blocks/warps/threads map onto CUDA cores?</a><br />
+</li>
+<li></li>
+</ul>
+<h2 id="cuda-runtime-api">CUDA runtime API</h2>
+<h3 id="cudamemcpyasync">cudaMemcpyAsync</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/14094079">Effect of using
+page-able memory for asynchronous memory copy?</a></li>
+</ul>
+<p><code>cudaMemcpyAsync</code> 是 <code>cudaMemcpy</code>
+的异步版本。若满足以下两个条件： - 使用non-default stream - host
+memory是pinned allocation。<br />
+GPU会分配一个free DMA copy
+engine，效果就是拷贝过程可以和其他GPU操作同步，比如kernel执行或者另一个拷贝（假如GPU有多个DMA
+copy engine的话）。<br />
+如果两个条件不能同时满足的话，GPU上的操作和 <code>cudaMemcpy</code>
+是一致的，只不过它不会阻塞host。</p>
+<p>也就是说， <code>cudaMemcpyAsync</code>
+不一定使用创建的流和锁页内存。</p>
+<h2 id="mps">MPS</h2>
+<h3 id="mps介绍">MPS介绍</h3>
+<p>volta及以后的架构对MPS做了基于硬件加速的实现，并对进程做了地址空间隔离，这样进一步减少kernellaunch带来的延迟。Volta下的MPS服务最多可以允许同时48个Client（客户端）。<br />
++ <a
+target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1081424">Multi-Process
+Scheduling翻译文</a></p>
+<h3 id="mps使用">MPS使用</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/34711344">How do I use Nvidia
+Multi-process Service (MPS) to run multiple non-MPI CUDA
+applications?</a></li>
+</ul>
+<p>start the MPS server:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"># the following must be performed with root privilege</span><br><span class="line">export CUDA_VISIBLE_DEVICES=&quot;0&quot;</span><br><span class="line">nvidia-smi -i 2 -c EXCLUSIVE_PROCESS</span><br><span class="line">nvidia-cuda-mps-control -d</span><br></pre></td></tr></table></figure>
+<p>stop the MPS server:<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">echo quit | nvidia-cuda-mps-control</span><br><span class="line">nvidia-smi -i 2 -c DEFAULT</span><br></pre></td></tr></table></figure></p>
+<h2 id="ipc">IPC</h2>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#interprocess-communication">cuda-c-programming-guide-Interprocess
+Communication</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/22950047/cuda-initialization-error-after-fork">CUDA
+initialization error after fork</a><br />
+</li>
+<li></li>
+</ul>
+<h2 id="pthreadmigration">pthreadMigration</h2>
+<p>pthread只能绑定一个context，而一个设备，多个pthread内创建的context是一致的。<br />
+pthread不能被MPS加速。</p>
+<blockquote>
+<p>Simple sample demonstrating multi-GPU/multithread functionality using
+the CUDA Context Management API. This API allows the a CUDA context to
+be associated with a CPU process. CUDA Contexts have a one-to-one
+orrespondence with host threads. A host thread may have only one device
+context current at a time.</p>
+</blockquote>
+<p>代码见<a
+target="_blank" rel="noopener" href="https://github.com/huoyao/cudasdk/blob/master/6_Advanced/threadMigration/threadMigration.cpp">threadMigration.cpp</a>。</p>
+<h2 id="get-sm-id-in-cuda-thread">get SM-ID in cuda thread</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">static __device__ __inline__ uint32_t __mysmid()</span><br><span class="line">&#123;</span><br><span class="line">    uint32_t smid;</span><br><span class="line">    asm volatile(&quot;mov.u32 %0, %%smid;&quot; : &quot;=r&quot;(smid));</span><br><span class="line">    return smid;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>%smid and %warpid are defined as volatile values</p>
+</blockquote>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/28881491/how-can-i-find-out-which-thread-is-getting-executed-on-which-core-of-the-gpu">How
+can I find out which thread is getting executed on which core of the
+GPU?</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://devtalk.nvidia.com/default/topic/481465/cuda-programming-and-performance/any-way-to-know-on-which-sm-a-thread-is-running-/2">which
+SM a thread is running?</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#sm-id-and-warp-id">sm-id
+and warp-id</a></li>
+</ul>
+<h2 id="dynamic-parallelism">Dynamic Parallelism</h2>
+<p>dynamic kernel creation</p>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/pdf/CUDA_C_Programming_Guide.pdf">find
+CUDA DYNAMIC PARALLELISM in CUDA C Programming Guide</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/1024incn/p/4557156.html"
+class="uri">https://www.cnblogs.com/1024incn/p/4557156.html</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/45201062/cuda-dynamic-parallelism-bad-performance">CUDA
+Dynamic Parallelism, bad performance</a></li>
+</ul>
+<h1 id="ptx">PTX</h1>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/inline-ptx-assembly/index.html#abstract">The
+reference guide for inlining PTX</a><br />
+</li>
+<li></li>
+</ul>
+<h1 id="cuda-snippets">CUDA Snippets</h1>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://github.com/yszheda/wiki/wiki/CUDA-Code-Snippets">CUDA Code
+Snippets</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/huoyao/cudasdk">CUDA Samples</a></li>
+</ul>
+<h1 id="review">review</h1>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/1958320/interview-questions-on-cuda-programming">Interview
+questions on CUDA Programming?</a>
+<ul>
+<li>How many different kind of memories are in a GPU ?</li>
+<li>What means coalesced / uncoalesced?</li>
+<li>Can you implement a matrix transpose kernel?</li>
+<li>What is a warp ?</li>
+<li>How many warps can run simultaneously inside a multiprocessor?</li>
+<li>What is the difference between a block and a thread ?</li>
+<li>Can thread communicate between them? and blocks ?</li>
+<li>Can you describe how works a cache?</li>
+<li>What is the difference between shared memory and registers?</li>
+<li>Which algorithms perform better on the gpu? data bound or cpu
+bound?</li>
+<li>Which steps will you perform to port of an application to cuda
+?</li>
+<li>What is a barrier ?</li>
+<li>What is a Stream ?</li>
+<li>Can you describe what means occupancy of a kernel?</li>
+<li>What means structure of array vs array of structures?</li>
+</ul></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.geeksforgeeks.org/nvidia-interview-set-1/">Nvidia
+Interview | Set 1</a><br />
+</li>
+<li></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/05/20/kernel%E6%BA%90%E7%A0%81%E4%B8%AD%E7%BC%96%E8%AF%91nouveau-module/" rel="prev" title="kernel源码中编译nouveau module">
+                  <i class="fa fa-angle-left"></i> kernel源码中编译nouveau module
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/08/15/latex%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0/" rel="next" title="latex语法学习">
+                  latex语法学习 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

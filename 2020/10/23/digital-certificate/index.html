@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="汇总整理数字签名和证书的知识点。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数字证书和PKI">
+<meta property="og:url" content="http://juniorprincewang.github.io/2020/10/23/digital-certificate/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="汇总整理数字签名和证书的知识点。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/digital-certificate/Digital_Signature_diagram.svg">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/digital-certificate/certificate_path.png">
+<meta property="article:published_time" content="2020-10-23T07:04:06.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.886Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="certificate">
+<meta property="article:tag" content="PKI">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://juniorprincewang.github.io/img/digital-certificate/Digital_Signature_diagram.svg">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2020/10/23/digital-certificate/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2020/10/23/digital-certificate/","path":"2020/10/23/digital-certificate/","title":"数字证书和PKI"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>数字证书和PKI | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="nav-number">1.</span> <span class="nav-text">数字签名</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#asn.1"><span class="nav-number">2.</span> <span class="nav-text">ASN.1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%AC%E9%92%A5%E8%AF%81%E4%B9%A6public-key-certificatepkc"><span class="nav-number">3.</span> <span class="nav-text">公钥证书（Public-key
+certificate，PKC）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#pki"><span class="nav-number">4.</span> <span class="nav-text">PKI</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2020/10/23/digital-certificate/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="数字证书和PKI | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数字证书和PKI
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-10-23 15:04:06" itemprop="dateCreated datePublished" datetime="2020-10-23T15:04:06+08:00">2020-10-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/security/" itemprop="url" rel="index"><span itemprop="name">security</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/security/crypto/" itemprop="url" rel="index"><span itemprop="name">crypto</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>汇总整理数字签名和证书的知识点。 <span id="more"></span></p>
+<h1 id="数字签名">数字签名</h1>
+<p>基于公钥密码学的数字签名能够用于通信的消息鉴别、数据完整性和非否认服务。
+基于公钥密码算法，Alice可以使用私钥对消息进行运算，Bob使用Alice公钥对消息进行验证。
+因此，数字签名由签名和验证两个过程组成。</p>
+<p>签名的信息通过在其后面附加信息的摘要来签名。
+摘要是通过单向哈希函数生成的，而加密是使用签名者的私钥计算的。</p>
+<p>验证签名过程分三步：<br />
+1). 计算原始消息的哈希值；<br />
+2). 使用签名者的公钥解密签名 3). 将两个结果比较看是否一致。</p>
+<!-- ![验签过程](/img/digital-certificate/Digital_Signature_Verification.png) -->
+<p><img src="/img/digital-certificate/Digital_Signature_diagram.svg"
+alt="签名/验签过程" /> <a
+target="_blank" rel="noopener" href="https://kulkarniamit.github.io/whatwhyhow/security/public-key-cryptography.html">Public
+Key Cryptography</a></p>
+<h1 id="asn.1">ASN.1</h1>
+<p><a
+target="_blank" rel="noopener" href="https://www.itu.int/en/ITU-T/asn1/Pages/introduction.aspx">ASN.1</a>（Abstract
+Syntax Notation One）
+一种数据定义语言，提供了一套数据类型表示和定义的方法，并且提供相应的编码和解码的规则，使得不同的系统之间可以采用统一的一套方式进行数据的通信。</p>
+<p>ASN.1是描述在网络上传输信息格式的标准方法。它有两部分：一部分描述信息内数据，数据类型及序列格式；另一部分描述如何将各部分组成消息。
+即ASN.1 定义了一些简单类型，然后通过组合简单类型可以构造出复杂类型。</p>
+<p>简单类型包括： integers (INTEGER), booleans (BOOLEAN), character
+strings (IA5String, UniversalString...), bit strings (BIT STRING)
+等。<br />
+构造类型包括： structures (SEQUENCE), lists (SEQUENCE OF), choice
+between types (CHOICE) 等。</p>
+<p>最基本的表达式如：　<code>Name ::= type</code>
+，表示为定义某个名称为Name的元素，它的类型为type。<br />
+再比如：<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PublicKey::= SEQUENCE &#123;</span><br><span class="line">           KeyType       BOOLEAN(0),</span><br><span class="line">           Modulus        INTEGER,</span><br><span class="line">           PubExponent INTEGER</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure></p>
+<p>使用ASN.1描述的数据结构，需要将数据结构编码成二进制文件。
+DER（Distinguished Encoding Rules，可辨别编码规则)是 ASN.1
+语法中的一种编码方式。<br />
+ASN.1 编码还包括 Basic Encoding Rules (BER)、 Canonical Encoding Rules
+(CER)、、 XML Encoding Rules (XER)、 Packed Encoding Rules (PER)、
+Generic String Encoding Rules (GSER)。</p>
+<p>DER编码采用<code>TLV</code>三元组的形式，即Type-Length-Value组织形式。
+例如： 02 01 05 的解码含义：</p>
+<blockquote>
+<p>02 -- tag indicating INTEGER 01 -- length in octets 05 -- value</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://lapo.it/asn1js/"
+class="uri">https://lapo.it/asn1js/</a>是证书解码器，可以解码 ASN.1 DER
+结构的PEM文件。</p>
+<h1 id="公钥证书public-key-certificatepkc">公钥证书（Public-key
+certificate，PKC）</h1>
+<p>公钥证书由三部分组成：<br />
+1. 证书内容 tbsCertificate，注：tbs=ToBeSigned 2. 签名算法
+signatureAlgotithm 3. 签名结果 signatureValue。</p>
+<p><a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc5280">公钥证书的ASN.1
+描述</a>为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Certificate  ::=  SEQUENCE  &#123;</span><br><span class="line">        tbsCertificate       TBSCertificate,</span><br><span class="line">        signatureAlgorithm   AlgorithmIdentifier,</span><br><span class="line">        signatureValue       BIT STRING  &#125;</span><br></pre></td></tr></table></figure>
+<p>其中 证书内容：<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">TBSCertificate ::= SEQUENCE &#123;</span><br><span class="line">    version [0] Version DEFAULT v1,</span><br><span class="line">    serialNumber CertificateSerialNumber,</span><br><span class="line">    signature AlgorithmIdentifier&#123;&#123;SupportedAlgorithms&#125;&#125;,</span><br><span class="line">    issuer Name,</span><br><span class="line">    validity Validity,</span><br><span class="line">    subject Name,</span><br><span class="line">    subjectPublicKeyInfo SubjectPublicKeyInfo,</span><br><span class="line">    issuerUniqueIdentifier [1] IMPLICIT UniqueIdentifier OPTIONAL,</span><br><span class="line">    ...,</span><br><span class="line">    [[2: -- if present, version shall be v2 or v3</span><br><span class="line">    subjectUniqueIdentifier [2] IMPLICIT UniqueIdentifier OPTIONAL]],</span><br><span class="line">    [[3: -- if present, version shall be v2 or v3</span><br><span class="line">    extensions [3] Extensions OPTIONAL]]</span><br><span class="line">    -- If present, version shall be v3]]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>签名类型 ASN.1 描述为<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SIGNED&#123;ToBeSigned&#125; ::= SEQUENCE &#123;</span><br><span class="line">    toBeSigned ToBeSigned,</span><br><span class="line">    COMPONENTS OF SIGNATURE&#123;ToBeSigned&#125;,</span><br><span class="line">... &#125;</span><br></pre></td></tr></table></figure></p>
+<p>签名算法为 AlgorithmIdentifier，签名结果为 BIT STRING 类型。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ENCRYPTED-HASH&#123;ToBeSigned&#125; ::= BIT STRING (CONSTRAINED BY &#123;</span><br><span class="line">    -- shall be the result of applying a hashing procedure to the DER-encoded (see 6.2)</span><br><span class="line">    -- octets of a value of -- ToBeSigned -- and then applying an encipherment procedure</span><br><span class="line">    -- to those octets -- &#125; )</span><br><span class="line"></span><br><span class="line">SIGNATURE&#123;ToBeSigned&#125; ::= SEQUENCE &#123;</span><br><span class="line">    algorithmIdentifier AlgorithmIdentifier&#123;&#123;SupportedAlgorithms&#125;&#125;,</span><br><span class="line">    encrypted ENCRYPTED-HASH&#123;ToBeSigned&#125;,</span><br><span class="line">    ... &#125;</span><br></pre></td></tr></table></figure>
+<p>更具体的证书内容包括：</p>
+<ol type="1">
+<li>版本号</li>
+</ol>
+<p>通常为 v3，用2表示。<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Version ::= INTEGER &#123;v1(0), v2(1), v3(2)&#125;</span><br></pre></td></tr></table></figure></p>
+<ol start="2" type="1">
+<li>序列号</li>
+</ol>
+<p>序列号用来在当前CA签发的唯一一个标识证书。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CertificateSerialNumber ::= INTEGER</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>签名算法</li>
+</ol>
+<p>签名算法给出了CA签发证书使用到的数字签名算法。<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AlgorithmIdentifier&#123;ALGORITHM:SupportedAlgorithms&#125; ::= SEQUENCE &#123;</span><br><span class="line">    algorithm ALGORITHM.&amp;id(&#123;SupportedAlgorithms&#125;),</span><br><span class="line">    parameters ALGORITHM.&amp;Type(&#123;SupportedAlgorithms&#125;&#123;@algorithm&#125;) OPTIONAL,</span><br><span class="line">... &#125;</span><br></pre></td></tr></table></figure></p>
+<ol start="4" type="1">
+<li>签发者（issuer）</li>
+</ol>
+<p>签发者标识了签发证书的CA实体，类型为Name。 Name用DN（Distinguished
+Name，DN）表示，DN是由（Relative Distinguished
+Name，RDN）构成的序列。<br />
+RDN用 <strong>属性类型=属性值</strong>的形式表示。<br />
+比如 CN=Google，CN为Common Name的缩写。</p>
+<ol start="5" type="1">
+<li>证书主体 (subject)</li>
+</ol>
+<p>证书主体标识了证书持有者，类型为Name。同issuer。</p>
+<ol start="6" type="1">
+<li>有效期 (valid)</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Validity ::= SEQUENCE &#123;</span><br><span class="line">    notBefore Time,</span><br><span class="line">    notAfter Time,</span><br><span class="line">... &#125;</span><br><span class="line"></span><br><span class="line">Time ::= CHOICE &#123;</span><br><span class="line">    utcTime UTCTime,</span><br><span class="line">    generalizedTime GeneralizedTime &#125;</span><br></pre></td></tr></table></figure>
+<ol start="7" type="1">
+<li>主体公钥信息</li>
+</ol>
+<p>主体公钥信息给出了证书所绑定的加密算法和公钥。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SubjectPublicKeyInfo ::= SEQUENCE &#123;</span><br><span class="line">    algorithm AlgorithmIdentifier&#123;&#123;SupportedAlgorithms&#125;&#125;,</span><br><span class="line">    subjectPublicKey BIT STRING,</span><br><span class="line">... &#125;</span><br></pre></td></tr></table></figure>
+<ol start="8" type="1">
+<li>签发者唯一标识符和主体唯一标识符</li>
+</ol>
+<p>一般不推荐使用这两个字段。</p>
+<p>证书除了上述基本内容，还可以包括一些扩展项。这里不再展开阐述，可以参见<a
+target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc5280#section-4.2">certificate
+extensions</a>。</p>
+<h1 id="pki">PKI</h1>
+<p>public-key infrastructure (PKI):
+能够支持公钥管理的基础结构，该公钥能够支持身份鉴别、加密、完整性或不可否认服务。</p>
+<p>ITU-T X.509 标准规定PKI包括三种不同功能的实体：<br />
+1. 证书认证中心（CA）<br />
+CA具有自己的公私钥，负责为他人签发证书。 2. 证书持有者（certificate
+holder）<br />
+证书持有者的身份信息和对应的公钥会出现在证书中。<br />
+3. 依赖方<br />
+使用他人证书来实现安全功能的通信实体称为依赖方。</p>
+<p>此外，PKI系统还包括其他提供辅助服务的组件，如 注册机构（registration
+authority，RA），密钥管理系统（key management
+system，KMS），OCSP（Online Certificate Status Protocol），CRL
+Issuer等。</p>
+<p>PKI系统为证书提供了证书生成、使用、撤销、更新、归档等管理。</p>
+<p>PKI体系中，CA成层级出现，除了作为信任锚的根CA外，还有其他的下级CA，每级CA拥有的证书都由上级CA签发。
+而根CA证书是一种自签名的证书，无法通过PKI技术手段对其进行验证，只能通过带外方式获取。</p>
+<p>而对证书的验证过程涉及以下步骤：<br />
+1.
+首先审查持有者的证书是否有效，包括查看证书的有效日期并查看证书的撤销情况。
+2.
+获取该证书签发者的数字证书来验证该证书上的数字签名。拿到签发者证书后，同样需要检查证书的失效日期，并查看证书的撤销情况。
+3.
+根据证书签发路径，一致查找到根CA的签名，由于根CA证书是自签名证书，因此不需要其他证书来验证根证书上的签名了。
+4. 用根CA的公钥来验证签发者CA证书的签名，并逐个验证证书的签名信息。 5.
+注意查看证书撤销列表（Certificate Revocation
+List，CRL）的时候，撤销列表也有根CA和下级CA的签名，验证撤销列表证书的过程也如前所述。</p>
+<figure>
+<img src="/img/digital-certificate/certificate_path.png"
+alt="证书路径" />
+<figcaption aria-hidden="true">证书路径</figcaption>
+</figure>
+<p><a
+target="_blank" rel="noopener" href="https://kulkarniamit.github.io/whatwhyhow/howto/verify-ssl-tls-certificate-signature.html">Verify
+SSL/TLS Certificate
+Signature</a>给出了验证stackoverflow.com服务器的证书的过程。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/certificate/" rel="tag"># certificate</a>
+              <a href="/tags/PKI/" rel="tag"># PKI</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/09/02/radix-tree-in-kernel/" rel="prev" title="Linux Kernel 中的 radix tree">
+                  <i class="fa fa-angle-left"></i> Linux Kernel 中的 radix tree
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/04/09/gcc-options/" rel="next" title="gcc options">
+                  gcc options <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

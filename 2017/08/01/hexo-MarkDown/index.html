@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本篇博客介绍了Markdown最常见命令的语法，有代码有效果。持续更新">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hexo中MarkDown语法">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/08/01/hexo-MarkDown/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本篇博客介绍了Markdown最常见命令的语法，有代码有效果。持续更新">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-08-01T14:51:53.000Z">
+<meta property="article:modified_time" content="2023-07-07T03:23:25.371Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="hexo">
+<meta property="article:tag" content="markdown">
+<meta property="article:tag" content="latex">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/08/01/hexo-MarkDown/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2017/08/01/hexo-MarkDown/","path":"2017/08/01/hexo-MarkDown/","title":"hexo中MarkDown语法"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>hexo中MarkDown语法 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E7%AB%A0%E5%A4%B4%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">文章头格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%BA%A7%E6%A0%87%E9%A2%98"><span class="nav-number">2.</span> <span class="nav-text">分级标题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%9C%E4%BD%93%E4%B8%8E%E7%B2%97%E4%BD%93"><span class="nav-number">3.</span> <span class="nav-text">斜体与粗体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%89%B2%E7%BA%BF%E5%92%8C%E5%88%A0%E9%99%A4%E7%BA%BF"><span class="nav-number">4.</span> <span class="nav-text">分割线和删除线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B6%85%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">超链接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E5%AD%97%E9%93%BE%E6%8E%A5"><span class="nav-number">5.1.</span> <span class="nav-text">文字链接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BE%E7%89%87%E9%93%BE%E6%8E%A5"><span class="nav-number">5.2.</span> <span class="nav-text">图片链接</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#hexo%E7%9A%84%E6%96%87%E7%AB%A0%E8%B5%84%E6%BA%90%E6%96%87%E4%BB%B6%E5%A4%B93"><span class="nav-number">5.2.1.</span> <span class="nav-text">hexo的文章资源文件夹[3]</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%86%E9%A2%91%E9%93%BE%E6%8E%A5"><span class="nav-number">5.3.</span> <span class="nav-text">视频链接</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E7%94%A8"><span class="nav-number">6.</span> <span class="nav-text">引用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%96%E5%BC%95%E7%94%A8"><span class="nav-number">6.1.</span> <span class="nav-text">外引用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%BC%95%E7%94%A8"><span class="nav-number">6.2.</span> <span class="nav-text">内引用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A4%E5%8F%89%E5%BC%95%E7%94%A8"><span class="nav-number">6.3.</span> <span class="nav-text">交叉引用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%A8%E6%A0%BC"><span class="nav-number">7.</span> <span class="nav-text">表格</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%8F%E5%88%97"><span class="nav-number">8.</span> <span class="nav-text">序列</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E5%BA%8F%E5%88%97%E8%A1%A8"><span class="nav-number">8.1.</span> <span class="nav-text">无序列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E5%BA%8F%E5%88%97%E8%A1%A8"><span class="nav-number">8.2.</span> <span class="nav-text">有序列表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%9D%97"><span class="nav-number">9.</span> <span class="nav-text">代码块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%8C%E5%86%85%E4%BB%A3%E7%A0%81%E5%9D%97"><span class="nav-number">9.1.</span> <span class="nav-text">行内代码块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E8%A1%8C%E4%BB%A3%E7%A0%81%E5%9D%97"><span class="nav-number">9.2.</span> <span class="nav-text">多行代码块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%BC%BA%E7%9A%84%E4%BB%A3%E7%A0%81%E5%9D%97"><span class="nav-number">9.3.</span> <span class="nav-text">加强的代码块</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E9%87%8A"><span class="nav-number">10.</span> <span class="nav-text">注释</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AE%B5%E8%90%BD%E4%B8%8E%E6%8D%A2%E8%A1%8C"><span class="nav-number">11.</span> <span class="nav-text">段落与换行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#latex-%E5%85%AC%E5%BC%8F"><span class="nav-number">12.</span> <span class="nav-text">LaTeX 公式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%AF%E6%8C%81markdown%E5%85%AC%E5%BC%8F%E7%BC%96%E8%BE%91%E9%85%8D%E7%BD%AE"><span class="nav-number">12.1.</span> <span class="nav-text">支持markdown公式编辑配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%92%E5%85%A5%E5%85%AC%E5%BC%8F"><span class="nav-number">12.2.</span> <span class="nav-text">插入公式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%93%E5%85%A5%E4%B8%8A%E4%B8%8B%E6%A0%87"><span class="nav-number">12.3.</span> <span class="nav-text">输入上下标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%93%E5%85%A5%E6%8B%AC%E5%8F%B7%E5%92%8C%E5%88%86%E9%9A%94%E7%AC%A6"><span class="nav-number">12.4.</span> <span class="nav-text">输入括号和分隔符</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E7%BD%91%E7%AB%99"><span class="nav-number">13.</span> <span class="nav-text">参考网站</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/08/01/hexo-MarkDown/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="hexo中MarkDown语法 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          hexo中MarkDown语法
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-08-01 22:51:53" itemprop="dateCreated datePublished" datetime="2017-08-01T22:51:53+08:00">2017-08-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-07 11:23:25" itemprop="dateModified" datetime="2023-07-07T11:23:25+08:00">2023-07-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/hexo/" itemprop="url" rel="index"><span itemprop="name">hexo</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/markdown/" itemprop="url" rel="index"><span itemprop="name">markdown</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本篇博客介绍了Markdown最常见命令的语法，有代码有效果。持续更新</p>
+<span id="more"></span>
+<h2 id="文章头格式">文章头格式</h2>
+<p><code>front-matter</code></p>
+<p>格式如下： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: hexo中MarkDown语法</span><br><span class="line">date: 2017-08-01 22:51:53</span><br><span class="line">tags: [Markdown,hexo]</span><br><span class="line">categories: hexo</span><br><span class="line">toc: true</span><br><span class="line">mathjax: true</span><br><span class="line">---</span><br></pre></td></tr></table></figure> 其中，tags可以这样 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tags:</span><br><span class="line">- markdown</span><br><span class="line">- hexo</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>categories 将其分类到 Sports/Baseball 和 Play 两个不同的目录下
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">categories:</span><br><span class="line">  - [Sports,Baseball]</span><br><span class="line">  - [Play]</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="分级标题">分级标题</h2>
+<p>这个很简单，就是在文字前添加个<code>#</code>和空格。<code>#</code>表示标签h1，<code>##</code>
+表示标签h2。</p>
+<p>例如： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># H1</span><br><span class="line">## H2</span><br><span class="line">### H3</span><br><span class="line">#### H4</span><br><span class="line">##### H5</span><br><span class="line">###### H6</span><br></pre></td></tr></table></figure></p>
+<h2 id="斜体与粗体">斜体与粗体</h2>
+<p>单个<code>*</code>或者<code>_</code>表示斜体，<code>**</code>或者<code>__</code>表示粗体。例如
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">这是*斜体*， 这是**粗体**</span><br><span class="line">这也是_斜体_， 这也是__粗体__</span><br></pre></td></tr></table></figure> 效果为：</p>
+<p>这是<em>斜体</em>， 这是<strong>粗体</strong> 这也是_斜体_，
+这也是__粗体__</p>
+<h2 id="分割线和删除线">分割线和删除线</h2>
+<p>在单独的一行使用 *** 或者 --- 表示分割线。 使用 ~~ 表示删除线。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1~~23456~~78</span><br></pre></td></tr></table></figure></p>
+<p>1<del>23456</del>78</p>
+<h2 id="超链接">超链接</h2>
+<h3 id="文字链接">文字链接</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[链接文字](链接地址)</span><br></pre></td></tr></table></figure>
+<p>或者也可以直接用&lt;
+&gt;，将网址或者邮箱地址放在中间，也能将地址直接转成链接：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;http://juniorprincewang.github.io/&gt;</span><br></pre></td></tr></table></figure>
+<p>这样可以省劲儿。效果 <a href="http://juniorprincewang.github.io/"
+class="uri">http://juniorprincewang.github.io/</a></p>
+<h3 id="图片链接">图片链接</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">![图片alt属性](图片链接或路径 &quot;图片标题&quot;)，也可以使用html语句&lt;img src=&quot;图片地址&quot; width=&quot;200&quot; height=&quot;200&quot;&gt;来自定义图片的大小。</span><br></pre></td></tr></table></figure>
+<p>如 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">![Logo](/images/logo.png)</span><br></pre></td></tr></table></figure></p>
+<h4 id="hexo的文章资源文件夹3">hexo的文章资源文件夹[3]</h4>
+<p>添加图片有<strong>绝对路径</strong>和<strong>相对路径</strong>两种方法，推荐使用绝对路径的方法，相较而言比较稳定。</p>
+<ul>
+<li>绝对路径添加图片的方法</li>
+</ul>
+<p>创建文件夹<code>source/images</code>
+并将图片存放在此文件夹中，然后通过 <code>![](/images/image.jpg)</code>
+来访问。<br />
+这种方法可适用于 hexo drafts 和 posts 的文档。</p>
+<ul>
+<li>相对路径添加图片的方法</li>
+</ul>
+<p>通过将 config.yml 文件中的 post_asset_folder 选项设为 true 来打开。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">_config.yml</span><br><span class="line">post_asset_folder: true</span><br></pre></td></tr></table></figure> 当资源文件管理功能打开后，Hexo将会在你每一次通过
+<code>hexo new [layout] &lt;title&gt;</code>命令创建新文章时自动创建一个文件夹。这个资源文件夹将会有与这个
+markdown 文件一样的名字。<br />
+<strong>引入图片相对路径</strong></p>
+<p>将所有与你的文章有关的资源放在这个关联文件夹中之后，你可以通过相对路径来引用它们。
+目录名和文章名一致，只要使用
+<del><code>![logo](../本地图片测试/logo.jpg)</code></del>
+<code>![logo](logo.jpg)</code>就可以插入图片。其中[]里面不写文字则没有图片标题。</p>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://yanyinhong.github.io/2017/05/02/How-to-insert-image-in-hexo-post/">Hexo博客搭建之在文章中插入图片</a></li>
+</ul>
+<h3 id="视频链接">视频链接</h3>
+<p>引用视频，需要加入一段iframe代码。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=&quot;/js/youtube-autoresizer.js&quot;&gt;&lt;/script&gt;</span><br><span class="line">&lt;iframe width=&quot;640&quot; height=&quot;360&quot; src=&quot;https://www.youtube.com/embed/HfElOZSEqn4&quot; frameborder=&quot;0&quot; allowfullscreen&gt;&lt;/iframe&gt;</span><br></pre></td></tr></table></figure></p>
+<h2 id="引用">引用</h2>
+<h3 id="外引用">外引用</h3>
+<p>使用<code>&gt;</code>表示文字引用。 例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; Never help a child with a task at which he feels he can succeed. ---- Maria Montessori</span><br><span class="line">&gt; &gt; 当一个孩子觉得自己能成功完成一项任务时，千万别去帮他。 ---- Maria Montessori</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Never help a child with a task at which he feels he can succeed. ----
+Maria Montessori &gt;
+当一个孩子觉得自己能成功完成一项任务时，千万别去帮他。 ---- Maria
+Montessori</p>
+</blockquote>
+<h3 id="内引用">内引用</h3>
+<p>当需要内引用时，就用空格缩进办法。例如 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">中国</span><br><span class="line">	1. 北京</span><br><span class="line">	2. 天津</span><br></pre></td></tr></table></figure></p>
+<p>中国 1. 北京 2. 天津</p>
+<h3 id="交叉引用">交叉引用</h3>
+<p>在需要引用的分级标题后设置一个 id。<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#入门-基本语法 &#123;#start&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后在其它任何地方使用这个唯一的标识符来进行引用以方便<strong>文章内</strong>的跳转。<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[入门-基本语法](#start)</span><br></pre></td></tr></table></figure></p>
+<h2 id="表格">表格</h2>
+<p>表格使用起来比较麻烦，用<code>|</code> 控制分列，<code>-</code>
+控制分行，<code>:</code> 控制对齐方式。例如 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">| Item     | Value     | Qty   |</span><br><span class="line">| :------- | --------: | :---: |</span><br><span class="line">| Computer | 1600 USD  | 5     |</span><br><span class="line">| Phone    | 12 USD    | 12    |</span><br><span class="line">| Pipe     | 1 USD     | 234   |</span><br></pre></td></tr></table></figure> 效果：</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Item</th>
+<th style="text-align: right;">Value</th>
+<th style="text-align: center;">Qty</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Computer</td>
+<td style="text-align: right;">1600 USD</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Phone</td>
+<td style="text-align: right;">12 USD</td>
+<td style="text-align: center;">12</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pipe</td>
+<td style="text-align: right;">1 USD</td>
+<td style="text-align: center;">234</td>
+</tr>
+</tbody>
+</table>
+<h2 id="序列">序列</h2>
+<p>如果要有子级序列，只需要再符号前面添加两个空格。</p>
+<h3 id="无序列表">无序列表</h3>
+<p>无序列表使用 <code>*</code>，<code>+</code>，<code>-</code>
+表示。例如 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">+ 无序列表项 一</span><br><span class="line">  + 子无序列表 一</span><br><span class="line">    + 子无序列表 三</span><br><span class="line">+ 无序列表项 二</span><br><span class="line">+ 无序列表项 三</span><br></pre></td></tr></table></figure> + 无序列表项 一 - 子无序列表 一 * 子无序列表
+三 + 无序列表项 二 + 无序列表项 三</p>
+<h3 id="有序列表">有序列表</h3>
+<p>有序列表使用数字和点<code>.</code>表示，例如： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1. 有序列表项 一</span><br><span class="line">	1. 子有序列表项 一</span><br><span class="line">	2. 子有序列表项 二</span><br><span class="line">2. 有序列表项 二</span><br><span class="line">3. 有序列表项 三</span><br></pre></td></tr></table></figure> 1.
+有序列表项 一 1. 子有序列表项 一 2. 子有序列表项 二 2. 有序列表项 二 3.
+有序列表项 三</p>
+<h2 id="代码块">代码块</h2>
+<h3 id="行内代码块">行内代码块</h3>
+<p>使用 ` ` 表示行内代码块。比如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">人生苦短，我用`python`。</span><br></pre></td></tr></table></figure>
+<p>效果：</p>
+<p>人生苦短，我用<code>python</code>。</p>
+<h3 id="多行代码块">多行代码块</h3>
+<p>多行代码块使用```和``` 包裹代码。例如 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line">python -c &quot;print &#x27;\x01&#x27;*10&quot;</span><br><span class="line">(此处应该有三个` ` `,但是现在无法显示lol)</span><br></pre></td></tr></table></figure></p>
+<p>反正效果就是</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c &quot;print &#x27;\x01&#x27;*10&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="加强的代码块">加强的代码块</h3>
+<p>支持多种编程语言的语法高亮，例如c语言 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">``` c</span><br><span class="line">int main()&#123;</span><br><span class="line">  return main();</span><br><span class="line">&#125;</span><br><span class="line">(此处应该有三个` ` `,但是现在无法显示lol)</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>高亮效果为： <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> main();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="注释">注释</h2>
+<p>用  表示注释， 后面的文字解析为纯文本格式。例如 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\# 这样输出一级标题</span><br></pre></td></tr></table></figure>
+效果：</p>
+<p># 这样输出一级标题</p>
+<h2 id="段落与换行">段落与换行</h2>
+<p>当一个段落需要包含多个文本行时，需要先在行末敲入
+<code>两个或以上空格</code> 再 <code>回车</code> 。</p>
+<h2 id="latex-公式">LaTeX 公式</h2>
+<p>hexo 提供了两种公式渲染引擎 <code>mathjax</code> 和
+<code>katex</code>，这里选择 <code>mathjax</code>。</p>
+<h3 id="支持markdown公式编辑配置">支持markdown公式编辑配置</h3>
+<p>在根目录配置文件 *_config.yml*，<code>math</code> 的
+<code>engine</code> 一栏默认选择的是 <code>mathjax</code>，对
+<code>src</code> 注释掉。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#math</span><br><span class="line"></span><br><span class="line">math:</span><br><span class="line">  engine: &#x27;mathjax&#x27; # or &#x27;katex&#x27;</span><br><span class="line">  mathjax:</span><br><span class="line">    # src: custom_mathjax_source</span><br><span class="line">    config:</span><br><span class="line">      # MathJax config</span><br><span class="line">  katex:</span><br><span class="line">    css: custom_css_source</span><br><span class="line">    js: custom_js_source # not used</span><br><span class="line">    config:</span><br><span class="line">      # KaTeX config</span><br></pre></td></tr></table></figure>
+<p>在主题Next配置文件 <em>blog_config.yml</em> 中，<code>math</code> 的
+<code>per_page</code> 为 <code>true</code> 表示每个文件默认启用
+mathjax，而为 <code>false</code> 则需要在 <code>front-matter</code>
+中添加 <code>mathjax: true</code>，不加 <code>mathjax</code> 和
+<code>mathjax: false</code> 效果一样，都不启用 mathjax。 例如
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: Will Render Math</span><br><span class="line">mathjax: true</span><br><span class="line">---</span><br></pre></td></tr></table></figure></p>
+<p>启用 <code>mathjax</code>，<code>enable: true</code>。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"># Math Formulas Render Support</span><br><span class="line">math:</span><br><span class="line">  # Default (true) will load mathjax / katex script on demand.</span><br><span class="line">  # That is it only render those page which has `mathjax: true` in Front-matter.</span><br><span class="line">  # If you set it to false, it will load mathjax / katex srcipt EVERY PAGE.</span><br><span class="line">  per_page: false</span><br><span class="line"></span><br><span class="line">  # hexo-renderer-pandoc (or hexo-renderer-kramed) required for full MathJax support.</span><br><span class="line">  mathjax:</span><br><span class="line">    enable: true</span><br><span class="line">    # See: https://mhchem.github.io/MathJax-mhchem/</span><br><span class="line">    mhchem: false</span><br><span class="line"></span><br><span class="line">  # hexo-renderer-markdown-it-plus (or hexo-renderer-markdown-it with markdown-it-katex plugin) required for full Katex support.</span><br><span class="line">  katex:</span><br><span class="line">    enable: false</span><br><span class="line">    # See: https://github.com/KaTeX/KaTeX/tree/master/contrib/copy-tex</span><br><span class="line">    copy_tex: false</span><br></pre></td></tr></table></figure></p>
+<p>并在博客文件夹下执行： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-math --save</span><br><span class="line">npm un hexo-renderer-marked</span><br><span class="line">npm i hexo-renderer-pandoc</span><br></pre></td></tr></table></figure>
+<code>hexo-renderer-pandoc</code> 需要安装
+<code>pandoc</code>，安装pandoc参见<a
+target="_blank" rel="noopener" href="https://github.com/jgm/pandoc/blob/master/INSTALL.md">这里</a>。Windows上安装完成后要重启电脑，不然启动hexo服务会一直提示pandoc
+exited with code null的错误。</p>
+<p>重启后，执行 <code>hexo clean</code> 再重新生成或启动服务。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ hexo clean &amp;&amp; hexo g -d</span><br><span class="line"># or hexo clean &amp;&amp; hexo s</span><br></pre></td></tr></table></figure></p>
+<h3 id="插入公式">插入公式</h3>
+<p>行中公式可以用如下方法表示 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ 数学公式 $</span><br></pre></td></tr></table></figure></p>
+<p>独立公式可以用如下方法表示： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$$ 数学公式 $$</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$$ x^&#123;y^z&#125;=(1+&#123;\rm e&#125;^x)^&#123;-2xy^w&#125; $$</span><br></pre></td></tr></table></figure>
+<p><span class="math display">\[x^{y^z}=(1+{\rm
+e}^x)^{-2xy^w}\]</span></p>
+<p>公式中添加编号： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$$y=F(x) \tag&#123;1.1&#125; \label&#123;eq1&#125;$$</span><br></pre></td></tr></table></figure> <span class="math display">\[y=F(x)
+\tag{1.1} \label{eq1}\]</span></p>
+<p>引用公式 <span class="math inline">\(\eqref{eq1}\)</span>。</p>
+<p>或者使用自动编号： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$$</span><br><span class="line">\begin&#123;equation&#125; </span><br><span class="line">y=F(x)</span><br><span class="line">\end&#123;equation&#125;</span><br><span class="line">\label&#123;eq2&#125;</span><br><span class="line">$$</span><br></pre></td></tr></table></figure> <span class="math display">\[
+\begin{equation}
+y=F(x)
+\end{equation}
+\label{eq2}
+\]</span></p>
+<p>引用公式 <span class="math inline">\(\eqref{eq2}\)</span>。</p>
+<h3 id="输入上下标">输入上下标</h3>
+<p><code>^</code> 表示上标, <code>_</code>
+表示下标。如果上下标的内容多于一个字符，需要用 <code>&#123;&#125;</code>
+将这些内容括成一个整体。上下标可以嵌套，也可以同时使用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$$ x^&#123;y^z&#125;=(1+&#123;\rm e&#125;^x)^&#123;-2xy^w&#125; $$</span><br></pre></td></tr></table></figure>
+<p><span class="math display">\[ x^{y^z}=(1+{\rm e}^x)^{-2xy^w}
+\]</span></p>
+<h3 id="输入括号和分隔符">输入括号和分隔符</h3>
+<p><code>()</code> 、 <code>[]</code> 和 <code>|</code>
+表示符号本身，使用 <code>\&#123;\&#125;</code> 来表示 <code>&#123;&#125;</code>
+。当要显示大号的括号或分隔符时，要用 <code>\left</code> 和
+<code>\right</code> 命令。</p>
+<p>一些特殊的括号：</p>
+<table>
+<thead>
+<tr class="header">
+<th>输入</th>
+<th>显示</th>
+<th>输入</th>
+<th>显示</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>\langle</code></td>
+<td><span class="math inline">\(\langle\)</span></td>
+<td><code>\rangle</code></td>
+<td><span class="math inline">\(\rangle\)</span></td>
+</tr>
+<tr class="even">
+<td><code>\lceil</code></td>
+<td><span class="math inline">\(\lceil\)</span></td>
+<td><code>\rceil</code></td>
+<td><span class="math inline">\(\rceil\)</span></td>
+</tr>
+<tr class="odd">
+<td><code>\lfloor</code></td>
+<td><span class="math inline">\(\lfloor\)</span></td>
+<td><code>\rfloor</code></td>
+<td><span class="math inline">\(\rfloor\)</span></td>
+</tr>
+<tr class="even">
+<td><code>\lbrace</code></td>
+<td><span class="math inline">\(\lbrace\)</span></td>
+<td><code>\rbrace</code></td>
+<td><span class="math inline">\(\rbrace\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>其他符号：</p>
+<p><code>\times</code> : <span class="math inline">\(\times\)</span></p>
+<p>更多的去参考 <a target="_blank" rel="noopener" href="https://www.zybuluo.com/codeep/note/163962">Cmd
+Markdown 公式指导手册</a></p>
+<h2 id="参考网站">参考网站</h2>
+<p>[1] <a
+target="_blank" rel="noopener" href="https://hyxxsfwy.github.io/2016/01/15/Hexo-Markdown-%E7%AE%80%E6%98%8E%E8%AF%AD%E6%B3%95%E6%89%8B%E5%86%8C/">Hexo
+Markdown 简明语法手册</a> [2] <a
+target="_blank" rel="noopener" href="https://yuxishe.github.io/2016/11/15/Hexo/">Hexo基础操作和Markdown语法</a>
+[3] <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/asset-folders.html">Hexo doc
+资源文件夹</a> [4] <a
+target="_blank" rel="noopener" href="https://coding.net/help/doc/project/markdown.html#section-2">Markdown语法介绍</a>
+[5] <a
+target="_blank" rel="noopener" href="https://sspai.com/post/37273">少为人知的Markdown基础知识</a><br />
+[6] <a
+target="_blank" rel="noopener" href="https://guides.github.com/features/mastering-markdown/">Mastering
+Markdown</a> [7] <a
+target="_blank" rel="noopener" href="http://aiellochan.com/2018/02/13/hexo/Hexo-%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0%E5%A4%9A%E4%B8%AA-categories/">Hexo
+一篇文章多个 categories</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/hexo/" rel="tag"># hexo</a>
+              <a href="/tags/markdown/" rel="tag"># markdown</a>
+              <a href="/tags/latex/" rel="tag"># latex</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/08/01/pwn%E5%85%A5%E9%97%A8/" rel="prev" title="安全入门">
+                  <i class="fa fa-angle-left"></i> 安全入门
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/08/04/vps/" rel="next" title="搭建vps">
+                  搭建vps <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

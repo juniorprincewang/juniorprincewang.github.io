@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="总结经常使用到的git命令。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git命令">
+<meta property="og:url" content="http://juniorprincewang.github.io/2019/05/13/Git-command/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="总结经常使用到的git命令。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-05-13T06:58:10.000Z">
+<meta property="article:modified_time" content="2023-08-28T03:18:48.053Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="git">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2019/05/13/Git-command/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2019/05/13/Git-command/","path":"2019/05/13/Git-command/","title":"Git命令"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Git命令 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#init-repository"><span class="nav-number">1.</span> <span class="nav-text">init repository</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#clone"><span class="nav-number">2.</span> <span class="nav-text">clone</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#submodule"><span class="nav-number">2.1.</span> <span class="nav-text">submodule</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#branch"><span class="nav-number">3.</span> <span class="nav-text">branch</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#tag"><span class="nav-number">4.</span> <span class="nav-text">tag</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#version-management"><span class="nav-number">5.</span> <span class="nav-text">version management</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#git-reset"><span class="nav-number">5.1.</span> <span class="nav-text">git reset</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#revert"><span class="nav-number">5.2.</span> <span class="nav-text">Revert</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#undo-all-changes"><span class="nav-number">6.</span> <span class="nav-text">undo all changes</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ignoring-changes-to-a-single-already-versioned-file"><span class="nav-number">6.1.</span> <span class="nav-text">ignoring
+changes to a single already versioned file</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#completely-ignore-a-specific-single-file-preventing-it-from-being-created-at-repository"><span class="nav-number">6.2.</span> <span class="nav-text">completely
+ignore a specific single file preventing it from being created at
+repository</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gitkeep"><span class="nav-number">6.3.</span> <span class="nav-text">.gitkeep</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gitignore-without-binary-files"><span class="nav-number">6.4.</span> <span class="nav-text">gitignore without binary
+files</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gitignore-does-not-work"><span class="nav-number">6.5.</span> <span class="nav-text">gitignore does not work</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git-checkout-error"><span class="nav-number">6.6.</span> <span class="nav-text">git checkout error</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#github"><span class="nav-number">7.</span> <span class="nav-text">github</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#github%E5%A6%82%E4%BD%95%E5%90%91%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE%E6%8F%90%E4%BA%A4pr"><span class="nav-number">7.1.</span> <span class="nav-text">github如何向开源项目提交pr</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git-fork%E5%90%8E%E5%90%8C%E6%AD%A5-upstream-repository"><span class="nav-number">7.2.</span> <span class="nav-text">git fork后同步 upstream
+repository</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fatal-remote-error-git-repository-not-found"><span class="nav-number">7.3.</span> <span class="nav-text">fatal: remote
+error: Git repository not found</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2019/05/13/Git-command/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Git命令 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Git命令
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-05-13 14:58:10" itemprop="dateCreated datePublished" datetime="2019-05-13T14:58:10+08:00">2019-05-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-08-28 11:18:48" itemprop="dateModified" datetime="2023-08-28T11:18:48+08:00">2023-08-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/git/" itemprop="url" rel="index"><span itemprop="name">git</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>总结经常使用到的git命令。 <span id="more"></span></p>
+<h1 id="init-repository">init repository</h1>
+<p>在将写好的工程上传到远端git服务器时，需要以下几个步骤：</p>
+<p>初始化本地repository。<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git init</span><br></pre></td></tr></table></figure></p>
+<p>对本地repository进行git管理。<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git add *</span><br><span class="line">git commit -m &quot;some info&quot;</span><br></pre></td></tr></table></figure></p>
+<p>关联远端repository。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote add origin https://github.com/yourgithubID/gitRepo.git </span><br></pre></td></tr></table></figure></p>
+<p>这个 <em>https://github.com/yourgithubID/gitRepo.git </em>
+必须存在，需要提前到github上建好。当然这里不限于github，其他git服务器也可以。</p>
+<p>将本地仓库push到远程仓库<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push -u origin master </span><br></pre></td></tr></table></figure></p>
+<p>由于在建立github
+repository时，在master分支创建了README.md，在push时候出现错误。<br />
+可以通过如下命令进行代码合并【注：<code>pull=fetch+merge</code>]<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git pull --rebase origin master</span><br></pre></td></tr></table></figure></p>
+<p>执行上面代码后可以看到本地代码库中多了 <em>README.md</em> 文件。
+再执行语句 <code>git push -u origin master</code>
+即可完成代码上传到github。</p>
+<p><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/u010412719/article/details/72860193">github新建本地仓库并将代码提交到远程仓库</a>
+<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/835e0a48c825">如何解决failed to push
+some refs to git</a></p>
+<h1 id="clone">clone</h1>
+<p><code>--depth &lt;depth&gt;</code>
+可以加速repository的下载速度，指定commit history中的depth条记录。</p>
+<p>比如，下条只取最近一次commit的history。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git</span><br></pre></td></tr></table></figure>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/31666461">Download a specific
+tag with Git</a><br />
+下载指定分支或者tag：<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone -b &#x27;v2.0&#x27; --single-branch --depth 1 https://github.com/git/git.git</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="submodule">submodule</h2>
+<p>仓库使用了其他仓库，可将其他仓库当作子模块，通过submodule来管理，只需要在必要时更新子模块即可。
+git将submodule有关的信息保存在两个地方： - <code>.gitmodules</code>:
+有版本控制，修改后会同步到其他仓库，使用 <code>submodule</code>
+相关命令时候会自动更新 - <code>.git/config</code>：
+需要手动更新，或者执行同步命令 <code>submodule sync</code> 将新的配置从
+<code>.gitsubmodule</code> 拷贝至此。</p>
+<p>子模块代码更新： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git submodule sync</span><br><span class="line">git submodule update --init --recursive</span><br></pre></td></tr></table></figure></p>
+<p><a
+target="_blank" rel="noopener" href="https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E5%AD%90%E6%A8%A1%E5%9D%97">7.11
+Git 工具 - 子模块</a></p>
+<h1 id="branch">branch</h1>
+<ul>
+<li>list branches</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -a</span><br></pre></td></tr></table></figure>
+<ul>
+<li>checkout a specific branch</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout &lt;branch_name&gt;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>Create the branch on your local machine and switch in this
+branch<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b [name_of_your_new_branch]</span><br></pre></td></tr></table></figure></p></li>
+<li><p>Push the branch on github<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin [name_of_your_new_branch]</span><br></pre></td></tr></table></figure></p></li>
+</ul>
+<p>或者首次使用 <code>-u</code>
+选项，之后仅仅使用<code>git push</code>即可。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push -u origin &lt;branch&gt;</span><br></pre></td></tr></table></figure> + <a
+href="">How do I push a new local branch to a remote Git repository and
+track it too?</a></p>
+<ul>
+<li><p>Delete a branch on your local filesystem<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d [name_of_your_new_branch]</span><br></pre></td></tr></table></figure></p></li>
+<li><p>To force the deletion of local branch on your filesystem<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -D [name_of_your_new_branch]</span><br></pre></td></tr></table></figure></p></li>
+<li><p>Delete the branch on github<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin :[name_of_your_new_branch]</span><br></pre></td></tr></table></figure></p></li>
+</ul>
+<p><a
+target="_blank" rel="noopener" href="https://github.com/Kunena/Kunena-Forum/wiki/Create-a-new-branch-with-git-and-manage-branches">Create
+a new branch with git and manage branches</a></p>
+<h1 id="tag">tag</h1>
+<p>git可以对某一时间点的版本<a
+target="_blank" rel="noopener" href="https://git-scm.com/book/zh/v1/Git-%E5%9F%BA%E7%A1%80-%E6%89%93%E6%A0%87%E7%AD%BE">打标签tag</a>
+。</p>
+<ul>
+<li>列出所有tag</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git tag  </span><br><span class="line">git tag -l</span><br><span class="line">git tag -l <span class="string">&#x27;v3.14.*&#x27;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>checkout a specific tag</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout tags/&lt;tag_name&gt;</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/792027">Download a specific tag
+with Git</a></p>
+<ul>
+<li>add tag</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git tag -a v2.1.0 -m <span class="string">&quot;xyz feature is released in this tag.&quot;</span></span><br><span class="line">git tag v2.0.0</span><br></pre></td></tr></table></figure>
+<p>push tag</p>
+<p>just push particular tag<br />
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin v1.0.3</span><br></pre></td></tr></table></figure></p>
+<p>push all tags:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push --tags</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/48534947">Create a tag in a
+GitHub repository</a></p>
+<ul>
+<li>delete tag</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// delete a remote tag</span><br><span class="line">git push --delete origin v1.0.0</span><br><span class="line">// also delete the <span class="built_in">local</span> tag</span><br><span class="line">git tag --delete tagname</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/5480292">How to delete a remote
+tag?</a></p>
+<h1 id="version-management">version management</h1>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://github.com/geeeeeeeeek/git-recipes/wiki/5.2-%E4%BB%A3%E7%A0%81%E5%9B%9E%E6%BB%9A%EF%BC%9AReset%E3%80%81Checkout%E3%80%81Revert-%E7%9A%84%E9%80%89%E6%8B%A9">5.2
+代码回滚：Reset、Checkout、Revert 的选择</a></li>
+</ul>
+<h2 id="git-reset">git reset</h2>
+<p>版本回滚，向前回滚两个版本，可以用
+<em>HEAD~2</em>，也可以使用7位commit id号。<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git reset HEAD~2</span><br><span class="line">git reset 1234567</span><br></pre></td></tr></table></figure></p>
+<p>末端的两个提交现在变成了悬挂提交。也就是说，下次 Git
+执行垃圾回收的时候，这两个提交会被删除。<br />
+当需要跳转回时，查看消失的两个commit可以使用<code>git reflog</code>命令。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reflog</span><br></pre></td></tr></table></figure>
+<h2 id="revert">Revert</h2>
+<p>顾名思义，版本还原，即撤销一个提交的同时会创建一个新的提交。<br />
+还原倒数第二个commit。<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git revert HEAD~2</span><br></pre></td></tr></table></figure></p>
+<p><code>revert</code> 和 <code>reset</code>
+区别是<code>revert</code>会改变提交历史，而<code>reset</code>不会。</p>
+<h1 id="undo-all-changes">undo all changes</h1>
+<ul>
+<li>unstage all files you might have staged with
+<code>git add</code></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reset</span><br></pre></td></tr></table></figure>
+<ul>
+<li>revert uncommitted changes</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git checkout .</span><br><span class="line"># or</span><br><span class="line">git reset --hard HEAD</span><br></pre></td></tr></table></figure>
+<ul>
+<li>remove all local untracked files</li>
+</ul>
+<p>preview files to be deleted!</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clean -n</span><br></pre></td></tr></table></figure>
+<p>then remove all untracked files.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clean -fdx</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/14075772">git undo all
+uncommitted or unsaved changes</a></p>
+<h2 id="ignoring-changes-to-a-single-already-versioned-file">ignoring
+changes to a single already versioned file</h2>
+<p>本次提交时忽略某一文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git add -u</span><br><span class="line">git reset -- main/dontcheckmein.txt</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/4475506">Add all files to a
+commit except a single file</a></p>
+<h2
+id="completely-ignore-a-specific-single-file-preventing-it-from-being-created-at-repository">completely
+ignore a specific single file preventing it from being created at
+repository</h2>
+<p>完全忽略某一文件： 在仓库根目录创建 <em>.gitignore</em>
+文件，并将要忽略的文件相对路径写入。</p>
+<h2 id="gitkeep"><em>.gitkeep</em></h2>
+<p>git无法追踪一个空的文件夹，当用户需要追踪(track)一个空的文件夹的时候，按照惯例，大家会把一个称为.gitkeep的文件放在这些文件夹里。</p>
+<p>主要用在：使git忽略一个文件夹下的所有文件，并保留该文件夹。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># .gitignore </span><br><span class="line"></span><br><span class="line"># ignore all files in lib/</span><br><span class="line">lib/*</span><br><span class="line"># except for .gitkeep</span><br><span class="line">!.gitkeep</span><br><span class="line"># ignore TODO file in root directory,not subdir/TODO</span><br><span class="line">/TODO</span><br></pre></td></tr></table></figure>
+<p>当.gitignore采用上面的写法时，git会忽略lib文件夹下除了.gitkeep外的所有文件。</p>
+<p>+<a
+target="_blank" rel="noopener" href="https://www.jianshu.com/p/2507dfdb35d8">.gitkeep说明</a></p>
+<h2 id="gitignore-without-binary-files">gitignore without binary
+files</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/7834886">ignore binary file in
+git</a></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -executable -type f &gt;&gt;.gitignore</span><br></pre></td></tr></table></figure>
+<h2 id="gitignore-does-not-work">gitignore does not work</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/3833675">Why doesn't Git ignore
+my specified file?</a><br />
+</li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/25436481">Gitignore not
+working</a></li>
+</ul>
+<p><em>.gitignore</em>
+忽略的是没有加入到仓库中的文件，如果已经添加到仓库，需要先删除。<br />
+这条命令会将文件从仓库中删除，但不会物理删除。然后提交更改即可。<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm --cached files</span><br></pre></td></tr></table></figure></p>
+<p>或者简单粗暴全部删除再提交。<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git rm -rf --cached .</span><br><span class="line">git add .</span><br></pre></td></tr></table></figure></p>
+<h2 id="git-checkout-error">git checkout error</h2>
+<p>git切换分支时出错：</p>
+<blockquote>
+<p>error: The following untracked working tree files would be
+overwritten by checkout</p>
+</blockquote>
+<p>这是由于一些untracked working tree files引起的问题。解决方法：<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clean -d -fx</span><br></pre></td></tr></table></figure></p>
+<p><code>git clean</code> 参数:<br />
++ <code>-n</code> 显示将要删除的文件和目录； + <code>-x</code>
+删除忽略文件已经对git来说不识别的文件 + <code>-d</code>
+删除未被添加到git的路径中的文件 + <code>-f</code> 强制运行</p>
+<h1 id="github">github</h1>
+<p>为了方便管理repository，免去每次push时候输入账户名和密码，接下来我们需要生成SSH公私钥对，并将公钥上传到
+project-&gt;Settings-&gt;Deploy keys-&gt;Add deploy key。
+SSH免密登录只针对以 <em>git@github.com:torvalds/linux.git</em>
+形式的url访问的仓库，如果当前仓库以 HTTPS访问，需要先转换下。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote set-url origin &lt;SSH url&gt;</span><br></pre></td></tr></table></figure> 比如：
+<code>git remote set-url origin git@github.com:torvalds/linux.git</code>，查看
+remote url 是否生效： <code>git remote -v</code>。</p>
+<p>首先<a
+target="_blank" rel="noopener" href="https://help.github.com/en/articles/checking-for-existing-ssh-keys">检查是否已经存在
+SSH key</a> 。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -al ~/.ssh</span><br></pre></td></tr></table></figure>
+<p>出现类似</p>
+<pre><code>id_dsa.pub
+id_ecdsa.pub
+id_ed25519.pub
+id_rsa.pub</code></pre>
+<p>如果想继续使用上述密钥，可直接将公钥拷贝出来；否则，要继续自行生成。</p>
+<p><a
+target="_blank" rel="noopener" href="https://help.github.com/en/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key">Generating
+a new SSH key and adding it to the ssh-agent</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -b 4096 -C &quot;your_email@example.com&quot;</span><br></pre></td></tr></table></figure>
+<p>如果想要保存不一样的位置或者名称，在下面的提示信息中输入即可。<br />
+&gt; Enter a file in which to save the key (/home/you/.ssh/id_rsa):
+[Press enter]</p>
+<p>将 SSH key 添加到 ssh-agent 中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">eval &quot;$(ssh-agent -s)&quot;</span><br><span class="line">ssh-add ~/.ssh/id_rsa</span><br></pre></td></tr></table></figure>
+<p>执行ssh-add时出现 <em>Could not open a connection to your
+authentication agent</em> 。 可能当前SHELL不支持，退出当前SHELL即可。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-agent bash</span><br></pre></td></tr></table></figure> 再次执行 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh-add ~/.ssh/id_rsa</span><br><span class="line">ssh-add -l</span><br></pre></td></tr></table></figure></p>
+<p>之后将 <em>~/.ssh/id_rsa.pub</em>
+内容拷贝到github的project-&gt;Settings-&gt;Deploy keys-&gt;Add deploy
+key。</p>
+<p>这时执行 <code>push</code>
+命令可能还会出现输入密码的问题，或者说没有权限。<br />
+查看 <em>.git/config</em> 文件查看传输协议,
+如果是https模式改为ssh模式即可。</p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8d0fae451745">Github Deploy Key
+操作如何避免输密码</a></p>
+<h2 id="github如何向开源项目提交pr">github如何向开源项目提交pr</h2>
+<ol type="1">
+<li><code>fork</code> 到自己的仓库<br />
+</li>
+<li>git clone 到本地<br />
+</li>
+<li>上游建立连接<br />
+<code>git remote add upstream 开源项目地址</code></li>
+<li>创建开发分支 (非必须)<br />
+<code>git checkout -b dev</code></li>
+<li>修改提交代码<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git status </span><br><span class="line">git add . </span><br><span class="line">git commit -m &quot;message&quot;</span><br><span class="line">git push origin branch</span><br></pre></td></tr></table></figure></li>
+<li>同步代码三部曲<br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git fetch upstream </span><br><span class="line">git rebase upstream/master </span><br><span class="line">git push origin master</span><br></pre></td></tr></table></figure></li>
+<li>提交pr<br />
+去自己github仓库对应fork的项目下new pull request</li>
+</ol>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://github.com/gnipbao/iblog/issues/19">github如何向开源项目提交pr</a></li>
+</ul>
+<h2 id="git-fork后同步-upstream-repository">git fork后同步 upstream
+repository</h2>
+<p>分两个步骤， 1. 给fork配置远程仓库</p>
+<p>查看远程仓库。<br />
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote -v</span><br></pre></td></tr></table></figure></p>
+<p>指定一个可以同步的远程upstream 仓库。<br />
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote add upstream https://github.com/ORIGINAL_OWNER/ORIGINAL_REPOSITORY.git</span><br></pre></td></tr></table></figure></p>
+<p>可以再次验证新的远程的upstream 仓库。<br />
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote -v</span><br></pre></td></tr></table></figure></p>
+<ol start="2" type="1">
+<li>同步fork</li>
+</ol>
+<p>从上游仓库 fetch 分支和提交点，所有上游分支并会被存储在本地分支，比如
+master分支的提交会存储在 upstream/master。<br />
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git fetch upstream</span><br></pre></td></tr></table></figure></p>
+<p>切换到本地分支(比如master) <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout master</span><br></pre></td></tr></table></figure></p>
+<p>将 upstream/master分支的更新merge到本地master分支。<br />
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git merge upstream/master</span><br></pre></td></tr></table></figure></p>
+<p>提交更新 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin master</span><br></pre></td></tr></table></figure></p>
+<p><a
+target="_blank" rel="noopener" href="https://www.zhihu.com/question/28676261">gitlab或github下fork后如何同步源的新更新内容？</a><br />
+<a
+target="_blank" rel="noopener" href="https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/configuring-a-remote-for-a-fork">Configuring
+a remote for a fork</a><br />
+<a
+target="_blank" rel="noopener" href="https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/syncing-a-fork">Sync
+a fork of a repository to keep it up-to-date with the upstream
+repository.</a></p>
+<h2 id="fatal-remote-error-git-repository-not-found">fatal: remote
+error: Git repository not found</h2>
+<p>远程仓库存在但是在clone或者pull时候报错不存在，可以通过查看并清理认证缓存方式解决(Credential
+Issues)。</p>
+<p>首先执行 <code>git config -l | grep credential.helper</code>
+确认机器是否有系统缓存，当返回值不为空时说明机器有认证缓存。</p>
+<p>credential.helper有多个模式，分别为 <code>cache</code>、
+<code>store</code>、 <code>osxkeychain</code>、
+<code>manager-core</code>。</p>
+<ul>
+<li><code>cache</code> 模式会将凭证存放在内存中一段时间。
+密码永远不会被存储在磁盘中，并且在15分钟后从内存中清除。</li>
+<li><code>store</code>
+模式会将凭证用明文的形式存放在磁盘中，并且永不过期。
+<ul>
+<li>该模式为通用模式，所有操作系统均可能出现该模式缓存，清理手段如下：
+<code>cat ~/.gitconfig</code> ，在文件内找到 credential
+对应的缓存文件路径，一般默认为~/.git-credentials，查询出缓存文件路径后，可直接删除掉该文件，也可通过编辑该文件来修改认证缓存信息，认证缓存格式为https://用户名:密码@github.com</li>
+</ul></li>
+<li><code>osxkeychain</code>
+模式，该模式为Mac系统独有，它会将凭证缓存到你系统用户的钥匙串中。
+这种方式将凭证存放在磁盘中，并且永不过期
+<ul>
+<li>该模式清理手段如下：通过钥匙串，搜索git相关的凭证，点击进入后可以看到缓存的用户名称并清除。</li>
+</ul></li>
+<li><code>manager-core</code>
+模式，该模式为windows系统独有，效果类似于“osxkeychain” 模式
+<ul>
+<li>该清理手段如下：开始--&gt;控制面板--&gt;所有控制面板项--&gt;凭据管理器--&gt;清除和git相关记录的凭据</li>
+</ul></li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://www.technewstoday.com/repository-not-found/">[Fix]
+‘Fatal: Repository Not Found’ Error In Git</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/git/" rel="tag"># git</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/05/07/CUDA-handbook/" rel="prev" title="CUDA handbook">
+                  <i class="fa fa-angle-left"></i> CUDA handbook
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/05/18/expect%E5%AE%9E%E7%8E%B0shell%E5%BE%97%E8%87%AA%E5%8A%A8%E5%8C%96%E4%BA%A4%E4%BA%92/" rel="next" title="expect实现shell得自动化交互">
+                  expect实现shell得自动化交互 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="CUDA的虚拟化有一项技术为 API Remoting， 通俗点就是将编程API重定向，或者说远程过程调用。这是在接口层面上实现虚拟化, 采用对调用接口二次封 装的方法。 API 重定向虽然能够达到接近原生硬件的性能, 但是需要修改客户虚拟机中程序库。本文探究CUDA runtime API的重定向细节。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CUDA API Remoting技术">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/05/14/CUDA-API-Remoting/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="CUDA的虚拟化有一项技术为 API Remoting， 通俗点就是将编程API重定向，或者说远程过程调用。这是在接口层面上实现虚拟化, 采用对调用接口二次封 装的方法。 API 重定向虽然能够达到接近原生硬件的性能, 但是需要修改客户虚拟机中程序库。本文探究CUDA runtime API的重定向细节。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-05-14T08:28:02.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.863Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="GPU">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/05/14/CUDA-API-Remoting/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/05/14/CUDA-API-Remoting/","path":"2018/05/14/CUDA-API-Remoting/","title":"CUDA API Remoting技术"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CUDA API Remoting技术 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#runtime-api"><span class="nav-number">1.</span> <span class="nav-text">Runtime API</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#cuda-kernel"><span class="nav-number">1.1.</span> <span class="nav-text">cuda kernel</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#qcuda"><span class="nav-number">1.2.</span> <span class="nav-text">qCUDA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#crcuda"><span class="nav-number">1.3.</span> <span class="nav-text">CRCUDA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E6%89%BE%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B8%AD%E7%9A%84-fatbin%E9%83%A8%E5%88%86"><span class="nav-number">1.4.</span> <span class="nav-text">查找二进制中的
+fatbin部分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cuda-cubinptx%E6%96%87%E4%BB%B6%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD"><span class="nav-number">1.5.</span> <span class="nav-text">CUDA CUBIN&#x2F;PTX文件动态加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cudalaunchkernel"><span class="nav-number">1.6.</span> <span class="nav-text">cudaLaunchKernel</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#gpgpu-sim"><span class="nav-number">2.</span> <span class="nav-text">GPGPU-SIM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">2.1.</span> <span class="nav-text">注意事项</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.1.</span> <span class="nav-text">编译问题</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/05/14/CUDA-API-Remoting/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="CUDA API Remoting技术 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CUDA API Remoting技术
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-05-14 16:28:02" itemprop="dateCreated datePublished" datetime="2018-05-14T16:28:02+08:00">2018-05-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/" itemprop="url" rel="index"><span itemprop="name">GPU</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/GPU%E8%99%9A%E6%8B%9F%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">GPU虚拟化</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/CUDA/" itemprop="url" rel="index"><span itemprop="name">CUDA</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>CUDA的虚拟化有一项技术为 <code>API Remoting</code>，
+通俗点就是将编程API重定向，或者说远程过程调用。这是在接口层面上实现虚拟化, 采用对调用接口二次封
+装的方法。 API
+重定向虽然能够达到接近原生硬件的性能, 但是需要修改客户虚拟机中程序库。本文探究CUDA
+runtime API的重定向细节。</p>
+<span id="more"></span>
+<h1 id="runtime-api">Runtime API</h1>
+<p>CUDA 应用程序可以调用CUDA Library，CUDA Runtime API和CUDA Driver
+API。 其中 CUDA Runtime API 还调用了 Driver API。Runtime API以动态库
+<em>libcuda.so</em> 提供，使用 <code>ioctl</code> 通过
+<em>/dev/nvidia0</em>，<em>/dev/nvidia-uvm</em>，<em>/dev/nvidiactl</em>
+与Driver(kernel mode)交互。 <img
+src="/img/CUDA-API-Remoting/CUDA-software-layers.png"
+alt="CUDA API call process" /></p>
+<p><code>nvcc</code> 对CUDA库的默认的链接方式是静态链接。可以通过
+<code>ldd</code> 查询，未发现关于
+<code>libcudart.so</code>的动态链接库。 其实可以通过 <code>nvcc</code>
+编译过程来发现端倪。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GPU$ nvcc --verbose thread.cu -o staticthread</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>#$ nvcc warning : The 'compute_20', 'sm_20', and 'sm_21'
+architectures are deprecated, and may be removed in a future release
+(Use -Wno-deprecated-gpu-targets to suppress warning).</p>
+</blockquote>
+<ul>
+<li>读取环境变量</li>
+</ul>
+<blockquote>
+<p>#$ <em>SPACE</em>= #$ <em>CUDART</em>=cudart #$
+<em>HERE</em>=/usr/local/cuda-8.0/bin #$
+<em>THERE</em>=/usr/local/cuda-8.0/bin #$ <em>TARGET_SIZE</em>= #$
+<em>TARGET_DIR</em>= #$ <em>TARGET_SIZE</em>=64 #$
+TOP=/usr/local/cuda-8.0/bin/.. #$
+NVVMIR_LIBRARY_DIR=/usr/local/cuda-8.0/bin/../nvvm/libdevice #$
+LD_LIBRARY_PATH=/usr/local/cuda-8.0/bin/../lib::/usr/local/cuda-8.0/lib64
+#$
+PATH=/usr/local/cuda-8.0/bin/../open64/bin:/usr/local/cuda-8.0/bin/../nvvm/bin:/usr/local/cuda-8.0/bin:/home/max/bin:/usr/local/&gt;
+sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/cuda-8.0/bin
+#$ INCLUDES="-I/usr/local/cuda-8.0/bin/..//include"<br />
+#$ LIBRARIES= "-L/usr/local/cuda-8.0/bin/..//lib64/stubs"
+"-L/usr/local/cuda-8.0/bin/..//lib64" #$ CUDAFE_FLAGS= #$
+PTXAS_FLAGS=</p>
+</blockquote>
+<ul>
+<li>使用 <code>C++预处理器</code> 进行预处理，生成中间文件
+<code>.cpp1.ii</code></li>
+</ul>
+<p>讲一些定义好的枚举变量（如cudaError）、struct、静态内联函数、extern
+c++和extern函数，还重新定义了std命名空间、函数模板等内容，写在main函数之前。</p>
+<blockquote>
+<p>#$ gcc -D__CUDA_ARCH__=200 -E -x c++ -DCUDA_DOUBLE_MATH_FUNCTIONS
+-D__CUDACC__ -D__NVCC__ "-I/usr/local/cuda-8.0/bin/..//include"
+-D"<strong>CUDACC_VER</strong>=80061"
+-D"<strong>CUDACC_VER_BUILD</strong>=61"
+-D"<strong>CUDACC_VER_MINOR</strong>=0"
+-D"<strong>CUDACC_VER_MAJOR</strong>=8" -include "cuda_runtime.h" -m64
+"thread.cu" &gt; "/tmp/tmpxft_0000286a_00000000-9_thread.cpp1.ii"</p>
+</blockquote>
+<ul>
+<li>调用 <code>cudafe</code> 将 <code>.cpp1.ii</code> 分别执行在
+<code>host</code> 和 <code>device</code> 上代码分离开，生成
+<code>.cudafe1.gpu</code>和 <code>cudafe1.c</code> ，其中
+<code>main</code> 函数在 <code>.cudafe1.c</code>文件中。</li>
+</ul>
+<blockquote>
+<p>#$ cudafe --allow_managed --m64 --gnu_version=50400 -tused
+--no_remove_unneeded_entities --gen_c_file_name
+"/tmp/tmpxft_0000286a_00000000-4_thread.cudafe1.c" --stub_file_name
+"/tmp/tmpxft_0000286a_00000000-4_thread.cudafe1.stub.c"
+--gen_device_file_name
+"/tmp/tmpxft_0000286a_00000000-4_thread.cudafe1.gpu" --nv_arch
+"compute_20" --gen_module_id_file --module_id_file_name
+"/tmp/tmpxft_0000286a_00000000-3_thread.module_id" --include_file_name
+"tmpxft_0000286a_00000000-2_thread.fatbin.c"
+"/tmp/tmpxft_0000286a_00000000-9_thread.cpp1.ii"</p>
+</blockquote>
+<ul>
+<li>预处理，由于不同架构gpu的计算能力不同，需要进行相应的处理，生成
+<code>.cpp4.ii</code> 。</li>
+</ul>
+<blockquote>
+<p>#$ gcc -E -x c++ -D__CUDACC__ -D__NVCC__
+"-I/usr/local/cuda-8.0/bin/..//include"
+-D"<strong>CUDACC_VER</strong>=80061"
+-D"<strong>CUDACC_VER_BUILD</strong>=61"
+-D"<strong>CUDACC_VER_MINOR</strong>=0"
+-D"<strong>CUDACC_VER_MAJOR</strong>=8" -include "cuda_runtime.h" -m64
+"thread.cu" &gt; "/tmp/tmpxft_0000286a_00000000-5_thread.cpp4.ii"</p>
+</blockquote>
+<blockquote>
+<p>#$ cudafe++ --allow_managed --m64 --gnu_version=50400
+--parse_templates --gen_c_file_name
+"/tmp/tmpxft_0000286a_00000000-4_thread.cudafe1.cpp" --stub_file_name
+"tmpxft_0000286a_00000000-4_thread.cudafe1.stub.c" --module_id_file_name
+"/tmp/tmpxft_0000286a_00000000-3_thread.module_id"
+"/tmp/tmpxft_0000286a_00000000-5_thread.cpp4.ii"</p>
+</blockquote>
+<ul>
+<li>使用 <code>c预处理器</code> 进行预处理，生成中间文件
+<code>.cpp2.i</code></li>
+</ul>
+<blockquote>
+<p>#$ gcc -D__CUDA_ARCH__=200 -E -x c -DCUDA_DOUBLE_MATH_FUNCTIONS
+-D__CUDACC__ -D__NVCC__ -D__CUDANVVM__ -D__CUDA_FTZ=0
+-D__CUDA_PREC_DIV=1 -D__CUDA_PREC_SQRT=1
+"-I/usr/local/cuda-8.0/bin/..//include" -m64
+"/tmp/tmpxft_0000286a_00000000-4_thread.cudafe1.gpu" &gt;
+"/tmp/tmpxft_0000286a_00000000-11_thread.cpp2.i"</p>
+</blockquote>
+<ul>
+<li>调用 <code>cudafe</code> 将 <code>.cpp2.i</code> 分别执行在
+<code>host</code> 和 <code>device</code> 上代码分离开，生成
+<code>.cudafe2.gpu</code>和 <code>cudafe2.c</code> 。</li>
+</ul>
+<blockquote>
+<p>#$ cudafe -w --allow_managed --m64 --gnu_version=50400 --c
+--gen_c_file_name "/tmp/tmpxft_0000286a_00000000-12_thread.cudafe2.c"
+--stub_file_name
+"/tmp/tmpxft_0000286a_00000000-12_thread.cudafe2.stub.c"
+--gen_device_file_name
+"/tmp/tmpxft_0000286a_00000000-12_thread.cudafe2.gpu" --nv_arch
+"compute_20" --module_id_file_name
+"/tmp/tmpxft_0000286a_00000000-3_thread.module_id" --include_file_name
+"tmpxft_0000286a_00000000-2_thread.fatbin.c"
+"/tmp/tmpxft_0000286a_00000000-11_thread.cpp2.i"</p>
+</blockquote>
+<ul>
+<li>使用 <code>c预处理器</code> 进行预处理，生成中间文件
+<code>.cpp3.i</code></li>
+</ul>
+<blockquote>
+<p>#$ gcc -D__CUDA_ARCH__=200 -E -x c -DCUDA_DOUBLE_MATH_FUNCTIONS
+-D__CUDABE__ -D__CUDANVVM__ -D__USE_FAST_MATH__=0 -D__CUDA_FTZ=0
+-D__CUDA_PREC_DIV=1 -D__CUDA_PREC_SQRT=1
+"-I/usr/local/cuda-8.0/bin/..//include" -m64
+"/tmp/tmpxft_0000286a_00000000-12_thread.cudafe2.gpu" &gt;
+"/tmp/tmpxft_0000286a_00000000-13_thread.cpp3.i"</p>
+</blockquote>
+<ul>
+<li>生成 <code>.ptx</code> 文件</li>
+</ul>
+<blockquote>
+<p>#$ cicc -arch compute_20 -m64 -ftz=0 -prec_div=1 -prec_sqrt=1 -fmad=1
+-nvvmir-library
+"/usr/local/cuda-8.0/bin/../nvvm/libdevice/libdevice.compute_20.10.bc"
+--orig_src_file_name "thread.cu"
+"/tmp/tmpxft_0000286a_00000000-13_thread.cpp3.i" -o
+"/tmp/tmpxft_0000286a_00000000-6_thread.ptx"</p>
+</blockquote>
+<ul>
+<li><code>PTX</code> 离线编译，将代码编译成一个确定的计算能力和
+<code>SM</code> 版本，对应的版本信息保存在 <code>.cubin</code> 中。</li>
+</ul>
+<blockquote>
+<p>#$ ptxas -arch=sm_20 -m64
+"/tmp/tmpxft_0000286a_00000000-6_thread.ptx" -o
+"/tmp/tmpxft_0000286a_00000000-14_thread.sm_20.cubin"</p>
+</blockquote>
+<ul>
+<li>生成 <code>.fatbin.c</code></li>
+</ul>
+<blockquote>
+<p>#$ fatbinary --create="/tmp/tmpxft_0000286a_00000000-2_thread.fatbin"
+-64
+"--image=profile=sm_20,file=/tmp/tmpxft_0000286a_00000000-14_thread.sm_20.cubin"
+"--image=profile=compute_20,file=/tmp/tmpxft_0000286a_00000000-6_thread.ptx"
+--embedded-fatbin="/tmp/tmpxft_0000286a_00000000-2_thread.fatbin.c"
+--cuda</p>
+</blockquote>
+<blockquote>
+<p>#$ rm /tmp/tmpxft_0000286a_00000000-2_thread.fatbin #$ gcc
+-D__CUDA_ARCH__=200 -E -x c++ -DCUDA_DOUBLE_MATH_FUNCTIONS
+-D__USE_FAST_MATH__=0 -D__CUDA_FTZ=0 -D__CUDA_PREC_DIV=1
+-D__CUDA_PREC_SQRT=1 "-I/usr/local/cuda-8.0/bin/..//include" -m64
+"/tmp/tmpxft_0000286a_00000000-4_thread.cudafe1.cpp" &gt;
+"/tmp/tmpxft_0000286a_00000000-15_thread.ii" #$ gcc -c -x c++
+"-I/usr/local/cuda-8.0/bin/..//include" -fpreprocessed -m64 -o
+"/tmp/tmpxft_0000286a_00000000-16_thread.o"
+"/tmp/tmpxft_0000286a_00000000-15_thread.ii" #$ nvlink --arch=sm_20
+--register-link-binaries="/tmp/tmpxft_0000286a_00000000-7_staticthread_dlink.reg.c"
+-m64 "-L/usr/local/cuda-8.0/bin/..//lib64/stubs"
+"-L/usr/local/cuda-8.0/bin/..//lib64" -cpu-arch=X86_64
+"/tmp/tmpxft_0000286a_00000000-16_thread.o" -o
+"/tmp/tmpxft_0000286a_00000000-17_staticthread_dlink.sm_20.cubin" #$
+fatbinary
+--create="/tmp/tmpxft_0000286a_00000000-8_staticthread_dlink.fatbin" -64
+-link
+"--image=profile=sm_20,file=/tmp/tmpxft_0000286a_00000000-17_staticthread_dlink.sm_20.cubin"
+--embedded-fatbin="/tmp/tmpxft_0000286a_00000000-8_staticthread_dlink.fatbin.c"
+#$ rm /tmp/tmpxft_0000286a_00000000-8_staticthread_dlink.fatbin #$ gcc
+-c -x c++
+-DFATBINFILE=""/tmp/tmpxft_0000286a_00000000-8_staticthread_dlink.fatbin.c""
+-DREGISTERLINKBINARYFILE=""/tmp/tmpxft_0000286a_00000000-7_staticthread_dlink.reg.c""
+-I. "-I/usr/local/cuda-8.0/bin/..//include"
+-D"<strong>CUDACC_VER</strong>=80061"
+-D"<strong>CUDACC_VER_BUILD</strong>=61"
+-D"<strong>CUDACC_VER_MINOR</strong>=0"
+-D"<strong>CUDACC_VER_MAJOR</strong>=8" -m64 -o
+"/tmp/tmpxft_0000286a_00000000-18_staticthread_dlink.o"
+"/usr/local/cuda-8.0/bin/crt/link.stub"</p>
+</blockquote>
+<ul>
+<li><code>gcc</code> 链接所有目标文件</li>
+</ul>
+<blockquote>
+<p>#$ g++ -m64 -o "staticthread" -Wl,--start-group
+"/tmp/tmpxft_0000286a_00000000-18_staticthread_dlink.o"
+"/tmp/tmpxft_0000286a_00000000-16_thread.o"
+"-L/usr/local/cuda-8.0/bin/..//lib64/stubs"
+"-L/usr/local/cuda-8.0/bin/..//lib64" -lcudadevrt -lcudart_static -lrt
+-lpthread -ldl -Wl,--end-group</p>
+</blockquote>
+<p>注意最后一行 &gt; #$ g++ -m64 -o "staticthread" -Wl,--start-group
+"/tmp/tmpxft_0000286a_00000000-18_staticthread_dlink.o" &gt;
+"/tmp/tmpxft_0000286a_00000000-16_thread.o"
+"-L/usr/local/cuda-8.0/bin/..//lib64/stubs"
+"-L/usr/local/cuda-8.0/bin/..//lib64" &gt; -lcudadevrt -lcudart_static
+-lrt -lpthread -ldl -Wl,--end-group</p>
+<p>这里的链接的库 <code>cudadevrt</code>和 <code>cudart_static</code>
+是位于 <code>/usr/local/cuda/lib64</code> 中的
+<code>libcudadevrt.a</code> 和 <code>libcudart_static.a</code> 。</p>
+<p>通过设置 cuda 的编译选项，使其调用库为动态调用：
+<code>--cudart=shared</code> 。 这样编译出来的二进制文件小很多。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-rwxrwxr-x  1 max max 569848 5月  15 09:39 staticthread*</span><br><span class="line">-rwxrwxr-x  1 max max  19552 5月  14 14:19 thread*</span><br></pre></td></tr></table></figure>
+<h2 id="cuda-kernel">cuda kernel</h2>
+<p>github 上的<a
+target="_blank" rel="noopener" href="https://github.com/nchong/cudahook">cudahook</a>给出了cuda运行时API的钩子函数，利用了
+<code>LD_PRELOAD</code> 和 <code>dlsym</code> 。</p>
+<p>之前尝试失败，造成的原因就是 nvcc 静态编译。 修改成动态链接即可。</p>
+<p>位于 <code>/usr/local/cuda/include/crt/host_runtime.h</code>中的
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">__cudaRegisterFunction</span><br><span class="line">__cudaUnregisterFatBinary</span><br><span class="line">__cudaRegisterFatBinary</span><br><span class="line">__cudaInitModule	// 这个目前没用上</span><br></pre></td></tr></table></figure> 其他函数： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cudaMalloc</span><br><span class="line">cudaConfigureCall</span><br><span class="line">cudaLaunch</span><br><span class="line">cudaFree</span><br><span class="line">cudaSetupArgument</span><br><span class="line">cudaMemcpy</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<h2 id="qcuda">qCUDA</h2>
+<p>今天【2018，6，1】收获颇丰，先是找到一份 <code>API Remoting</code>
+的源码<a target="_blank" rel="noopener" href="https://github.com/coldfunction/qCUDA">qCUDA: GPGPU
+Virtualization at a New API Remoting Method with
+Para-virtualization</a>。</p>
+<p><code>qCUDA</code> 采用的是虚拟机上的GPU虚拟化，采用
+<code>virtio</code> 作为传输通道，但是 <code>kernel</code>
+函数没有进行传输，直接将其二进制的客户机物理地址转换（guest physical
+address, GPA）到宿主机虚拟地址（host virtual
+address，HVA），据说带宽效率达到的95%。</p>
+<p>关键部分是在 <code>guest</code> 的驱动中，将用户态
+<code>malloc</code> 后的内存，全部通过 <code>copy_from_user_safe</code>
+拷贝到在内核中 <code>kmalloc</code> 申请的内存，之后再通过
+<code>virt_to_phys</code> 将内核的虚拟地址转换成物理地址。</p>
+<blockquote>
+<p>virt_to_phys: The returned physical address is the physical (CPU)
+mapping for the memory address given. It is only valid to use this
+function on addresses directly mapped or allocated via kmalloc. It means
+It is used by the kernel to translate kernel virtual address (not user
+virtual address) to physical address</p>
+</blockquote>
+<h2 id="crcuda">CRCUDA</h2>
+<p>是的，今天【2018，6，1】收获第二件事就是找到了
+<code>pause/resume</code> 的另一份代码：<a
+target="_blank" rel="noopener" href="https://github.com/tbrand/CRCUDA">Transparent checkpoint/restart
+library for CUDA application.</a>。</p>
+<p>【暂时没有研究】</p>
+<h2 id="查找二进制中的-fatbin部分">查找二进制中的
+<code>fatbin</code>部分</h2>
+<p>最关键的部分就是如何将包含 <code>kernel</code> 的 <code>GPU</code>
+代码从二进制中找到并剥离出来。</p>
+<p>还是在<a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/6392407/what-are-the-parameters-for-cudaregisterfatbinary-and-cudaregisterfunction-f/39453201">what
+are the parameters for __cudaRegisterFatBinary and
+__cudaRegisterFunction functions?</a>
+此问题下，良心答主给出了建设性意见。</p>
+<p>答主提到： <code>__cuRegisterFatBinary</code> 函数的唯一一个
+<code>void *</code> 的指针参数，指向的是一个结构体：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct &#123;</span><br><span class="line">    uint32_t magic; // Always 0x466243b1</span><br><span class="line">    uint32_t seq;   // Sequence number of the cubin</span><br><span class="line">    uint64_t ptr;   // The pointer to the real cubin</span><br><span class="line">    uint64_t data_ptr;    // Some pointer related to the data segment</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而这个结构体中的字段 <code>ptr</code> 指向的是真正的
+fatBin文件，此fatBin文件按照 <code>fatBinary.h</code> 中的格式定义。
+此文件中会有一些其他信息，如果接续搜索下去，会搜索到
+<code>0x7F + 'ELF'</code> ，可以再此提取出 <code>cubin</code> 文件。</p>
+<p>按照提示，我去做一些尝试！</p>
+<p>在 <code>/usr/local/cuda/include/</code> 中找到
+<code>fatBinary.h</code> 文件，并找到了 fat binary 头结构。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct __align__(8) fatBinaryHeader        </span><br><span class="line">&#123;</span><br><span class="line">	unsigned int 			magic;</span><br><span class="line">	unsigned short         	version;</span><br><span class="line">	unsigned short         	headerSize;</span><br><span class="line">	unsigned long long int 	fatSize;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>那么指向此结构体的指针在哪里呢？</p>
+<p>这还要从 <code>__cudaRegisterFatBinary</code>
+讲起来。它的函数声明为： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void** __cudaRegisterFatBinary(void *fatCubin);</span><br></pre></td></tr></table></figure></p>
+<p>这个函数传入的参数 <code>fatCubin</code>
+指针是指向的是一个结构体，此结构体定义在
+<code>/usr/local/cuda/include/fatBinaryCtl.h</code> 中。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * These defines are for the fatbin.c runtime wrapper</span><br><span class="line"> */</span><br><span class="line">#define FATBINC_MAGIC   0x466243B1</span><br><span class="line">#define FATBINC_VERSION 1</span><br><span class="line">#define FATBINC_LINK_VERSION 2</span><br><span class="line">typedef struct &#123;</span><br><span class="line">	int magic;</span><br><span class="line">	int version;</span><br><span class="line">	const unsigned long long* data;</span><br><span class="line">	void *filename_or_fatbins;  /* version 1: offline filename,</span><br><span class="line">                               * version 2: array of prelinked fatbins */</span><br><span class="line">&#125; __fatBinC_Wrapper_t;</span><br></pre></td></tr></table></figure>
+<code>__fatBinC_Wrapper_t</code> 第三个参数就是指向的真是的 fatCubin，而
+fatCubin 的最开始的元数据是结构体 <code>struct fatBinaryHeader</code>
+。</p>
+<p>可以通过 <code>nvcc</code> 编译生成 <code>fatbin</code> 文件，与
+截获的文件比较，完全一致。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nvcc --cudart=shared --fatbin -o test.fatbin test.cu</span><br><span class="line">diff test.fatbin cut.fatbin</span><br></pre></td></tr></table></figure></p>
+<p><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/24869167/trouble-launching-cuda-kernels-from-static-initialization-code/24883665#24883665">Trouble
+launching CUDA kernels from static initialization code</a>提到了CUDA
+runtime程序采取lazy初始化Context，直到调用了第一个CUDA runtime
+API，Context才正式初始化。这个初始化的函数入口就是
+<code>__cudaRegisterFatBinary</code> ，它负责载入和注册fat
+binary中的kernels，textures和静态定义的设备符号。
+验证办法就是在用gdb调试时，添加断点
+<code>break __cudaRegisterFatBinary</code> 。</p>
+<h2 id="cuda-cubinptx文件动态加载">CUDA CUBIN/PTX文件动态加载</h2>
+<p>在获取了GPU的代码后，如何在其他进程中动态加载呢？这就要用到Driver
+API的 <a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__MODULE.html">Module
+Management的API了</a>。 其中，涉及到Module的API如下： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">CUresult cuModuleGetFunction ( CUfunction* hfunc, CUmodule hmod, const char* name )</span><br><span class="line">	Returns a function handle.</span><br><span class="line">CUresult cuModuleGetGlobal ( CUdeviceptr* dptr, size_t* bytes, CUmodule hmod, const char* name )</span><br><span class="line">	Returns a global pointer from a module.</span><br><span class="line">CUresult cuModuleGetSurfRef ( CUsurfref* pSurfRef, CUmodule hmod, const char* name )</span><br><span class="line">	Returns a handle to a surface reference.</span><br><span class="line">CUresult cuModuleGetTexRef ( CUtexref* pTexRef, CUmodule hmod, const char* name )</span><br><span class="line">	Returns a handle to a texture reference.</span><br><span class="line">CUresult cuModuleLoad ( CUmodule* module, const char* fname )</span><br><span class="line">	Loads a compute module.</span><br><span class="line">CUresult cuModuleLoadData ( CUmodule* module, const void* image )</span><br><span class="line">	Load a module&#x27;s data.</span><br><span class="line">CUresult cuModuleLoadDataEx ( CUmodule* module, const void* image, unsigned int  numOptions, CUjit_option* options, void** optionValues )</span><br><span class="line">	Load a module&#x27;s data with options.</span><br><span class="line">CUresult cuModuleLoadFatBinary ( CUmodule* module, const void* fatCubin )</span><br><span class="line">	Load a module&#x27;s data.</span><br><span class="line">CUresult cuModuleUnload ( CUmodule hmod )</span><br><span class="line">	Unloads a module.</span><br></pre></td></tr></table></figure></p>
+<p>可以使用 <code>cuModuleLoad</code> 将 fatbinary image从文件读入。而
+<code>cuModuleLoadData</code> 将 fatbinary image从字符串读入。
+<code>cuModuleGetFunction</code> 可以从 module <code>hmod</code>
+当中返回函数名为 <code>name</code> 的函数指针 <code>hfunc</code>。</p>
+<h2 id="cudalaunchkernel">cudaLaunchKernel</h2>
+<p>通过 <code>nvprof</code> 工具获得简单的 <em>vectorAdd</em>
+程序的profile，可以获得一些额外的信息。</p>
+<pre><code>==16486== Profiling application: ./vectorAdd
+==16486== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   65.79%  67.266us         2  33.633us  32.737us  34.529us  [CUDA memcpy HtoD]
+                   30.52%  31.200us         1  31.200us  31.200us  31.200us  [CUDA memcpy DtoH]
+                    3.69%  3.7760us         1  3.7760us  3.7760us  3.7760us  vectorAdd(float const *, float const *, float*, int)
+      API calls:   99.23%  127.05ms         3  42.351ms  3.4780us  127.05ms  cudaMalloc
+                    0.34%  430.20us        96  4.4810us      98ns  170.55us  cuDeviceGetAttribute
+                    0.21%  263.80us         3  87.934us  49.895us  120.54us  cudaMemcpy
+                    0.11%  141.99us         1  141.99us  141.99us  141.99us  cuDeviceTotalMem
+                    0.07%  91.916us         3  30.638us  3.8710us  80.965us  cudaFree
+                    0.03%  38.155us         1  38.155us  38.155us  38.155us  cuDeviceGetName
+                    0.01%  18.698us         1  18.698us  18.698us  18.698us  cudaLaunchKernel
+                    0.00%  1.8070us         1  1.8070us  1.8070us  1.8070us  cuDeviceGetPCIBusId
+                    0.00%     959ns         3     319ns      82ns     545ns  cuDeviceGetCount
+                    0.00%     794ns         2     397ns     139ns     655ns  cuDeviceGet
+                    0.00%     193ns         1     193ns     193ns     193ns  cuDeviceGetUuid
+                    0.00%     186ns         1     186ns     186ns     186ns  cudaGetLastError</code></pre>
+<p><em>vectorAdd</em>源码只有 <code>cudaMemcpy</code> 、
+<code>cudaFree</code> 、
+<code>cudaMalloc</code>，这莫名多出了很多函数。说明再载入二进制的时候又默认启动了其他相关的函数。</p>
+<h1 id="gpgpu-sim">GPGPU-SIM</h1>
+<p>经过了上面艰难的探索，今天偶然发现一篇对CUDA程序编译和调用过程的探索，这篇<a
+target="_blank" rel="noopener" href="http://people.cs.pitt.edu/~yongli/notes/gpgpu/GPGPUSIMNotes.html">GPGPU-SIM
+Code Study (version: 3.1.2)</a>
+里面讲解了源码编译模拟过程，其中设计到我们这里探究的隐藏API。同时<a
+target="_blank" rel="noopener" href="http://galoisplusplus.coding.me/blog/2018/05/22/cudaErrorCudartUnloading/">cudaErrorCudartUnloading问题排查及建议方案</a>也做了讨论。</p>
+<p>编译器将 <code>__cudaRegisterFatBinary()</code></p>
+<p>总结一下：</p>
+<p><code>nvcc</code> 使用 <em>--cuda</em> 选项来查看
+编译的执行配置语法（ECS）和管理kernel代码，生成 <em>.cu.cpp.ii</em>
+文件，此文件可以不需要NVIDIA编译工具就能够被编译和链接。深入阅读此文件，就可以发现端倪。<br />
+1. 设备代码被作为 fat binary 对象嵌入到可执行文件的 <em>.rodata</em>
+区间。 2.
+对于kernel代码，源码中都有对应的与每个kernel函数名相同的host函数。 3. 在
+<code>main</code> 函数调用前，<code>cudaRegisterAll</code>
+函数做以下工作。 - 调用入口函数
+<code>__cudaRegisterFatBinary</code>，参数是指向 fat binary
+的指针，此指针可以直接访问kernel代码。 -
+为每个kernel，调用kernel注册函数<code>cudaRegisterFunction</code>，指针指向在上述步骤2中源码中的函数。
+4. 对于执行配置语法被以下函数取代： + <code>cudaConfigureCall</code>
+用于设置kernel调用的配置选项，如grid，block等。 +
+<code>cudaSetupArgument</code> 用于设置kernel调用的参数。 +
+<code>cudaLaunch</code> 调用kernel，参数是指向步骤2中的函数的函数指针。
+5. Fat
+binary注销函数<code>cudaUnregisterBinaryUtil</code>，在程序退出的时候调用。</p>
+<p>函数定义在 <em>/usr/local/cuda/include/crt/host_runtime.h</em> 。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">extern void** CUDARTAPI __cudaRegisterFatBinary(</span><br><span class="line">  void *fatCubin</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">extern void CUDARTAPI __cudaUnregisterFatBinary(</span><br><span class="line">  void **fatCubinHandle</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">extern void CUDARTAPI __cudaRegisterFunction(</span><br><span class="line">        void   **fatCubinHandle,</span><br><span class="line">  const char    *hostFun,</span><br><span class="line">        char    *deviceFun,</span><br><span class="line">  const char    *deviceName,</span><br><span class="line">        int      thread_limit,</span><br><span class="line">        uint3   *tid,</span><br><span class="line">        uint3   *bid,</span><br><span class="line">        dim3    *bDim,</span><br><span class="line">        dim3    *gDim,</span><br><span class="line">        int     *wSize</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">static void **__cudaFatCubinHandle;</span><br><span class="line"></span><br><span class="line">static void __cdecl __cudaUnregisterBinaryUtil(void)</span><br><span class="line">&#123; </span><br><span class="line">  ____nv_dummy_param_ref((void *)&amp;__cudaFatCubinHandle);</span><br><span class="line">  __cudaUnregisterFatBinary(__cudaFatCubinHandle);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>函数定义在 <em>/usr/local/cuda/include/crt/host_runtime_api.h</em> 。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">extern __host__ cudaError_t CUDARTAPI cudaConfigureCall(dim3 gridDim, dim3 blockDim, size_t sharedMem __dv(0), cudaStream_t stream __dv(0));</span><br><span class="line">extern __host__ cudaError_t CUDARTAPI cudaSetupArgument(const void *arg, size_t size, size_t offset);</span><br><span class="line">extern __host__ cudaError_t CUDARTAPI cudaLaunch(const void *func);</span><br></pre></td></tr></table></figure></p>
+<h2 id="注意事项">注意事项</h2>
+<h3 id="编译问题">编译问题</h3>
+<ul>
+<li>对 <code>dlopen</code> 未定义得引用</li>
+</ul>
+<p>在编译时加入动态库 <code>ldl</code> 。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -ldl ***</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>RTLD_NEXT</code> undeclared (first use in this function)</li>
+</ul>
+<p>主要是 <code>RTLD_NEXT</code> 没有定义在
+posix标准中，因此需要在代码的<em>最开始</em>加上
+<code>#define _GNU_SOURCE</code> 。</p>
+<p>通过 <code>man dlsym</code> 可以清晰得查看到。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">SYNOPSIS</span><br><span class="line">	#include &lt;dlfcn.h&gt;</span><br><span class="line"></span><br><span class="line">	void *dlsym(void *handle, const char *symbol);</span><br><span class="line"></span><br><span class="line">	#define _GNU_SOURCE</span><br><span class="line">	#include &lt;dlfcn.h&gt;</span><br><span class="line"></span><br><span class="line">	void *dlvsym(void *handle, char *symbol, char *version);</span><br><span class="line"></span><br><span class="line">	Link with -ldl.</span><br></pre></td></tr></table></figure>
+<ul>
+<li>error: conflicting types for错误原因</li>
+</ul>
+<p>自己在写 <code>cudaMemcpy</code> 函数定义时，是按照CUDA Runtime API
+文档写的， <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cudaError_t cudaMemcpy(</span><br><span class="line">		void* dst, </span><br><span class="line">		const void* src, </span><br><span class="line">		size_t count,  </span><br><span class="line">		cudaMemcpyKind kind)</span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可是报错：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">error: expected declaration specifiers or &#x27;...&#x27; before &#x27;cudaMemcpyKind&#x27;</span><br><span class="line">error: conflicting types for &#x27;cudaMemcpy&#x27;</span><br><span class="line">/usr/local/cuda/include/cuda_runtime_api.h:4130: note: previous declaration of &#x27;cudaMemcpy&#x27; was here</span><br></pre></td></tr></table></figure>
+<p>原因包括很多，</p>
+<pre><code>-- 没有函数声明，且函数定义在主函数之后；
+-- 头文件的被循环引用，在引用时考虑清楚包含顺序
+-- 头文件函数声明和函数定义参数不同</code></pre>
+<p>通过查看 <code>/usr/local/cuda/include/cuda_runtime_api.h:4130</code>
+中声明的函数为： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cudaError_t cudaMemcpy(</span><br><span class="line">		void* dst, </span><br><span class="line">		const void* src, </span><br><span class="line">		size_t count,  </span><br><span class="line">		enum cudaMemcpyKind kind)</span><br></pre></td></tr></table></figure> 与自己定义的差了一个
+<code>enum</code>，失声痛哭。</p>
+<p>参考：<a target="_blank" rel="noopener" href="http://blog.51cto.com/10901086/1903340">error:
+conflicting types for 错误原因及解决办法</a></p>
+<h1 id="参考">参考</h1>
+<p>[1] <a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/6392407/what-are-the-parameters-for-cudaregisterfatbinary-and-cudaregisterfunction-f">what
+are the parameters for __cudaRegisterFatBinary and
+__cudaRegisterFunction functions?</a> [2] <a
+target="_blank" rel="noopener" href="https://github.com/nchong/cudahook">cudahook</a> [3] <a
+target="_blank" rel="noopener" href="https://blog.csdn.net/qq_20487945/article/details/51023664">CUDA
+CUBIN/PTX文件动态加载</a> [4] <a
+target="_blank" rel="noopener" href="http://galoisplusplus.coding.me/blog/2018/05/22/cudaErrorCudartUnloading/">cudaErrorCudartUnloading问题排查及建议方案</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/tags/GPU/" rel="tag"># GPU</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/05/14/Linux%E4%B8%8B%E6%9F%A5%E7%9C%8B%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6/" rel="prev" title="Linux下查看二进制文件">
+                  <i class="fa fa-angle-left"></i> Linux下查看二进制文件
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/05/14/linux%E4%B8%8B%E6%96%87%E4%BB%B6%E6%9F%A5%E6%89%BE%E4%B8%8E%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%9F%A5%E6%89%BE/" rel="next" title="linux下文件查找与文件内容查找">
+                  linux下文件查找与文件内容查找 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

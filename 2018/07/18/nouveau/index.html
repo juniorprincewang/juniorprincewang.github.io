@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="nouveau是LINUX内核中NVIDIA显卡的开源驱动，但是它不对CUDA支持，熟悉nouveau对于加强掌握NVIDIA GPU显卡有极大的帮助。本文整理了阅读到的nouveau资料。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nouveau资料整理">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/07/18/nouveau/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="nouveau是LINUX内核中NVIDIA显卡的开源驱动，但是它不对CUDA支持，熟悉nouveau对于加强掌握NVIDIA GPU显卡有极大的帮助。本文整理了阅读到的nouveau资料。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/nouveau-docs/Linux_Graphics_Stack_2013.svg">
+<meta property="article:published_time" content="2018-07-18T06:18:35.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.897Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="GPU">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="nouveau">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://juniorprincewang.github.io/img/nouveau-docs/Linux_Graphics_Stack_2013.svg">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/07/18/nouveau/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/07/18/nouveau/","path":"2018/07/18/nouveau/","title":"nouveau资料整理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>nouveau资料整理 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#development"><span class="nav-number">1.</span> <span class="nav-text">development</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#codenames"><span class="nav-number">1.1.</span> <span class="nav-text">CodeNames</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#riva128.txt"><span class="nav-number">1.2.</span> <span class="nav-text">riva128.txt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#contextswitching"><span class="nav-number">1.3.</span> <span class="nav-text">ContextSwitching</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fence"><span class="nav-number">1.4.</span> <span class="nav-text">fence</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%91%E4%B8%8A%E6%94%AF%E6%8C%81%E7%9A%84%E6%8E%A5%E5%8F%A3"><span class="nav-number">2.</span> <span class="nav-text">向上支持的接口</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#coriander"><span class="nav-number">2.1.</span> <span class="nav-text">Coriander</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gdev"><span class="nav-number">2.2.</span> <span class="nav-text">Gdev</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#nouveau-%E4%BB%A3%E7%A0%81"><span class="nav-number">3.</span> <span class="nav-text">nouveau 代码</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#nouveau-%E4%BB%A3%E7%A0%81%E7%9A%84%E5%9C%B0%E5%9D%80"><span class="nav-number">3.1.</span> <span class="nav-text">nouveau 代码的地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nouveau%E5%8F%98%E9%87%8F%E5%91%BD%E5%90%8D"><span class="nav-number">3.2.</span> <span class="nav-text">nouveau变量命名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#libdrm"><span class="nav-number">3.3.</span> <span class="nav-text">libdrm</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mesa"><span class="nav-number">3.4.</span> <span class="nav-text">mesa</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#opengl"><span class="nav-number">3.4.1.</span> <span class="nav-text">OpenGL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gallium3d"><span class="nav-number">3.4.2.</span> <span class="nav-text">Gallium3D</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#irc-nouveau"><span class="nav-number">4.</span> <span class="nav-text">IRC #nouveau</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#yuzu-emulator"><span class="nav-number">5.</span> <span class="nav-text">yuzu emulator</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/07/18/nouveau/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="nouveau资料整理 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          nouveau资料整理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-07-18 14:18:35" itemprop="dateCreated datePublished" datetime="2018-07-18T14:18:35+08:00">2018-07-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/" itemprop="url" rel="index"><span itemprop="name">GPU</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/nouveau/" itemprop="url" rel="index"><span itemprop="name">nouveau</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>nouveau是LINUX内核中NVIDIA显卡的开源驱动，但是它不对CUDA支持，熟悉nouveau对于加强掌握NVIDIA
+GPU显卡有极大的帮助。本文整理了阅读到的nouveau资料。 <span id="more"></span></p>
+<p>首先<a
+target="_blank" rel="noopener" href="https://nouveau.freedesktop.org/wiki/">nouveau官网</a>介绍它是NVidia显卡的加速开源驱动。</p>
+<p>要认真读一遍<a
+target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Nouveau_(software)">nouveau的wikipedia介绍</a>，它详细介绍了发展历史和支持的软件。</p>
+<p>先来学习下入门阶段的<a
+target="_blank" rel="noopener" href="https://nouveau.freedesktop.org/wiki/IntroductoryCourse/">介绍</a></p>
+<h1 id="development">development</h1>
+<p><a
+target="_blank" rel="noopener" href="https://nouveau.freedesktop.org/wiki/Development/">nouveau开发</a>也提供了不少的有价值的资料。<br />
+<a
+target="_blank" rel="noopener" href="http://download.nvidia.com/open-gpu-doc/">NVIDIA挤牙膏式的部分开源资料</a><br />
+<a
+target="_blank" rel="noopener" href="https://github.com/NVIDIA/open-gpu-doc">NVIDIA挤牙膏式的部分开源资料github版</a></p>
+<h2 id="codenames">CodeNames</h2>
+<p><a
+target="_blank" rel="noopener" href="https://nouveau.freedesktop.org/wiki/CodeNames/">NVIDIA显卡的代号CodeNames</a>
+比如我使用的 GeForce GTX Titan Black 的 Codename就是
+<code>NVF1 (GK110B)</code>。<br />
+Tegra X1 是 <code>NV110 family (Maxwell)</code> 的
+<code>NV12B (GM20B)</code>。<br />
+GeForce GTX (1070, 1080) 是 <code>NV134 (GP104)</code>。</p>
+<h2 id="riva128.txt"><a
+target="_blank" rel="noopener" href="https://github.com/Emu-Docs/Emu-Docs/blob/master/PC/GPUs/nVidia/Riva%20128/riva128.txt">riva128.txt</a></h2>
+<p>比较老的一个介绍旧显卡的文档，但是阐明了内部的运作。</p>
+<h2 id="contextswitching">ContextSwitching</h2>
+<p><a
+target="_blank" rel="noopener" href="https://nouveau.freedesktop.org/wiki/ContextSwitching/">ContextSwitching</a>
+上下文切换的重要性和如何切换。</p>
+<p>硬件上下文指的是显卡硬件的当前状态，即GPU寄存器和命令FIFO等。<br />
+NVidia显卡提供多个命令通道（Command
+Channels），每个通道与给定的硬件环境相关联。
+这意味着，在使用所有通道之前，每个图形客户端将在显卡上拥有其自己的通道和硬件上下文。</p>
+<p>上下文之间的切换的方式在所有显卡中不总是一样的。
+最新的Nvidia卡自动完成，但需要特殊的初始化，而较旧的则需要驱动程序自行处理。</p>
+<p>在NV10之前，上下文切换由驱动程序完成并且是中断驱动的：每当显卡在当前未激活的通道上获取命令时，它将发送PGRAPH中断（PGRAPH中断是由显卡的图形引擎发送的中断）
+到驱动程序，驱动必须保存显卡的寄存器，并恢复新的上下文。</p>
+<p>从NV20开始，上下文切换由GPU在硬件上完成，从NV40开始计算，这些卡需要一个特殊的微代码，称为ctxprogs。</p>
+<p>上下文切换现在适用于所有卡。 对于需要ctxprog（NV4x
++）的卡，我们曾经复制过专有驱动程序发送的ctxprog，但现在已经为它们编写了ctxprog生成器。</p>
+<p><a
+target="_blank" rel="noopener" href="https://nouveau.freedesktop.org/wiki/NVC0_Firmware/">NVC0显卡的上下文切换固件</a></p>
+<h2 id="fence">fence</h2>
+<p><a
+target="_blank" rel="noopener" href="https://www.khronos.org/registry/OpenGL/extensions/NV/NV_fence.txt">GL_NV_fence</a>
+解释了 <code>fence</code> 。</p>
+<p><code>fence</code> 是
+DRM的TTM的重要概念，本质上是一种管理CPU和GPU之间并发的机制。
+当GPU不再使用缓冲区对象时，<code>fence</code>
+会跟踪，通常用于通知任何用户空间进程可以访问此缓冲对象。</p>
+<h1 id="向上支持的接口">向上支持的接口</h1>
+<p>nouveau向用户态支持的库包括 图形渲染API： Mesa 3D、 OpenGL；
+计算API：OpenCL、 CUDA。</p>
+<figure>
+<img src="/img/nouveau-docs/Linux_Graphics_Stack_2013.svg"
+alt="DRM, KMS driver, libDRM, Mesa 3D等结构图，来自wiki" />
+<figcaption aria-hidden="true">DRM, KMS driver, libDRM, Mesa
+3D等结构图，来自wiki</figcaption>
+</figure>
+<p>从图中可以看出，nouveau集成到了DRM的驱动和用户态上。</p>
+<h2 id="coriander">Coriander</h2>
+<p>Nouveau本身不支持 CUDA，但是 [Coriander 项目：Build applications
+written in NVIDIA® CUDA™ code for OpenCL™ 1.2 devices] 在OpenCL 1.2
+上支持CUDA，但是需要使用项目提供的编译器。
+Coriander一直在维护，github地址在 <a
+target="_blank" rel="noopener" href="https://github.com/hughperkins/coriander"
+class="uri">https://github.com/hughperkins/coriander</a>。</p>
+<h2 id="gdev">Gdev</h2>
+<p>发表在顶会 <strong>USENIX ATC'12</strong> 上的项目<a
+target="_blank" rel="noopener" href="https://github.com/shinpei0208/gdev">Gdev：Open-Source GPGPU
+Runtime and Driver Software</a> ，为NVIDIA
+GPGPU提供了驱动和运行时库的开源的支持。提供了CUDA driver
+API，此项目可以运行在nouveau上。<br />
+Gdev停止更新在2014年，因此代码支持到彼时的sm
+3.5计算能力的Kepler架构的GTX 780。</p>
+<h1 id="nouveau-代码">nouveau 代码</h1>
+<p>nouveau由两个内核模块 DRM和 KMS驱动组成，和调用用户空间的libdrm，
+Mesa 3D。</p>
+<h2 id="nouveau-代码的地址">nouveau 代码的地址</h2>
+<p>nouveau upstream repository 一直由 skeggsb 维护。<br />
++ nouveau 持续更新代码: <a target="_blank" rel="noopener" href="https://github.com/skeggsb/nouveau"
+class="uri">https://github.com/skeggsb/nouveau</a><br />
++ Linux kernel 中的最新 nouveau 更新： <a
+target="_blank" rel="noopener" href="https://github.com/skeggsb/linux"
+class="uri">https://github.com/skeggsb/linux</a></p>
+<ul>
+<li>用户态libdrm中的nouveau代码： <a
+target="_blank" rel="noopener" href="https://github.com/tobiasjakobi/libdrm/tree/exynos/nouveau"
+class="uri">https://github.com/tobiasjakobi/libdrm/tree/exynos/nouveau</a>
+，libdrm版本 <a target="_blank" rel="noopener" href="https://dri.freedesktop.org/libdrm/"
+class="uri">https://dri.freedesktop.org/libdrm/</a> 。</li>
+</ul>
+<p>其他：<br />
++ Linux-4.4 内核代码中 nouveau代码 <a
+target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v4.4.169/source/drivers/gpu/drm/nouveau"
+class="uri">https://elixir.bootlin.com/linux/v4.4.169/source/drivers/gpu/drm/nouveau</a>
++ Linux-4.4 nouveau 更新日志： <a
+target="_blank" rel="noopener" href="https://cgit.freedesktop.org/nouveau/linux-2.6/log/?h=linux-4.4"
+class="uri">https://cgit.freedesktop.org/nouveau/linux-2.6/log/?h=linux-4.4</a></p>
+<p>如果要深入阅读代码，需要记住很多结构体和函数，网上没有什么代码解析的博客，官网也没有什么补充材料，只能靠自己阅读。</p>
+<p>补充一些材料。</p>
+<h2 id="nouveau变量命名">nouveau变量命名</h2>
+<p><a
+target="_blank" rel="noopener" href="https://www.phoronix.com/scan.php?page=news_item&amp;px=Nouveau-Linux-3.20">Nouveau
+In Linux 3.20 Will Have A Lot Of Code Cleaning</a> 提到 Linux-3.20
+中的更新情况，引入了 <code>NVKM</code> 命名空间，函数用
+<code>nvkm_*</code> 代替 <code>nouveau_*</code> 。
+但是没有二进制文件改动，这是将DRM驱动划拨出来方便以后虚拟化。<a
+target="_blank" rel="noopener" href="https://cgit.freedesktop.org/nouveau/linux-2.6/commit/?h=linux-3.20&amp;id=be83cd4ef9a2a56bd35550bf96146b7b837daf02">改动见这里</a><br />
+比如 <code>struct nouveau_mmu</code> 改动为
+<code>struct nvkm_mmu</code><br />
+<strong>nvkm</strong> is short for <strong>NVIDIA Kernel
+Module</strong></p>
+<blockquote>
+<p>drm/nouveau: finalise nvkm namespace switch (no binary
+change)linux-3.20 The namespace of NVKM is being changed to nvkm_
+instead of nouveau_, which will be used for the DRM part of the driver.
+This is being done in order to make it very clear as to what part of the
+driver a given symbol belongs to, and as a minor step towards splitting
+the DRM driver out to be able to stand on its own (for virt).</p>
+</blockquote>
+<blockquote>
+<p>Because there's already a large amount of churn here anyway, this is
+as good a time as any to also switch to NVIDIA's device and chipset
+naming to ease collaboration with them.</p>
+</blockquote>
+<p>而对应的 <strong>nvif</strong> 就是应该是 <strong>NVIDIA
+InterFace</strong>的缩写。</p>
+<p>GPU设备名称和芯片名称替换Nouveau自己的GPU名字。 如 <em>gk104</em>
+替换 <em>nve0</em> 。<br />
+其他engine或subdev 的命名规则。</p>
+<blockquote>
+<p>sw: rename from software<br />
+msenc: rename from venc<br />
+gr: rename from graph<br />
+msppp: rename from ppp<br />
+ce: rename from copy<br />
+pm: rename from perfmon<br />
+sec: separate from cipher (formerly crypt)<br />
+mmu: rename from vmmgr<br />
+pmu: rename from pwr (power)<br />
+clk: rename from clock</p>
+</blockquote>
+<p>注： CE is DmaCopy &gt; uevent : user event &gt;e.g.: struct
+nouveau_event *uevent;</p>
+<p><code>oclass</code> : object class<br />
+<code>sclass</code> : subclass, 或者称为 child</p>
+<h2 id="libdrm">libdrm</h2>
+<p>内核的drm主要是为了实现图形的DRI硬件加速而服务的，通过提供一系列ioctls的操作，使得应用层的软件可以直接对显卡硬件操作。驱动实际使用drm是经过libdrm封装之后的接口。<br />
+内核drm主要包括：vblank事件处理，内存管理，输出管理，framebuffer管理，命令注册，fence,suspend/resume
+支持，dma服务等。<br />
+用户空间程序可以使用DRM
+API来命令GPU进行硬件加速的3D渲染和视频解码以及GPGPU计算。</p>
+<h2 id="mesa">mesa</h2>
+<p><a target="_blank" rel="noopener" href="https://mesa3d.org/">mesa 3D</a> 的介绍就一句话：<br />
+&gt; Open source implementations of OpenGL, OpenGL ES, Vulkan, OpenCL,
+and more!</p>
+<p>其他可以阅读的资料：</p>
+<p><a
+target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Mesa_(computer_graphics)">mesa3D
+wikipedia</a>：讲了Mesa3D的前生今世。<br />
+<a target="_blank" rel="noopener" href="https://blogs.igalia.com/itoral/">lago Toral
+博客</a>：介绍了很多mesa3d原理和linux图形栈的分析。<br />
+<a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/shoemaker/tag/AMD%E6%98%BE%E5%8D%A1/">Linux图形系统和AMD显卡编程
+系列教程</a><br />
+<a
+target="_blank" rel="noopener" href="https://gallium.readthedocs.io/en/latest/">Gallium3D</a>:Gallium3D是Mesa3D的一个非常重要组成部分</p>
+<p><a target="_blank" rel="noopener" href="https://docs.mesa3d.org/">mesa3d 文档</a></p>
+<p><a target="_blank" rel="noopener" href="https://docs.mesa3d.org/sourcetree.html">mesa source code
+tree</a><br />
+<a target="_blank" rel="noopener" href="https://winddoing.github.io/post/39ae47e2.html">mesa
+框架与目录结构</a></p>
+<p>以10.1.4版本的Mesa3D为例，主要由mesa主模块、gallium模块、egl模块、glsl模块和glx等模块组成.
+其中最重要的模块就是主模块，它主要包括mesa/和mapi/这两个folder.
+mapi/负责所有API的初始化工作，为各个API设置分发表等；mesa/则是整个Mesa3D图形库的核心，它负责的有vbo相关工作、非Gallium3D支持的驱动DRI实现以及软件实现渲染管道等等.
+gallium模块则是Mesa3D整合原开源项目Gallium的结果，主要实现驱动无关的硬件加速.
+egl模块用来实现EGL库，glsl模块用来实现GLSL编译器，glx模块用来实现GLX库.</p>
+<p><a target="_blank" rel="noopener" href="https://juejin.im/post/5cd40e35f265da039f0f2b3c">Mesa &amp;
+Gallium3D 介绍</a></p>
+<h3 id="opengl">OpenGL</h3>
+<p>OpenGL API
+是定义了一个跨编程语言、跨平台的应用程序接口(API)的规范，它用于生成2D和3D图像，而它仅仅是定义了一种API，并没有任何实现细节。
+而OpenGL API的具体实现有很多，主要分为开源实现和闭源实现，
+闭源实现如各大GPU厂商自己实现的闭源OpenGL图形库，例如AMD显卡的Catalyst闭源驱动；而开源实现便是Mesa3D。</p>
+<h3 id="gallium3d">Gallium3D</h3>
+<p><a
+target="_blank" rel="noopener" href="https://www.freedesktop.org/wiki/Software/gallium/">Gallium3D
+Technical Overview from freedesktop</a><br />
+<a
+target="_blank" rel="noopener" href="https://dri.freedesktop.org/doxygen/gallium/index.html">Gallium3D
+Documentation</a></p>
+<p>Mesa的框架决定了它驱动开发的复杂性：每个显卡厂商的3D驱动都有各自不同的应用后端，通过此调用
+Mesa 的 API 来实现 3D 加速。 Intel、AMD 和 NVIDIA
+这三大厂商的显卡都具备各自不同的应用后端，造成了开发和维护困难。</p>
+<p>Gallium3D 提供一套统一的
+API，这套API将标准的硬件特性（而非软件特性）暴露出来（如shader
+units），也就是说，Gallium3D
+直接与统一的硬件级特性打交道，而非充当一个纯软件层。</p>
+<p>因此，这些 API 使得 OpenGL 1.x/2.x，OpenGL 3.x，OpenVG，GPGPU
+架构甚至 Direct3D
+的实现，都只需要通过一个单独的后端即可。而无须各个厂商自行开发各自不同的后端。</p>
+<p>这不仅让开发和维护显示驱动带来了极大的方便，而且统一的 API 使得
+Mesa的灵活性和扩展性大大增强。</p>
+<p>Gallium3D 的目的：</p>
+<ul>
+<li>make driver smaller and smaller</li>
+<li>model modern graphics hardware</li>
+<li>support multiple graphics API's</li>
+<li>Support multiple operating systems</li>
+</ul>
+<h1 id="irc-nouveau">IRC #nouveau</h1>
+<p>此频道所有的日志文件存放在了 <a
+target="_blank" rel="noopener" href="https://people.freedesktop.org/~cbrill/dri-log/index.php"
+class="uri">https://people.freedesktop.org/~cbrill/dri-log/index.php</a>
+中。</p>
+<p><a target="_blank" rel="noopener" href="http://webchat.freenode.net/"
+class="uri">http://webchat.freenode.net/</a> 频道为
+<code>#nouveau</code></p>
+<p>如果要发言，需要提前注册下，<a
+target="_blank" rel="noopener" href="https://freenode.net/kb/answer/registration">IRC 账号注册</a>
+。</p>
+<h1 id="yuzu-emulator">yuzu emulator</h1>
+<p><a target="_blank" rel="noopener" href="https://github.com/yuzu-emu/yuzu">yuzu</a> 是 Nintendo
+Switch 的开源模拟器。<br />
+Nintendo Switch console 使用的显卡是 Tegra
+X1，Maxwell架构，经过开源社区nouveau和yuzu的不懈努力，已经将其成功虚拟化。<br />
+yuzu使用OpenGL 和 Vulkan 两种图形API实现。<br />
+这对于研究maxwell架构的GPU又进一步提供了资料:D。</p>
+<h1 id="参考">参考</h1>
+<ol type="1">
+<li><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/GoodQt/article/details/40681007">Nouveau源码分析(零):前言、目录</a></li>
+<li><a target="_blank" rel="noopener" href="http://download.nvidia.com/open-gpu-doc/">nvidia gpu open
+doc</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/tags/GPU/" rel="tag"># GPU</a>
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/nouveau/" rel="tag"># nouveau</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/07/14/NVIDIA-GPU-hardware/" rel="prev" title="NVIDIA GPU 硬件介绍">
+                  <i class="fa fa-angle-left"></i> NVIDIA GPU 硬件介绍
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/07/20/qemu-memory/" rel="next" title="QEMU-KVM内存虚拟化">
+                  QEMU-KVM内存虚拟化 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="为了提高编程效率，需要多利用现有的工具，比如插件！本篇博客介绍好使的vim插件。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vim插件">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/01/29/vimplugins/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="为了提高编程效率，需要多利用现有的工具，比如插件！本篇博客介绍好使的vim插件。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-01-29T11:49:33.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.906Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="vim">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/01/29/vimplugins/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/01/29/vimplugins/","path":"2018/01/29/vimplugins/","title":"vim插件"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>vim插件 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#vimplus"><span class="nav-number">1.</span> <span class="nav-text">vimplus</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#cscope-%E4%BD%BF%E7%94%A8"><span class="nav-number">1.1.</span> <span class="nav-text">cscope 使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nerdtree"><span class="nav-number">1.2.</span> <span class="nav-text">NERDTree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#search"><span class="nav-number">1.3.</span> <span class="nav-text">search</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vundle"><span class="nav-number">2.</span> <span class="nav-text">Vundle</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85vundle"><span class="nav-number">2.1.</span> <span class="nav-text">安装Vundle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEvundle"><span class="nav-number">2.2.</span> <span class="nav-text">配置Vundle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E6%8F%92%E4%BB%B6"><span class="nav-number">2.3.</span> <span class="nav-text">安装插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A7%BB%E9%99%A4%E6%8F%92%E4%BB%B6"><span class="nav-number">2.4.</span> <span class="nav-text">移除插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">2.5.</span> <span class="nav-text">其他常用命令</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%B8%B8%E7%94%A8%E7%9A%84%E6%8F%92%E4%BB%B6"><span class="nav-number">3.</span> <span class="nav-text">一些常用的插件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#youcompleteme"><span class="nav-number">4.</span> <span class="nav-text">YouCompleteMe</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E7%8E%AF%E5%A2%83"><span class="nav-number">4.1.</span> <span class="nav-text">安装环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E8%BF%87vundle%E5%AE%89%E8%A3%85ycm"><span class="nav-number">4.2.</span> <span class="nav-text">通过Vundle安装YCM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEycm"><span class="nav-number">4.3.</span> <span class="nav-text">配置YCM</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#nerdtree-1"><span class="nav-number">5.</span> <span class="nav-text">NERDTree</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">5.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEnerdtree"><span class="nav-number">5.2.</span> <span class="nav-text">配置NERDTree</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-vim-airline-%E6%8F%92%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text">安装 vim-airline 插件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">7.</span> <span class="nav-text">参考：</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/01/29/vimplugins/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="vim插件 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          vim插件
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-29 19:49:33" itemprop="dateCreated datePublished" datetime="2018-01-29T19:49:33+08:00">2018-01-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/vim/" itemprop="url" rel="index"><span itemprop="name">vim</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>为了提高编程效率，需要多利用现有的工具，比如插件！本篇博客介绍好使的vim插件。
+<span id="more"></span></p>
+<h1 id="vimplus"><a
+target="_blank" rel="noopener" href="https://github.com/chxuan/vimplus">vimplus</a></h1>
+<p><a target="_blank" rel="noopener" href="https://github.com/chxuan/vimplus">vimplus</a>
+这款工具自动帮用户完成了插件配置，包括了 <em>YouCompleteMe</em>、
+<em>NerdTree</em>、 <em>Airline</em>
+等实用插件，省去了网上甄别配置教程和逐一尝试的烦恼。</p>
+<p>安装vimplus<br />
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/chxuan/vimplus.git ~/.vimplus</span><br><span class="line"><span class="built_in">cd</span> ~/.vimplus</span><br><span class="line">./install.sh //不加sudo</span><br></pre></td></tr></table></figure></p>
+<p>注意<a
+target="_blank" rel="noopener" href="https://github.com/chxuan/vimplus/blob/master/help.md">快捷键</a>的使用，加速查询和编辑。</p>
+<p>涉及到插件的快捷键有个 <em>Leader Key</em>
+的概念，需要先摁此键，再配合其他键使用。这里默认是
+<em>,</em>，也可以在配置文件中改。<br />
+我常用的快捷键：</p>
+<ul>
+<li><code>&lt;leader&gt;f</code> 搜索~目录下的文件</li>
+<li><code>&lt;leader&gt;t</code> 打开/关闭函数列表</li>
+<li><code>&lt;c-p&gt;</code> 切换到上一个buffer</li>
+<li><code>&lt;c-n&gt;</code> 切换到下一个buffer</li>
+<li><code>&lt;leader&gt;d</code> 删除当前buffer</li>
+<li><code>&lt;leader&gt;D</code> 删除当前buffer外的所有buffer</li>
+<li><code>&lt;F9&gt;</code> 显示上一主题</li>
+<li><code>&lt;F10&gt;</code> 显示下一主题</li>
+<li><code>&lt;leader&gt;&lt;leader&gt;i</code> 安装插件</li>
+<li><code>&lt;leader&gt;&lt;leader&gt;u</code> 更新插件</li>
+<li><code>&lt;leader&gt;&lt;leader&gt;c</code> 删除插件</li>
+</ul>
+<h2 id="cscope-使用">cscope 使用</h2>
+<p>函数和声明跳转快捷键不怎么好使，我使用了比较流行的 cscope 来分析
+Kernel code。</p>
+<p>需要安装插件 cscope，但是 <a
+target="_blank" rel="noopener" href="http://cscope.sourceforge.net/cscope_vim_tutorial.html">The
+Vim/Cscope tutorial</a> 并没有说安装，将配置文件 cscope_maps.vim 放入
+<strong>~.vim* 中，注意此处是 </strong>~.vim* ，而非 **~.vim* 。</p>
+<p>**~.vim* 是 vim-plug 为了管理plugin
+而创建的文件夹。将vim文件直接放入这里，<a
+target="_blank" rel="noopener" href="https://stackoverflow.com/a/20826292">这么配置的插件没有起作用</a>。</p>
+<p>cscope_maps.vim 配置文件里面设置了自动载入 cscope.out
+和一些快捷键操作。</p>
+<p>纠正方法有2</p>
+<ol type="1">
+<li>其实搞错了， 一个 <em>.vim</em> 文件仅仅放入 <em>~/.vim/plugin</em>
+中即可。</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://vi.stackexchange.com/a/614">How do I install a
+plugin in Vim/vi?</a></p>
+<ol start="2" type="1">
+<li>别人在github上备份的cscope-maps.vim 镜像</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Plug &#x27;dr-kino/cscope-maps&#x27;</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/55764323">How to install
+cscope_maps with vim-plug?</a></p>
+<p>linux kernel 创建 tag db。</p>
+<p>如果在out-of-tree的kernel module 使用时，需要使用绝对路径</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ARCH=x86 make O=. cscope</span><br><span class="line">cscope -d -P `pwd`</span><br><span class="line">:cs add &lt;base_location&gt;/cscope.out &lt;base_location&gt;/</span><br></pre></td></tr></table></figure>
+<p><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/a/3197191">引入cscope.out时，提供prefix</a><br />
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:cscope add /path/to/cscope.out /path/to/src/code</span><br></pre></td></tr></table></figure></p>
+<p>如果就是在 in-tree 查看源代码，则不用绝对路径。</p>
+<p>对于用户态的c+工程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cscope -Rbq</span><br></pre></td></tr></table></figure>
+<p>比较靠谱的指南：<br />
++ <a
+target="_blank" rel="noopener" href="https://developer.aliyun.com/article/686709">vim+cscope使用指南</a><br />
++ <a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/22938266/linux-kernel-makefile-cscope-target">Linux
+kernel makefile cscope target</a><br />
++ <a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/33676829/vim-configuration-for-linux-kernel-development">Vim
+configuration for Linux kernel development [closed]</a>里面建议
+<code>cscope</code> 和 <code>ctags</code> 两个工具</p>
+<p>每次使用前，在cscope.out所在的根目录打开vim<br />
+在vim命令行中添加cscope db</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:cs add [path\to\].cscope.out</span><br></pre></td></tr></table></figure>
+<h2 id="nerdtree">NERDTree</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/5601830">How to filter out
+files by extension in NERDTree?</a></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">let NERDTreeIgnore = [&#x27;\.pyc$&#x27;, &#x27;\.py$&#x27;]</span><br></pre></td></tr></table></figure>
+<h2 id="search">search</h2>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/657447/vim-clear-last-search-highlighting">Vim
+clear last search highlighting</a></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">To turn off highlighting until the next search:</span><br><span class="line"></span><br><span class="line">:noh</span><br><span class="line">Or turn off highlighting completely:</span><br><span class="line"></span><br><span class="line">set nohlsearch</span><br><span class="line">Or, to toggle it:</span><br><span class="line"></span><br><span class="line">set hlsearch!</span><br><span class="line"></span><br><span class="line">nnoremap &lt;F3&gt; :set hlsearch!&lt;CR&gt;</span><br></pre></td></tr></table></figure>
+<p>下面内容过于繁琐陈旧，不必再看。</p>
+<hr />
+<h1 id="vundle">Vundle</h1>
+<p><a
+target="_blank" rel="noopener" href="https://github.com/VundleVim/Vundle.vim#quick-start">Vundle</a>是Vim
+bundle的缩写，它是一款Vim的插件管理工具。 Vundle可以允许用户</p>
+<pre><code>1. 在`.vimrc`中跟踪和配置插件；
+2. 安装插件，类似于script/bundle；
+3. 升级配置的插件；
+4. 按照名字搜索Vim脚本；
+5. 清除不使用的插件；
+...</code></pre>
+<h2 id="安装vundle">安装Vundle</h2>
+<p>安装很简单，只需要安装到<code>~/.vim/bundle/Vundle.vim</code>。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim</span><br></pre></td></tr></table></figure></p>
+<h2 id="配置vundle">配置Vundle</h2>
+<p>将下面官网给出的配置信息写入<code>~/.vimrc</code>文件中，可以把<code>Plugin 'file:///home/gmarik/path/to/plugin'</code>用<code>"</code>注释掉，因为这是配置本机路径，很明显此文件在我的机器本地路径不存在。否则会报错。</p>
+<pre><code>set nocompatible              &quot; be iMproved, required
+filetype off                  &quot; required
+
+&quot; set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+&quot; alternatively, pass a path where Vundle should install plugins
+&quot;call vundle#begin(&#39;~/some/path/here&#39;)
+
+&quot; let Vundle manage Vundle, required
+Plugin &#39;VundleVim/Vundle.vim&#39;
+
+&quot; The following are examples of different formats supported.
+&quot; Keep Plugin commands between vundle#begin/end.
+&quot; plugin on GitHub repo
+Plugin &#39;tpope/vim-fugitive&#39;
+&quot; plugin from http://vim-scripts.org/vim/scripts.html
+&quot; Plugin &#39;L9&#39;
+&quot; Git plugin not hosted on GitHub
+Plugin &#39;git://git.wincent.com/command-t.git&#39;
+&quot; git repos on your local machine (i.e. when working on your own plugin)
+Plugin &#39;file:///home/gmarik/path/to/plugin&#39;
+&quot; The sparkup vim script is in a subdirectory of this repo called vim.
+&quot; Pass the path to set the runtimepath properly.
+Plugin &#39;rstacruz/sparkup&#39;, &#123;&#39;rtp&#39;: &#39;vim/&#39;&#125;
+&quot; Install L9 and avoid a Naming conflict if you&#39;ve already installed a
+&quot; different version somewhere else.
+&quot; Plugin &#39;ascenator/L9&#39;, &#123;&#39;name&#39;: &#39;newL9&#39;&#125;
+
+&quot; All of your Plugins must be added before the following line
+call vundle#end()            &quot; required
+filetype plugin indent on    &quot; required
+&quot; To ignore plugin indent changes, instead use:
+&quot;filetype plugin on
+&quot;
+&quot; Brief help
+&quot; :PluginList       - lists configured plugins
+&quot; :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
+&quot; :PluginSearch foo - searches for foo; append `!` to refresh local cache
+&quot; :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
+&quot;
+&quot; see :h vundle for more details or wiki for FAQ
+&quot; Put your non-Plugin stuff after this line</code></pre>
+<h2 id="安装插件">安装插件</h2>
+<p>将想要安装的插件，按照地址填写方法，将地址填写在<code>~/.vimrc</code>
+中的 <strong>vundle#begin</strong> 和 <strong>vundle#end</strong>
+之间就可以。<br />
+添加完 启动Vim，执行<code>:PluginInstall</code>即可安装。
+可以通过<code>:PluginUpdate</code>一键更新所有插件。</p>
+<p>参考： 1. <a
+target="_blank" rel="noopener" href="https://github.com/VundleVim/Vundle.vim#quick-start">VundleVim/Vundle.vim</a></p>
+<h2 id="移除插件">移除插件</h2>
+<ol type="1">
+<li>编辑.vimrc文件移除的你要移除的插件所对应的plugin那一行。</li>
+<li>保存退出当前的vim</li>
+<li>重新打开vim，输入命令BundleClean。</li>
+</ol>
+<h2 id="其他常用命令">其他常用命令</h2>
+<ul>
+<li>更新插件 <code>BundleUpdate</code></li>
+<li>列出所有插件 <code>BundleList</code></li>
+<li>查找插件 <code>BundleSearch</code></li>
+</ul>
+<h1 id="一些常用的插件">一些常用的插件</h1>
+<p>通过github repos来定义的插件</p>
+<pre><code>Bundle &#39;christoomey/vim-run-interactive&#39;
+Bundle &#39;Valloric/YouCompleteMe&#39;
+Bundle &#39;croaky/vim-colors-github&#39;
+Bundle &#39;danro/rename.vim&#39;
+Bundle &#39;majutsushi/tagbar&#39;
+Bundle &#39;kchmck/vim-coffee-script&#39;
+Bundle &#39;kien/ctrlp.vim&#39;
+Bundle &#39;pbrisbin/vim-mkdir&#39;
+Bundle &#39;scrooloose/syntastic&#39;
+Bundle &#39;slim-template/vim-slim&#39;
+Bundle &#39;thoughtbot/vim-rspec&#39;
+Bundle &#39;tpope/vim-bundler&#39;
+Bundle &#39;tpope/vim-endwise&#39;
+Bundle &#39;tpope/vim-fugitive&#39;
+Bundle &#39;tpope/vim-rails&#39;
+Bundle &#39;tpope/vim-surround&#39;
+Bundle &#39;vim-ruby/vim-ruby&#39;
+Bundle &#39;vim-scripts/ctags.vim&#39;
+Bundle &#39;vim-scripts/matchit.zip&#39;
+Bundle &#39;vim-scripts/tComment&#39;
+Bundle &quot;mattn/emmet-vim&quot;
+Bundle &quot;scrooloose/nerdtree&quot;
+Bundle &quot;Lokaltog/vim-powerline&quot;
+Bundle &quot;godlygeek/tabular&quot;
+Bundle &quot;msanders/snipmate.vim&quot;
+Bundle &quot;jelera/vim-javascript-syntax&quot;
+Bundle &quot;altercation/vim-colors-solarized&quot;
+Bundle &quot;othree/html5.vim&quot;
+Bundle &quot;xsbeats/vim-blade&quot;
+Bundle &quot;Raimondi/delimitMate&quot;
+Bundle &quot;groenewege/vim-less&quot;
+Bundle &quot;Lokaltog/vim-easymotion&quot;
+Bundle &quot;tomasr/molokai&quot;
+Bundle &quot;klen/python-mode&quot;</code></pre>
+<p>其中主要用到的是 <em>YouCompleteMe</em> 和
+<em>nerdtree</em>，需要注意的是安装好后需要添加配置信息。</p>
+<h1 id="youcompleteme">YouCompleteMe</h1>
+<p>代码编辑器怎么能少了自动补齐功能？Vim下值得安装的工具<a
+target="_blank" rel="noopener" href="https://github.com/Valloric/YouCompleteMe">YouCompleteMe</a>简称<a
+target="_blank" rel="noopener" href="https://github.com/Valloric/YouCompleteMe">YCM</a>。</p>
+<p>YCM是很强大的自动补全引擎，支持的语言包括
+C-family，C#，Go，JavaScript，
+Python，Rust，TypeScript，当然也可以支持其他语言。
+功能强大，比较重量级，安装起来也比较麻烦。
+官网上给出的安装教程不是很完整，下面介绍我自己的安装过程。</p>
+<h2 id="安装环境">安装环境</h2>
+<p>我的操作系统是<code>Ubuntu 16.04</code>，确保 vim 版本是 7.4.143
+或以上，并且支持python
+2/3脚本。官网给出的结果<code>Ubuntu 16.04</code>及以上系统足够配置。不过可以通过<code>vim --version</code>确认。</p>
+<p>安装必要的开发工具，CMake和Python工具。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential cmake</span><br><span class="line">sudo apt-get install python-dev python3-dev</span><br></pre></td></tr></table></figure></p>
+<h2 id="通过vundle安装ycm">通过Vundle安装YCM</h2>
+<p>在 vim 的配置文件 <code>~/.vimrc</code> 中添加一行（在call
+vundle#begin() 和 call vundle#end() 之间） <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Plugin &#x27;Valloric/YouCompleteMe’</span><br></pre></td></tr></table></figure>
+启动Vim，运行<code>:PluginInstall</code> 安装。
+虽然安装成功，但是启动Vim后发现报错。</p>
+<pre><code>YouCompleteme unavailable : no module named future</code></pre>
+<p>再继续下面操作。 ## 编译YCM</p>
+<p>这里举例支持C-family语法自动补齐功能的安装。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.vim/bundle/YouCompleteMe</span><br><span class="line">./install.py --clang-completer</span><br></pre></td></tr></table></figure></p>
+<p>这个过程会自动安装<code>clang</code>，从而在<code>~/.vim/bundle/YouCompleteMe/python</code>目录下产生libclang.so文件。</p>
+<h2 id="配置ycm">配置YCM</h2>
+<p>复制 .ycm_extra_conf.py 文件。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp ~/.vim/bundle/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py ~/.vim/</span><br></pre></td></tr></table></figure></p>
+<p>在<code>~/.vimrc</code>中添加 vim 配置注意下面的 python
+解释器的路径要和编译 ycm_core 的时候使用的python 解释器是相同的版本（2
+或 3）。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">let g:ycm_server_python_interpreter=&#x27;/usr/bin/python&#x27;</span><br><span class="line">let g:ycm_global_ycm_extra_conf=&#x27;~/.vim/.ycm_extra_conf.py&#x27;</span><br></pre></td></tr></table></figure></p>
+<p>其中<code>ycm_global_ycm_extra_conf</code>非常重要，里面设定ycm的搜索头文件路径。.ycm_extra_conf.py文件可以针对具体的代码工程建一个，如果不这么做，那么vim会按照.vimrc中设定的路径去找.ycm_extra_conf.py。
+其他一些必要的配置:</p>
+<pre><code>&quot; 设置跳转到方法/函数定义的快捷键 
+nnoremap &lt;leader&gt;j :YcmCompleter GoToDefinitionElseDeclaration&lt;CR&gt; 
+&quot; 触发补全快捷键 
+let g:ycm_key_list_select_completion = [&#39;&lt;TAB&gt;&#39;, &#39;&lt;c-n&gt;&#39;, &#39;&lt;Down&gt;&#39;] 
+let g:ycm_key_list_previous_completion = [&#39;&lt;S-TAB&gt;&#39;, &#39;&lt;c-p&gt;&#39;, &#39;&lt;Up&gt;&#39;] 
+let g:ycm_auto_trigger = 1 
+&quot; 最小自动触发补全的字符大小设置为 3 
+let g:ycm_min_num_of_chars_for_completion = 3 
+&quot; YCM的previw窗口比较恼人，还是关闭比较好 
+set completeopt-=preview </code></pre>
+<p>其他语言的安装可参见官网。</p>
+<p>参考: 1. <a
+target="_blank" rel="noopener" href="https://github.com/Valloric/YouCompleteMe#ubuntu-linux-x64">Valloric/YouCompleteMe</a>
+2. <a
+target="_blank" rel="noopener" href="https://www.jianshu.com/p/d908ce81017a">一步一步带你安装史上最难安装的
+vim 插件 —— YouCompleteMe</a> 3. <a
+target="_blank" rel="noopener" href="http://blog.csdn.net/vintage_1/article/details/21557277">Vim+Vundle+YouCompleteMe</a></p>
+<h1 id="nerdtree-1">NERDTree</h1>
+<p><a
+target="_blank" rel="noopener" href="https://github.com/scrooloose/nerdtree">NERDTree</a>查看当前目录下的目录文件树，可以很方便的找到对应的文件并进行切换编辑。</p>
+<h2 id="安装">安装</h2>
+<p>通过Vundle安装。在.vimrc，加入 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Plugin &#x27;scrooloose/nerdtree&#x27; &quot; 加入NERDTree</span><br></pre></td></tr></table></figure></p>
+<p>保存退出，并重新进入vim，执行:PluginInstall，等待安装，安装完成会有Done状态提示，这样NERDTree插件就安装上了，执行<code>:NERDTree命令</code>，<strong>这里一定要大小写分明</strong>，侧栏文件树形目录就出来了。</p>
+<h2 id="配置nerdtree">配置NERDTree</h2>
+<p>配置NERDTree可以在<code>~/.vimrc</code>中添加如下命令。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&quot; 想要打开Vim时自动打开NERDTree。</span><br><span class="line">autocmd vimenter * NERDTree</span><br><span class="line"></span><br><span class="line">&quot; 使用F2键快速调出和隐藏它；</span><br><span class="line">map &lt;F2&gt; :NERDTreeToggle&lt;CR&gt;</span><br><span class="line"></span><br><span class="line">&quot; 将 NERDTree 的窗口设置在 vim 窗口的右侧（默认为左侧）</span><br><span class="line">let NERDTreeWinPos=&quot;right&quot;</span><br><span class="line"></span><br><span class="line">&quot; 当打开 NERDTree 窗口时，自动显示 Bookmarks</span><br><span class="line">let NERDTreeShowBookmarks=1</span><br></pre></td></tr></table></figure></p>
+<p>当然更重要的是如何使用这款插件。</p>
+<p>在工作台和目录间切换。</p>
+<pre><code>ctrl + w + h    光标 focus 左侧树形目录
+ctrl + w + l    光标 focus 右侧文件显示窗口
+ctrl + w + w    光标自动在左右侧窗口切换
+ctrl + w + r    移动当前窗口的布局位置</code></pre>
+<p>常用操作:</p>
+<pre><code>o       在已有窗口中打开文件、目录或书签，并跳到该窗口
+go      在已有窗口 中打开文件、目录或书签，但不跳到该窗口
+t       在新 Tab 中打开选中文件/书签，并跳到新 Tab
+T       在新 Tab 中打开选中文件/书签，但不跳到新 Tab
+i       split 一个新窗口打开选中文件，并跳到该窗口
+gi      split 一个新窗口打开选中文件，但不跳到该窗口
+s       vsplit 一个新窗口打开选中文件，并跳到该窗口
+gs      vsplit 一个新 窗口打开选中文件，但不跳到该窗口
+!       执行当前文件
+O       递归打开选中 结点下的所有目录
+x       合拢选中结点的父目录
+X       递归 合拢选中结点下的所有目录
+e       Edit the current dif
+
+双击    相当于 NERDTree-o
+中键    对文件相当于 NERDTree-i，对目录相当于 NERDTree-e
+
+D       删除当前书签
+
+P       跳到根结点
+p       跳到父结点
+K       跳到当前目录下同级的第一个结点
+J       跳到当前目录下同级的最后一个结点
+k       跳到当前目录下同级的前一个结点
+j       跳到当前目录下同级的后一个结点
+
+C       将选中目录或选中文件的父目录设为根结点
+u       将当前根结点的父目录设为根目录，并变成合拢原根结点
+U       将当前根结点的父目录设为根目录，但保持展开原根结点
+r       递归刷新选中目录
+R       递归刷新根结点
+m       显示文件系统菜单
+cd      将 CWD 设为选中目录
+
+I       切换是否显示隐藏文件
+f       切换是否使用文件过滤器
+F       切换是否显示文件
+B       切换是否显示书签
+
+q       关闭 NerdTree 窗口
+?       切换是否显示 Quick Help</code></pre>
+<p>切换标签页:</p>
+<pre><code>:tabnew [++opt选项] ［＋cmd］ 文件      建立对指定文件新的tab
+:tabc   关闭当前的 tab
+:tabo   关闭所有其他的 tab
+:tabs   查看所有打开的 tab
+:tabp   前一个 tab
+:tabn   后一个 tab
+
+标准模式下：
+gT      前一个 tab
+gt      后一个 tab
+
+MacVim 还可以借助快捷键来完成 tab 的关闭、切换
+cmd+w   关闭当前的 tab
+cmd+&#123;   前一个 tab
+cmd+&#125;   后一个 tab</code></pre>
+<h1 id="安装-vim-airline-插件">安装 vim-airline 插件</h1>
+<p>这个插件没有很大的实用性，但能增加逼格，增加vim的有趣性。</p>
+<p>第一步，我们先把下面的需要配置的文件添加到 ~/.vimrc 中</p>
+<pre><code>&quot; ------------------------安装 vim-airline------------------
+
+set laststatus=2   &quot; 永远显示状态栏
+set t_Co=256       &quot; 在windows中用xshell连接打开vim可以显示色彩
+
+&quot;Vim 在与屏幕/键盘交互时使用的编码(取决于实际的终端的设定)        
+:set encoding=utf-8
+:set langmenu=zh_CN.UTF-8
+:set fileencodings=utf-8
+:set fileencoding=utf-8
+:set termencoding=utf-8
+
+Plugin &#39;vim-airline&#39;    
+let g:airline_theme=&quot;molokai&quot;
+
+&quot;这个是安装字体后 必须设置此项&quot; 
+let g:airline_powerline_fonts = 1  
+&quot;打开tabline功能,方便查看Buffer和切换,省去了minibufexpl插件
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#buffer_nr_show = 1
+
+&quot;设置切换Buffer快捷键&quot;
+nnoremap &lt;F4&gt; :bn&lt;CR&gt;
+&quot; 关闭状态显示空白符号计数
+let g:airline#extensions#whitespace#enabled = 0
+let g:airline#extensions#whitespace#symbol = &#39;!&#39;
+&quot; 设置consolas字体&quot;前面已经设置过
+&quot;set guifont=Consolas\ for\ Powerline\ FixedD:h11
+if !exists(&#39;g:airline_symbols&#39;)
+let g:airline_symbols = &#123;&#125;
+endif
+&quot; old vim-powerline symbols
+let g:airline_left_sep = &#39;⮀&#39;
+let g:airline_left_alt_sep = &#39;⮁&#39;
+let g:airline_right_sep = &#39;⮂&#39;
+let g:airline_right_alt_sep = &#39;⮃&#39;
+let g:airline_symbols.branch = &#39;⭠&#39;
+let g:airline_symbols.readonly = &#39;⭤&#39;</code></pre>
+<p>第二步：要安装字体，如果没有安装字体的话，vim-airline的效果就没法正确的显示</p>
+<p>字体安装GitHub地址：<a target="_blank" rel="noopener" href="https://github.com/powerline/fonts"
+class="uri">https://github.com/powerline/fonts</a></p>
+<p>在终端上一步步输入下面的内容即可：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># clone</span><br><span class="line">git clone https://github.com/powerline/fonts --depth=1</span><br><span class="line"># install</span><br><span class="line">cd fonts</span><br><span class="line">./install.sh</span><br><span class="line"># clean-up a bit</span><br><span class="line">cd ..</span><br><span class="line">rm -rf fonts</span><br></pre></td></tr></table></figure>
+<h1 id="参考">参考：</h1>
+<ol type="1">
+<li><a
+target="_blank" rel="noopener" href="http://yang3wei.github.io/blog/2013/01/29/nerdtree-kuai-jie-jian-ji-lu/">NERDTree
+快捷键辑录</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.jianshu.com/p/eXMxGx">NERDTree插件（vim笔记三）</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/vim/" rel="tag"># vim</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/01/24/tmux%E7%BB%88%E7%AB%AF%E5%A4%8D%E7%94%A8/" rel="prev" title="Tmux终端复用">
+                  <i class="fa fa-angle-left"></i> Tmux终端复用
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/02/08/python%E4%B9%8Bpickle%E7%9A%84%E4%BB%BB%E6%84%8F%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/" rel="next" title="python之pickle的任意代码执行漏洞">
+                  python之pickle的任意代码执行漏洞 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

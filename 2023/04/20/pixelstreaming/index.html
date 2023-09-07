@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本文分析UE5.1版本的PixelStreaming的Editor推流原理。 UE5.1相较于UE5.0在PixelStreaming的改动很大，引入了PixelStreamingEditor、PixelStreamingPlayer等功能。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE5的PixelStreaming分析">
+<meta property="og:url" content="http://juniorprincewang.github.io/2023/04/20/pixelstreaming/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本文分析UE5.1版本的PixelStreaming的Editor推流原理。 UE5.1相较于UE5.0在PixelStreaming的改动很大，引入了PixelStreamingEditor、PixelStreamingPlayer等功能。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://juniorprincewang.github.io/img/pixelstreaming/p2parch.jpg">
+<meta property="article:published_time" content="2023-04-20T01:48:19.000Z">
+<meta property="article:modified_time" content="2023-04-26T09:19:34.376Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="UE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://juniorprincewang.github.io/img/pixelstreaming/p2parch.jpg">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2023/04/20/pixelstreaming/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2023/04/20/pixelstreaming/","path":"2023/04/20/pixelstreaming/","title":"UE5的PixelStreaming分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>UE5的PixelStreaming分析 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8"><span class="nav-number">1.</span> <span class="nav-text">使用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#p2p-%E5%BB%BA%E7%AB%8B"><span class="nav-number">2.1.</span> <span class="nav-text">P2P 建立</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#editor%E7%9A%84video%E6%8E%A8%E6%B5%81"><span class="nav-number">2.2.</span> <span class="nav-text">Editor的Video推流</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8D%95%E8%8E%B7%E6%B8%B2%E6%9F%93%E5%B8%A7"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. 捕获渲染帧</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E7%BC%96%E7%A0%81%E5%99%A8"><span class="nav-number">2.2.2.</span> <span class="nav-text">2. 创建编码器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E7%A0%81"><span class="nav-number">2.2.3.</span> <span class="nav-text">3. 编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E9%80%81"><span class="nav-number">2.2.4.</span> <span class="nav-text">4. 发送</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2023/04/20/pixelstreaming/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="UE5的PixelStreaming分析 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          UE5的PixelStreaming分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-04-20 09:48:19" itemprop="dateCreated datePublished" datetime="2023-04-20T09:48:19+08:00">2023-04-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-04-26 17:19:34" itemprop="dateModified" datetime="2023-04-26T17:19:34+08:00">2023-04-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本文分析UE5.1版本的PixelStreaming的Editor推流原理。
+UE5.1相较于UE5.0在PixelStreaming的改动很大，引入了PixelStreamingEditor、PixelStreamingPlayer等功能。</p>
+<span id="more"></span>
+<h1 id="使用"><a href="#使用">使用</a></h1>
+<p>使用可以参考官方教程：<a
+target="_blank" rel="noopener" href="https://docs.unrealengine.com/5.1/en-US/pixel-streaming-in-editor/"
+class="uri">https://docs.unrealengine.com/5.1/en-US/pixel-streaming-in-editor/</a>。</p>
+<p>Editor启动命令： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UnrealEditor-Cmd.exe -project Path\To\Your\Project.uproject -RenderOffscreen -EditorPixelStreamingRes=1920x1080 -EditorPixelStreamingStartOnLaunch=true -PixelStreamingURL=ws://127.0.0.1:8888</span><br></pre></td></tr></table></figure>
+如果指定RenderOffscreen，就需要设置启动开启PixelStreaming选项和URL选项。如果正常启动，可以在Editor的工具栏中的Pixel
+Streaming中设置URL。Pixel
+Streaming可以连接远端已启动的信令服务器，也可以自启动/停止信令服务器。
+Pixel Streaming Editor提供了两种串流模式，一种是Full
+Editor，串流整个窗口;一种是Level Editor，串流Level Editor
+Viewport。两种方法获取Backbuffer方式不同而已。
+浏览器访问时需要设置鼠标为HoveringMouse模式，这样才会响应鼠标点击事件，或者在url中加入
+hoveringMouse=true 选项。</p>
+<h1 id="原理"><a href="#原理">原理</a></h1>
+<h2 id="p2p-建立">P2P 建立</h2>
+<p>游戏客户端与信令服务器间的通信由WebSocket建立后，便在信令服务器协调下与Browser建立起P2P连接。建立的P2P连接共建立了音频、视频流通道和输入数据通道，此后PixelStream客户端和Browser之间的数据交互不在经由信令服务器。
+P2P连接建立的过程如下图。</p>
+<ol type="1">
+<li>PixelStreaming客户端启动会带上启动参数
+<code>-PixelStreamingURL=ws://127.0.0.1:8888</code>
+形式的信令服务器地址,。PS通过WebSocket连接信令服务器地址，信令服务器收到请求后会返回附带iceServers候选项的配置信息供后面使用。</li>
+<li>用户在Browser访问WebServer，信令服务器收到用户请求后向PixelStreaming客户端发送playerConnected命令。</li>
+<li>PixelStreaming客户端收到playerConnected后，启动专门的线程处理与SignallingServer的操作，为player创建独立的session，创建
+PeerConnectionFactory、创建PeerConnection、创建DataChannel、为Audio与Video添加track，创建Offer并设置Local
+SDP，将SDP发送给信令服务器。</li>
+<li>Browser收到经由信令服务器发送来的WebRTC
+Offer请求后，同样也创建PeerConnectionFactory、创建PeerConnection、创建DataChannel、为Audio与Video添加track，创建Answer并设置Local
+SDP，将Offer设置成Remote SDP，同时将Answer SDP发送给信令服务器。</li>
+<li>PixelStreaming客户端收到信令服务器发送来的Answer指令后设置Remote
+SDP。</li>
+<li>PixelStreaming客户端与Candidate在协商好STUN服务器后，便可开始P2P的通信。</li>
+</ol>
+<figure>
+<img src="/img/pixelstreaming/p2parch.jpg" alt="P2P时序图" />
+<figcaption aria-hidden="true">P2P时序图</figcaption>
+</figure>
+<p>P2P连接过程涉及几个关键类，包括： +
+<code>FPixelStreamingSignallingConnection</code> ： 负责与Signalling
+Server的连接、接收消息、发送消息。该类主要封装了对
+<code>IWebSocket</code> 的调用，消息以Json格式传递。在
+<code>OnMessage()</code>
+函数中会解析信令服务器发送来的信息，解析出type字段，包括了config、offer、answer、iceCandidate、playerConnected、playerDisconnected、pong心跳信息等，后再去FStreamer对象处理。
++
+<code>FStreamer</code>：核心类，管理与信令服务器通信、管理用户会话，负责WebRTC的交互处理、UE输入、视频源等。
++
+<code>FPixelStreamingPeerConnection</code>：负责具体创建和处理PeerConnection一端的监听事件，包括创建
+<code>PeerConnectionFactory</code>、异步创建offer、answer异步接收offer、answer，异步设置LocalSDP和RemoteSDP，添加Remote
+Ice Candidate，创建DataChannel。 +
+<code>FPixelStreamingDataChannel</code>:
+负责处理DataChannel一端的监听事件（browser输入）和发送数据。</p>
+<h2 id="editor的video推流">Editor的Video推流</h2>
+<p>Video推流流程分四个步骤：（1）捕获渲染帧，（2）创建编码器，（3）编码，（4）发送。</p>
+<h3 id="捕获渲染帧">1. 捕获渲染帧</h3>
+<p>FullEditor模式捕获渲染帧通过UE中的Slate Render的回调函数
+<code>OnBackBufferReadyToPresent()</code> 完成，传递的参数
+<code>SlateWindow</code> 与 <code>FrameBuffer</code>
+即为捕获到的窗口和渲染帧。
+由于可视窗口可能会开多个且有叠加情况，该模式对所有可视化窗口帧做了组合。
+组合原理：将可视化窗口从底到顶逐一处理，这样后处理的纹理能够覆盖前面的纹理。这里组合纹理大小是屏幕坐标+窗口大小，初始化的组合纹理长宽为1。
+首先获取窗口坐标+大小，如果其长或宽有一方超过了组合纹理长或宽，则重新创建大纹理，将组合纹理赋值到此纹理；再将窗口纹理复制到组合纹理上。
+这种做法简单粗暴，未作覆盖部分的裁剪，底层纹理仅保留露出来的纹理即可，该过程可在CPU端处理。</p>
+<p>LevelEditor模式捕获渲染帧由
+<code>UGameViewportClient::OnViewportRendered</code>
+代理完成，该函数在viewport渲染完成后执行，拦截到的FViewport对象的RenderTargetTexture就是渲染帧。
+回调函数在渲染线程中调用，捕获后的组合纹理会被拷贝到一个循环队列中缓存起来，等到对纹理编码时再从循环队列中读取。
+纹理拷贝被封装到 <code>FPixelCapture Plugin</code> 中，由类
+<code>FPixelCaptureCapturer</code>
+完成，拷贝除了使用RHI外，又多了一种RDG方式。
+纹理拷贝通过RHI异步拷贝，轮询Fence
+来确定GPU拷贝完成；RDG方法不在GPU上立即执行Pass，而是先收集所有需要渲染的Pass，然后按照依赖的顺序对图表进行编译和执行，期间会执行各类裁剪和优化。
+纹理缓存由 <code>FOutputFrameBuffer</code>
+完成，内部实现为RingBuffer的循环队列。</p>
+<h3 id="创建编码器">2. 创建编码器</h3>
+<p>PixelStreaming使用 AVEncoder
+组件对视频进行编码，选取的编码类型为H264。
+<code>AVEncoder::FVideoEncoderFactory::Get().Create()</code>
+可用于创建视频编码器工厂对象。先配置
+VideoConfig，设置宽、高、码率、帧率等，根据 RHI （Vulkan3D113D12） 创建
+<code>VideoEncoderInput</code>，最终调用
+<code>VideoEncoderFactory</code> 对象创建
+encoder，此外还需要注册编码完成后的回调函数
+<code>SetOnEncodedPacket</code>。</p>
+<p>首先是向WebRTC的 <code>PeerConnectionFactory</code> 传入自定义的
+<code>VideoEncoderFactory</code>。 在创建
+<code>PeerConnectionFactory</code> 的函数
+<code>webrtc::CreatePeerConnectionFactory</code> 的参数中会传入
+<code>AudioEncoderFactory</code>、 <code>AudioDecoderFactory</code>、
+<code>VideoEncoderFactory</code> 和 <code>VideoDecoderFactory</code>
+四个编解码器工厂对象。 P2P创建 <code>PeerConnectionFactory</code> 传入的
+<code>AudioEncoderFactory</code>、 <code>AudioDecoderFactory</code>
+都是WebRTC内部指定类，而 <code>VideoEncoderFactory</code> 传入的是
+<code>FVideoEncoderFactoryLayered</code>
+对象，<code>VideoDecoderFactory</code> 传入的是
+<code>FVideoDecoderFactory</code>对象。 接着，创建自定义的
+<code>VideoEncoder</code>。编码器的创建由WebRTC内部调用
+<code>FVideoEncoderFactoryLayered</code> 对象的
+<code>CreateVideoEncoder()</code> 方法，创建出了
+<code>FVideoEncoderSingleLayerH264</code> 类型的
+<code>VideoEncoder</code> 对象。 最后，完成对 AVEncoder
+的创建。WebRTC在内部调用 <code>FVideoEncoderSingleLayerH264</code>
+对象的 <code>InitEncode</code> 函数时，创建了封装AVEncoder的
+<code>FVideoEncoderWrapperHardware</code> 对象，并在
+<code>AVEncoder::FVideoEncoder</code> 的
+<code>SetOnEncodedPacket</code>回调函数中注册了
+<code>FVideoEncoderWrapperHardware:: OnEncodedPacket</code>
+以用于发送编码后的FrameBuffer。</p>
+<h3 id="编码">3. 编码</h3>
+<p>编码过程发生在WebRTC的内部调用
+<code>FVideoEncoderSingleLayerH264</code> 对象的 <code>encode()</code>
+函数中，要将 WebRtc的 <code>VideoFrame</code> 转换成
+<code>TextureBuffer</code> 并再次绑定到AVEncoder可以操作的
+<code>FVideoEncoderInputFrame</code>，进而调用AVEncoder的
+<code>encode()</code> 函数进行真正的编码。</p>
+<h3 id="发送">4. 发送</h3>
+<p>发送过程发生在 <code>AVEncoder::FVideoEncoder</code>
+编码完成后的回调函数中，也就是函数
+<code>FVideoEncoderWrapperHardware::OnEncodedPacket()</code>。
+由于发送利用的是WebRTC内部接口，因此需要将AVEncoder的编码后内容构建成WebRTC格式，最终再去调用
+<code>FVideoEncoderSingleLayerH264</code> 的默认回调函数
+<code>OnEncodedImageCallback-&gt;OnEncodedImage()</code>
+来完成发送编码图像。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/UE/" rel="tag"># UE</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/03/17/vscode-debug/" rel="prev" title="vscode debug 笔记">
+                  <i class="fa fa-angle-left"></i> vscode debug 笔记
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

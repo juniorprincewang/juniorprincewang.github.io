@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Linux 内核模块是设备和用户应用程序之间的桥梁，可以通过标准系统调用，为应用程序屏蔽设备细节。本篇文章就记录下写内核模块需要注意的点。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="编写Linux内核模块">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/11/16/%E7%BC%96%E5%86%99Linux%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="Linux 内核模块是设备和用户应用程序之间的桥梁，可以通过标准系统调用，为应用程序屏蔽设备细节。本篇文章就记录下写内核模块需要注意的点。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-11-16T11:37:38.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.911Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="kernel">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/11/16/%E7%BC%96%E5%86%99Linux%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/11/16/%E7%BC%96%E5%86%99Linux%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97/","path":"2018/11/16/编写Linux内核模块/","title":"编写Linux内核模块"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>编写Linux内核模块 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E5%92%8C%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E5%8C%BA%E5%88%AB"><span class="nav-number">1.</span> <span class="nav-text">内核模块和应用程序区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E6%A0%B8%E7%9A%84%E5%B9%B6%E5%8F%91"><span class="nav-number">2.</span> <span class="nav-text">内核的并发</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E7%BC%96%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">内核模块编程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E6%A8%A1%E5%9D%97"><span class="nav-number">4.</span> <span class="nav-text">编译模块</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD%E5%92%8C%E5%8D%B8%E8%BD%BD%E6%A8%A1%E5%9D%97"><span class="nav-number">5.</span> <span class="nav-text">加载和卸载模块</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%8F-export_symbol"><span class="nav-number">6.</span> <span class="nav-text">宏 EXPORT_SYMBOL</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#export_symbol%E5%AE%8F%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">6.1.</span> <span class="nav-text">EXPORT_SYMBOL宏的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#export_symbol%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="nav-number">6.2.</span> <span class="nav-text">EXPORT_SYMBOL使用方法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/11/16/%E7%BC%96%E5%86%99Linux%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="编写Linux内核模块 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          编写Linux内核模块
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-11-16 19:37:38" itemprop="dateCreated datePublished" datetime="2018-11-16T19:37:38+08:00">2018-11-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>Linux
+内核模块是设备和用户应用程序之间的桥梁，可以通过标准系统调用，为应用程序屏蔽设备细节。本篇文章就记录下写内核模块需要注意的点。
+<span id="more"></span></p>
+<p>在编写Linux内核模块（驱动）这个过程中，应该掌握如下一些知识：</p>
+<ol type="1">
+<li><p>驱动开发人员应该有良好的C语言基础，并能灵活地应用C语言的结构体、指针、宏等基本语言结构。
+另外，Linux系统使用的C编译器是GNU C编译器，所以对GNU
+C标准的C语言也应该有所了解。</p></li>
+<li><p>驱动开发人员应该有良好的硬件基础。虽然不要求驱动开发人员具有设计电路的能力，但也应该对芯片手册上描述的接口设备有清楚的认识。
+常用的设备有SRAM、Flash、UART、IIC和USB等。</p></li>
+<li><p>驱动开发人员应该对Linux内核源代码有初步的了解。例如一些重要的数据结构和函数等。</p></li>
+<li><p>驱动开发人员应该有多任务程序设计的能力，同时驱动中也会使用大量的自旋锁、互斥锁和信号量等。</p></li>
+</ol>
+<h1 id="内核模块和应用程序区别">内核模块和应用程序区别</h1>
+<p>内核模块不是应用程序，从一开始就没有 <code>main()</code>
+函数。内核模块和普通应用程序的区别有：</p>
+<ul>
+<li>非顺序执行：
+内核模块使用初始化函数将自身注册并处理请求，初始化函数运行后就结束了。
+内核模块处理的请求在模块代码中定义。这和常用于图形用户界面（graphical-user
+interface，GUI）应用的事件驱动编程模型比较类似。</li>
+<li>没有自动清理：
+任何由内核模块申请的内存，必须要模块卸载时手动释放，否则这些内存将无法使用，直到系统重启。</li>
+<li>不要使用 printf() 函数： 内核代码无法访问为 Linux
+用户空间编写的库。内核模块运行在内核空间，它有自己独立的地址空间。内核空间和用户空间的接口被清晰的定义和控制。
+内核模块可以通过 printk()
+函数输出信息，这些输出可以在用户空间查看到。</li>
+<li>会被中断： 内核模块一个概念上困难的地方在于他们可能会同时被多个程序
+/
+进程使用。构建内核模块时需要小心，以确保在发生中断的时候行为一致和正确。</li>
+<li>更高级的执行特权： 通常内核模块会比用户空间程序分配更多的 CPU
+周期。这看上去是一个优势，然而需要特别注意内核模块不会影响到系统的综合性能。</li>
+<li>无浮点支持：
+对用户空间应用，内核代码使用陷阱（trap）来实现整数到浮点模式的转换。然而在内核空间中这些陷阱难以使用。
+替代方案是手工保存和恢复浮点运算，这是最好的避免方式，并将处理留给用户空间代码。</li>
+</ul>
+<h1 id="内核的并发">内核的并发</h1>
+<p>内核编程中有几个并发的来源。 1. 自然的, Linux 系统运行多个进程,
+在同一时间, 不止一个进程能够试图使用你的驱动。 2.
+大部分设备能够中断处理器; 中断处理异步运行,
+并且可能在你的驱动试图做其他事情的同一时间被调用。 3.
+在对称多处理器系统( SMP )上运行, 驱动可能在多个 CPU 上并发执行。</p>
+<h1 id="内核模块编程">内核模块编程</h1>
+<p>这里使用 Derek Molloy 的 <code>hello.c</code> 编程代码来学习。
+编写一个内核最最基本的框架，需要引用的头文件和函数。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;linux/init.h&gt;             // 用于标记函数的宏，如 __init、__exit</span><br><span class="line">#include &lt;linux/module.h&gt;           // 加载内核模块到内核使用的核心头文件 </span><br><span class="line">#include &lt;linux/kernel.h&gt;           // 包含内核使用的类型、宏和函数 </span><br><span class="line"></span><br><span class="line">MODULE_LICENSE(&quot;GPL&quot;);              ///&lt; 许可类型，它会影响到运行时行为 </span><br><span class="line">MODULE_AUTHOR(&quot;Derek Molloy&quot;);      ///&lt; 作者，当使用 modinfo 命令时可见 </span><br><span class="line">MODULE_DESCRIPTION(&quot;A simple Linux driver for the BBB.&quot;);  ///&lt; 模块描述，参见 modinfo 命令 </span><br><span class="line">MODULE_VERSION(&quot;0.1&quot;);              ///&lt; 模块版本 </span><br><span class="line"></span><br><span class="line">static char *name = &quot;world&quot;;        ///&lt; 可加载内核模块参数示例，这里默认值设置为“world”</span><br><span class="line">module_param(name, charp, S_IRUGO); ///&lt; 参数描述。charp 表示字符指针（char ptr），S_IRUGO 表示该参数只读，无法修改 </span><br><span class="line">MODULE_PARM_DESC(name, &quot;The name to display in /var/log/kern.log&quot;);  ///&lt; 参数描述 </span><br><span class="line"></span><br><span class="line">/** @brief 可加载内核模块初始化函数 </span><br><span class="line"> *  static 关键字限制了该函数的可见范围为当前 C 文件。</span><br><span class="line"> *  __init 宏表示对于内置驱动（不是可加载内核模块），该函数只在初始化的时候执行，</span><br><span class="line"> *  在此之后，该函数可以废弃，且内存可以被回收。</span><br><span class="line"> *  @return 当执行成功返回 0</span><br><span class="line"> */</span><br><span class="line">static int __init helloBBB_init(void)&#123;</span><br><span class="line">   printk(KERN_INFO &quot;EBB: Hello %s from the BBB LKM!\n&quot;, name);</span><br><span class="line">   return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/** @brief 可加载内核模块清理函数 </span><br><span class="line"> *  和初始化函数类似，它是静态（static）的。__exit 函数表示如果这个代码是给内置驱动（非可加载内核模块）使用，该方法是不需要的。 </span><br><span class="line"> */</span><br><span class="line">static void __exit helloBBB_exit(void)&#123;</span><br><span class="line">   printk(KERN_INFO &quot;EBB: Goodbye %s from the BBB LKM!\n&quot;, name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/** @brief 内核模块必须使用 linux/init.h 头文件提供的 module_init() 和 module_exit() 宏，</span><br><span class="line"> *  它们标识了在模块插入时的初始化函数和移除时的清理函数（如上描述）</span><br><span class="line"> */</span><br><span class="line">module_init(helloBBB_init);</span><br><span class="line">module_exit(helloBBB_exit);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第 5 行：语句 <code>MODULE_LICENSE("GPL")</code> 提供了（通过
+<code>modinfo</code>
+）该模块的许可条款，这让使用这个内核模块的用户能够确保在使用自由软件。由于内核是基于
+GPL 发布的，许可的选择会影响内核处理模块的方式。如果对于非 GPL
+代码选择“专有”许可，内核将会把模块标记为“污染的（tainted）”，并且显示警告。对
+GPL 有非污染（non-tainted）的替代品，比如“GPL 版本 2”、“GPL
+和附加权利”、“BSD/GPL 双许可”、“MIT/GPL 双许可”和“MPL/GPL
+双许可”。更多内容可以查看 <code>linux/module.h</code> 头文件。</li>
+<li>第 10
+行：名字（字符类型指针）被声明为静态，并且被初始化包含字符串“hello”。
+<code>在内核模块中应该避免使用全局变量</code>，这比在应用程序编程时更加重要，因为全局变量被整个内核共享。应该使用
+<code>static</code>
+关键字来限制变量在模块中的作用域。如果必须使用全局变量，在变量名上增加前缀确保在模块中是唯一的。</li>
+<li>第 11 行： <code>module_param(name, type, permissions)</code>
+宏有三个参数，<code>名字</code>（展示给用户的参数名和模块中的变量名）、
+<code>类型</code>（参数类型，即
+byte、int、uint、long、ulong、short、ushort、bool、逆布尔 invbool
+或字符指针之一）和 <code>权限</code>（这是当使用 sysfs
+时对参数的访问权限。值 0 禁用该项，而值为 <code>S_IRUGO</code>
+运行用户/组/其他有读权限，参阅访问权限模式位指南）。</li>
+<li>第 20 和 28 行：函数可以是任何名字（如 <code>helloBBB_init()</code>
+和 <code>helloBBB_exit()</code> ），但是必须向
+<code>module_init()</code> 和 <code>module_exit()</code>
+宏传入相同的名字，如第 35 和 36 行。</li>
+<li>第 21 行： <code>printk()</code> 和 <code>printf()</code>
+行数的使用方式类似，可以在内核模块代码的任何地方调用该函数。唯一重要却别是当调用
+<code>printk()</code> 函数时，必须提供日志级别。日志级别在
+<code>linux/kern_levels.h</code> 头文件中定义，它的值为
+KERN_EMERG、KERN_ALERT、KERN_CRIT、KERN_ERR、KERN_WARNING、KERN_NOTICE、KERN_INFO、KERN_DEBUG
+和 KERN_DEFAULT 之一。该头文件通过 <code>linux/printk.h</code>
+文件被包含在 <code>linux/kernel.h</code> 头文件中。</li>
+</ul>
+<h1 id="编译模块">编译模块</h1>
+<p>构建内核模块需要 Makefile 文件，事实上是一个特殊的
+<code>kbuild Makefile</code> 。 构建本文示例的内核模块所需要的
+<code>kbuild Makefile</code> 文件参见下面代码。
+详细的内核编译指南，参见内核源码的 <a
+target="_blank" rel="noopener" href="https://www.kernel.org/doc/Documentation/kbuild/"><code>Document/kbuild</code>
+目录</a>下发现的文件。</p>
+<p>构建 Hello World 可加载内核模块需要的 Makefile 文件 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">obj-m+=hello.o</span><br><span class="line"></span><br><span class="line">all:</span><br><span class="line">    make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) modules</span><br><span class="line">clean:</span><br><span class="line">    make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) clean</span><br></pre></td></tr></table></figure></p>
+<p>Makefile
+文件第一行被成为目标定义，它定义了需要构建的模块（hello.o）。这条命令表明有一个模块要
+从目标文件 hello.o 建立， 在从目标文件建立后结果模块命名为
+hello.ko。它的语法惊人的复杂，例如 <code>obj-m</code>
+定义了<code>可加载模块目标</code> ，<code>obj-y</code>
+表示内置的对象目标。
+当模块需要从多个目标文件构建时，语法会变得更加复杂。
+如果你有一个模块名为 module.ko, 是来自 2 个源文件( 姑且称之为, file1.c
+和 file2.c ), 正确的书写应当是: <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">obj-m := module.o</span><br><span class="line">module-objs := file1.o file2.o</span><br></pre></td></tr></table></figure> Makefile
+文件中需要提醒的内容和普通 Makefile 文件类似。
+<code>$(shell uname -r) 命令返回当前内核构建版本</code>，这确保了一定程度的可移植性。
+<code>-C</code> 选项在执行任何 make
+任务前将目录切换到内核目录，它在那里会发现内核的顶层 makefile。
+<code>M=$(PWD)</code> 变量赋值告诉 make
+命令实际工程文件存放位置，在试图建立模块 (modules)
+目标前，回到你的模块源码目录，而此目标会在 <code>obj-m</code>
+变量里面找模块列表。对于外部内核模块来说，modules
+目标是默认目标。另一种目标是
+modules_install，它将安装模块（make命令必须使用超级用户权限执行且需要提供模块安装路径）。</p>
+<h1 id="加载和卸载模块">加载和卸载模块</h1>
+<p>通过 <code>insmod</code> 命令将模块插入内核，通过 <code>rmmod</code>
+命令删除模块。要查询内核中当前的模块，使用 <code>lsmod</code>
+命令。因为模块可以依赖于其他模块，所以可以用 <code>depmod</code>
+命令构建一个依赖项文件。要在模块之前自动加载依赖模块，可以使用
+<code>modprobe</code> 命令（ <code>insmod</code>
+的包装器）。最后，您可以使用 <code>modinfo</code> 命令读取 LKM
+的模块信息 。</p>
+<p><code>insmod</code> 命令和 <code>modprobe</code>
+都可以动态加载驱动模块。不过 <code>modprobe</code>
+可以解决加载模块时的依赖关系，它是通过
+<code>/lib/modules/$(shell uname -r)/modules.dep(.bb)</code>
+文件来查找依赖关系的；而 <code>insmod</code> 不能解决依赖问题，但是
+<code>insmod</code> 可以在任何目录下执行。
+如果要加载的驱动模块还依赖其他ko驱动模块的话，就只能将模块拷贝到上述的特定目录，<code>depmod</code>
+后再 <code>modprobe</code>。 还有一点需要注意的是 <code>insmod</code>
+加载模块需要后缀名 <code>.ko</code> ，而 <code>modprobe</code>
+的模块名称不需要后缀名。 + <code>insmod</code> 动态加载 hello 模块。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">insmod hello.ko</span><br></pre></td></tr></table></figure> + <code>modprobe</code> 动态加载 hello 模块。
+<code>modprobe</code>
+会读取驱动模块安装目录下的modules.dep文件，从而分析出各个模块的依赖性的。因此，在
+<code>depmod</code> 后再去执行 <code>modprobe hello</code> 。 其中
+<code>depmod</code> 会在
+<code>/lib/modules/$(shell uname -r)/</code>目录下生成
+<code>modules.dep</code> 和 <code>modules.dep.bb</code>
+文件，表明模块的依赖关系。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cp hello.ko  /lib/modules/$(shell uname -r)/</span><br><span class="line">depmod </span><br><span class="line">modprobe hello</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>lsmod</code> 查看加载的驱动模块列表</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lsmod | grep hello</span><br><span class="line">Module                  Size  Used by</span><br><span class="line">hello                  16384  0</span><br></pre></td></tr></table></figure>
+<p>除了 <code>lsmod</code> 命令可以查看，还可以直接查看文件系统。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/modules | grep hello</span><br><span class="line">hello 16384 0 - Live 0xffffffffc1288000 (OE)</span><br></pre></td></tr></table></figure>
+这里查看到的信息和lsmod命令提供的相同，但是它同时提供了<strong>已加载模块在当前内核内存中的偏移量</strong>，这个数据在调试时非常有用。</p>
+<p>可加载内核模块在 <code>/sys/module</code>
+目录下也有目录项，它提供了用户直接访问自定义参数状态的方式。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:~# ll /sys/module/hello/</span><br><span class="line">总用量 0</span><br><span class="line">drwxr-xr-x   5 root root    0 11月 19 19:14 ./</span><br><span class="line">drwxr-xr-x 184 root root    0 11月 19 19:14 ../</span><br><span class="line">-r--r--r--   1 root root 4096 11月 19 19:10 coresize</span><br><span class="line">drwxr-xr-x   2 root root    0 11月 19 19:10 holders/</span><br><span class="line">-r--r--r--   1 root root 4096 11月 19 19:15 initsize</span><br><span class="line">-r--r--r--   1 root root 4096 11月 19 19:15 initstate</span><br><span class="line">drwxr-xr-x   2 root root    0 11月 19 19:15 notes/</span><br><span class="line">-r--r--r--   1 root root 4096 11月 19 19:10 refcnt</span><br><span class="line">drwxr-xr-x   2 root root    0 11月 19 19:15 sections/</span><br><span class="line">-r--r--r--   1 root root 4096 11月 19 19:15 srcversion</span><br><span class="line">-r--r--r--   1 root root 4096 11月 19 19:15 taint</span><br><span class="line">--w-------   1 root root 4096 11月 19 19:10 uevent</span><br><span class="line">root@ubuntu:~# cat /sys/module/hello/taint </span><br><span class="line">OE</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>rmmod</code> 卸载模块驱动 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rmmod hello</span><br><span class="line">rmmod hello.ko</span><br></pre></td></tr></table></figure>
+此处删除的是模块名称，可以是
+lsmod显示的模块名称，也可以是对应的ko文件名。</li>
+</ul>
+<p>当然还可以使用 <code>modprobe</code> 的 <code>-r</code> 选项。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">modprobe -r hello           # 注意这里无需输入.ko后缀</span><br><span class="line">depmod                      # 更新modules.dep和modules.dep.bb文件，记录模块的依赖关系</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>modinfo</code> 获得模块信息</li>
+</ul>
+<p>通过 <code>modinfo</code>
+命令，可以获得模块的信息，这个命令能够识别出模块的描述、作者和定义的任何模块参数：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">root#ubuntu:~# modinfo hello.ko </span><br><span class="line">filename:       /home/ubuntu/hello.ko</span><br><span class="line">license:        Dual BSD/GPL</span><br><span class="line">srcversion:     31FE72DA6A560C890FF9B3F</span><br><span class="line">depends:        </span><br><span class="line">retpoline:      Y</span><br><span class="line">vermagic:       4.4.0-139-generic SMP mod_unload modversions retpoline </span><br></pre></td></tr></table></figure></p>
+<h1 id="宏-export_symbol">宏 EXPORT_SYMBOL</h1>
+<p>Linux-2.4之前，默认的非static 函数和变量都会自动导入到kernel 空间，
+而Linux-2.6之后默认不导出所有的符号，所以使用
+<code>EXPORT_SYMBOL()</code> 做标记。</p>
+<h2 id="export_symbol宏的作用">EXPORT_SYMBOL宏的作用</h2>
+<p><code>EXPORT_SYMBOL</code>
+标签内定义的函数或者符号对全部内核代码公开，不用修改内核代码就可以在内核模块中直接调用。
+即使用 <code>EXPORT_SYMBOL</code>
+可以将一个函数以符号的方式导出给其他模块使用。
+符号的意思就是函数的入口地址，或者说是把这些符号和对应的地址保存起来的，在内核运行的过程中，可以找到这些符号对应的地址的。</p>
+<p>这里要和System.map做一下对比： System.map
+中的是连接时的函数地址。连接完成以后，在2.6内核运行过程中，是不知道哪个符号在哪个地址的。
+EXPORT_SYMBOL 的符号，
+是把这些符号和对应的地址保存起来，在内核运行的过程中，可以找到这些符号对应的地址。
+在模块加载中，其本质就是动态链接到内核。
+如果在模块中引用了内核或其它模块的符号，就要 <code>EXPORT_SYMBOL</code>
+这些符号，这样才能找到对应的地址连接。</p>
+<h2 id="export_symbol使用方法">EXPORT_SYMBOL使用方法</h2>
+<pre><code>1.在模块函数定义之后使用 `EXPORT_SYMBOL(函数名)`
+2.在调用该函数的模块中使用 `extern` 对要使用的符号或者函数进行声明
+3.首先加载定义该函数的模块，再加载调用该函数的模块</code></pre>
+<p>## EXPORT_SYMBOL示范 比如有两个驱动模块：Module A和Module
+B，其中Module B使用了Module A中的export的函数，因此在Module
+B的Makefile文件中必须添加： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">KBUILD_EXTRA_SYMBOLS += /path/to/ModuleA/Module.symvers</span><br><span class="line">export KBUILD_EXTRA_SYMBOLS</span><br></pre></td></tr></table></figure></p>
+<p>这样在编译Module
+B时，才不会出现Warning，提示说func1这个符号找不到，而导致编译得到的ko加载时也会出错。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">// Module A (mod_a.c)</span><br><span class="line">#include&lt;linux/init.h&gt;</span><br><span class="line">#include&lt;linux/module.h&gt;</span><br><span class="line">#include&lt;linux/kernel.h&gt;</span><br><span class="line"> </span><br><span class="line">static int func1(void)</span><br><span class="line">&#123;</span><br><span class="line">       printk(&quot;In Func: %s...\n&quot;,__func__);</span><br><span class="line">       return 0;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">// Export symbol func1</span><br><span class="line">EXPORT_SYMBOL(func1);</span><br><span class="line"> </span><br><span class="line">static int __init hello_init(void)</span><br><span class="line">&#123;</span><br><span class="line">       printk(&quot;Module 1，say hello world!\n&quot;);</span><br><span class="line">       return 0;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">static void __exit hello_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">       printk(&quot;Module 1,Exit!\n&quot;);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">module_init(hello_init);</span><br><span class="line">module_exit(hello_exit);</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">// Module B (mod_b.c)</span><br><span class="line">#include&lt;linux/init.h&gt;</span><br><span class="line">#include&lt;linux/kernel.h&gt;</span><br><span class="line">#include&lt;linux/module.h&gt;</span><br><span class="line">extern int functl(void);</span><br><span class="line">static int func2(void)</span><br><span class="line">&#123;</span><br><span class="line">       func1();</span><br><span class="line">       printk(&quot;In Func: %s...\n&quot;,__func__);</span><br><span class="line">       return 0;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">static int __init hello_init(void)</span><br><span class="line">&#123;</span><br><span class="line">       printk(&quot;Module 2,is used Module 1 function!\n&quot;);</span><br><span class="line">       func2();</span><br><span class="line">       return 0;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">static void __exit hello_exit(void)</span><br><span class="line">&#123;</span><br><span class="line">       printk(&quot;Module 2,Exit!\n&quot;);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">module_init(hello_init);</span><br><span class="line">module_exit(hello_exit);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>在驱动加载的时候，一定要先加载定义function1的Module
+A模块，然后再加载调用function1的Module B的驱动模块。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">insmod Module_A.ko</span><br><span class="line">insmod Module_B.ko</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/zengxianyang/article/details/50611828">Linux内核—EXPORT_SYMBOL宏的使用</a></p>
+<h1 id="参考">参考</h1>
+<ol type="1">
+<li><a
+target="_blank" rel="noopener" href="http://derekmolloy.ie/writing-a-linux-kernel-module-part-1-introduction/">Writing
+a Linux Kernel Module — Part 1: Introduction</a></li>
+<li><a
+target="_blank" rel="noopener" href="http://www.infoq.com/cn/articles/linux-kernel-module-part01">编写Linux内核模块——第一部分：前言</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/linux/l-lkm/index.html#artrelatedtopics">Linux
+可加载内核模块剖析</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/kernel/" rel="tag"># kernel</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/11/15/QEMU/" rel="prev" title="QEMU 学习">
+                  <i class="fa fa-angle-left"></i> QEMU 学习
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/11/20/Linux-dd-%E5%91%BD%E4%BB%A4/" rel="next" title="Linux dd 命令">
+                  Linux dd 命令 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

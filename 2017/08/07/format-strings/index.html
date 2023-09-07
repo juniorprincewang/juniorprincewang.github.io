@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="格式化漏洞的原理 printf函数在处理参数的时候，每遇到一个%开头的标记，就会根据这个%开头的字符所规定的规则执行，即使没有传入参数，也会认定栈上相应的位置为参数。 每一个格式化字符串的 % 之后可以跟一个十进制的常数再跟一个 $ 符号, 表示格式化指定位置的参数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="格式化字符串漏洞">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/08/07/format-strings/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="格式化漏洞的原理 printf函数在处理参数的时候，每遇到一个%开头的标记，就会根据这个%开头的字符所规定的规则执行，即使没有传入参数，也会认定栈上相应的位置为参数。 每一个格式化字符串的 % 之后可以跟一个十进制的常数再跟一个 $ 符号, 表示格式化指定位置的参数">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-08-07T12:38:44.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.888Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="格式化字符串">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/08/07/format-strings/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2017/08/07/format-strings/","path":"2017/08/07/format-strings/","title":"格式化字符串漏洞"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>格式化字符串漏洞 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%88%A9%E7%94%A8%E7%9B%AE%E7%9A%84"><span class="nav-number">1.</span> <span class="nav-text">格式化字符串利用目的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BF%E9%97%AE%E4%BB%BB%E6%84%8F%E4%BD%8D%E7%BD%AE%E5%86%85%E5%AD%98"><span class="nav-number">2.</span> <span class="nav-text">访问任意位置内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E5%86%99%E4%B8%80%E4%B8%AA%E6%95%B0%E5%AD%97"><span class="nav-number">3.</span> <span class="nav-text">在内存中写一个数字</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="nav-number"></span> <span class="nav-text">知识点</span></a></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/08/07/format-strings/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="格式化字符串漏洞 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          格式化字符串漏洞
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-08-07 20:38:44" itemprop="dateCreated datePublished" datetime="2017-08-07T20:38:44+08:00">2017-08-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/security/" itemprop="url" rel="index"><span itemprop="name">security</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/security/pwn/" itemprop="url" rel="index"><span itemprop="name">pwn</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>格式化漏洞的原理
+printf函数在处理参数的时候，每遇到一个%开头的标记，就会根据这个%开头的字符所规定的规则执行，即使没有传入参数，也会认定栈上相应的位置为参数。
+每一个格式化字符串的 % 之后可以跟一个十进制的常数再跟一个 $ 符号,
+表示格式化指定位置的参数</p>
+<span id="more"></span>
+<p>开始入坑格式化字符串漏洞利用！</p>
+<h2 id="格式化字符串利用目的">格式化字符串利用目的</h2>
+<ul>
+<li>读任意一块内存区域</li>
+<li>写任意一块内存区域</li>
+</ul>
+<h2 id="访问任意位置内存">访问任意位置内存</h2>
+<p>格式字符串位于栈上.
+如果我们可以把目标地址编码进格式字符串，那样目标地址也会存在于栈上，在接下来的例子里，格式字符串将保存在栈上的缓冲区中。</p>
+<p>最大的挑战就是想方设法找出 printf 函数栈指针(函数取参地址)到
+user_input 数组的这一段距离是多少，这段距离决定了你需要在%s
+之前输入多少个%x。</p>
+<h2 id="在内存中写一个数字">在内存中写一个数字</h2>
+<p>%n:
+该符号前输入的字符数量会被存储到对应的参数中去。<em>格式化字符串输出几个字符，%n就是几，比如printf("%d%n",
+1234, &amp;n)；此时n就是4.</em> 利用这个方法，攻击者可以做以下事情: 1.
+重写程序标识控制访问权限 2. 重写栈或者函数等等的返回地址
+然而，写入的值是由%n
+之前的字符数量决定的。真的有办法能够写入任意数值么？ 1.
+用最古老的计数方式， 为了写 1000，就填充 1000 个字符吧。 2.
+为了防止过长的格式字符串，我们可以使用一个宽度指定的格式指示器。(比如（%0
+数字 x）就会左填充预期数量的 0 符号)</p>
+<p>目前做这个<a
+target="_blank" rel="noopener" href="https://github.com/CTF-Thanos/ctf-writeups/tree/master/2016/CCTF/pwn/pwn3">格式化字符串题目</a>。也可以在这里下载<a
+href="/img/format-strings/pwn3">file</a>和<a
+href="/img/format-strings/libc.so.6">libc.so</a>。
+拿到之后先运行程序，是个简单的ftp server，开始需要输入用户名和密码。
+用IDA Pro查看反汇编代码，从main函数开始。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __cdecl __noreturn <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> **argv, <span class="type">const</span> <span class="type">char</span> **envp)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> v3; <span class="comment">// eax@2</span></span><br><span class="line">  <span class="type">int</span> v4; <span class="comment">// [sp+14h] [bp-2Ch]@1</span></span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> v5; <span class="comment">// [sp+3Ch] [bp-4h]@2</span></span><br><span class="line"></span><br><span class="line">  setbuf(<span class="built_in">stdout</span>, <span class="number">0</span>);</span><br><span class="line">  ask_username((<span class="type">char</span> *)&amp;v4);</span><br><span class="line">  ask_password((<span class="type">char</span> *)&amp;v4);</span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      print_prompt();</span><br><span class="line">      v3 = get_command();</span><br><span class="line">      v5 = v3;</span><br><span class="line">      <span class="keyword">if</span> ( v3 != <span class="number">2</span> )</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      put_file();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( v3 == <span class="number">3</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      show_dir();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> ( v3 != <span class="number">1</span> )</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">      get_file();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>ask_username</code>函数 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">char *__cdecl ask_username(char *dest)</span><br><span class="line">&#123;</span><br><span class="line">  char src[40]; // [sp+14h] [bp-34h]@1</span><br><span class="line">  int i; // [sp+3Ch] [bp-Ch]@1</span><br><span class="line"></span><br><span class="line">  puts(&quot;Connected to ftp.hacker.server&quot;);</span><br><span class="line">  puts(&quot;220 Serv-U FTP Server v6.4 for WinSock ready...&quot;);</span><br><span class="line">  printf(&quot;Name (ftp.hacker.server:Rainism):&quot;);</span><br><span class="line">  __isoc99_scanf(&quot;%40s&quot;, src);</span><br><span class="line">  for ( i = 0; i &lt;= 39 &amp;&amp; src[i]; ++i )</span><br><span class="line">    ++src[i];</span><br><span class="line">  return strcpy(dest, src);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<code>ask_password</code>函数为 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">int __cdecl ask_password(char *s1)</span><br><span class="line">&#123;</span><br><span class="line">  if ( strcmp(s1, &quot;sysbdmin&quot;) )</span><br><span class="line">  &#123;</span><br><span class="line">    puts(&quot;who you are?&quot;);</span><br><span class="line">    exit(1);</span><br><span class="line">  &#125;</span><br><span class="line">  return puts(&quot;welcome!&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+两者结合不难发现，server密码是sysbdmin，用户名采用采用凯撒加密，反推可得到用户名。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">get_file</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> dest; <span class="comment">// [sp+1Ch] [bp-FCh]@5</span></span><br><span class="line">  <span class="type">char</span> s1; <span class="comment">// [sp+E4h] [bp-34h]@1</span></span><br><span class="line">  <span class="type">char</span> *i; <span class="comment">// [sp+10Ch] [bp-Ch]@3</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;enter the file name you want to get:&quot;</span>);</span><br><span class="line">  __isoc99_scanf(<span class="string">&quot;%40s&quot;</span>, &amp;s1);</span><br><span class="line">  <span class="keyword">if</span> ( !<span class="built_in">strncmp</span>(&amp;s1, <span class="string">&quot;flag&quot;</span>, <span class="number">4u</span>) ) </span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;too young, too simple&quot;</span>);</span><br><span class="line">  <span class="keyword">for</span> ( i = (<span class="type">char</span> *)file_head; i; i = (<span class="type">char</span> *)*((_DWORD *)i + <span class="number">60</span>) )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( !<span class="built_in">strcmp</span>(i, &amp;s1) )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="built_in">strcpy</span>(&amp;dest, i + <span class="number">40</span>);</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">printf</span>(&amp;dest);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">printf</span>(&amp;dest);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> *<span class="title function_">put_file</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> *v0; <span class="comment">// ST1C_4@1</span></span><br><span class="line">  <span class="type">char</span> *result; <span class="comment">// eax@1</span></span><br><span class="line"></span><br><span class="line">  v0 = (<span class="type">char</span> *)<span class="built_in">malloc</span>(<span class="number">244u</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;please enter the name of the file you want to upload:&quot;</span>);</span><br><span class="line">  get_input((<span class="type">int</span>)v0, <span class="number">40</span>, <span class="number">1</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;then, enter the content:&quot;</span>);</span><br><span class="line">  get_input((<span class="type">int</span>)(v0 + <span class="number">40</span>), <span class="number">200</span>, <span class="number">1</span>);</span><br><span class="line">  *((_DWORD *)v0 + <span class="number">60</span>) = file_head;</span><br><span class="line">  result = v0;</span><br><span class="line">  file_head = (<span class="type">int</span>)v0;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">show_dir</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v0; <span class="comment">// eax@3</span></span><br><span class="line">  <span class="type">char</span> s[<span class="number">1024</span>]; <span class="comment">// [sp+14h] [bp-414h]@1</span></span><br><span class="line">  <span class="type">int</span> i; <span class="comment">// [sp+414h] [bp-14h]@1</span></span><br><span class="line">  <span class="type">int</span> j; <span class="comment">// [sp+418h] [bp-10h]@1</span></span><br><span class="line">  <span class="type">int</span> v5; <span class="comment">// [sp+41Ch] [bp-Ch]@1</span></span><br><span class="line"></span><br><span class="line">  v5 = <span class="number">0</span>;</span><br><span class="line">  j = <span class="number">0</span>;</span><br><span class="line">  bzero(s, <span class="number">0x400</span>u);</span><br><span class="line">  <span class="keyword">for</span> ( i = file_head; i; i = *(_DWORD *)(i + <span class="number">240</span>) )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">for</span> ( j = <span class="number">0</span>; *(_BYTE *)(i + j); ++j )</span><br><span class="line">    &#123;</span><br><span class="line">      v0 = v5++;</span><br><span class="line">      s[v0] = *(_BYTE *)(i + j);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">puts</span>(s);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>拿到puts的GOT地址，<code>0x0804a028</code>。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">➜  fmt_string_write_got objdump -R pwn3 </span><br><span class="line"></span><br><span class="line">pwn3:     file format elf32-i386</span><br><span class="line"></span><br><span class="line">DYNAMIC RELOCATION RECORDS</span><br><span class="line">OFFSET   TYPE              VALUE </span><br><span class="line">08049ffc R_386_GLOB_DAT    __gmon_start__</span><br><span class="line">0804a060 R_386_COPY        stdin</span><br><span class="line">0804a080 R_386_COPY        stdout</span><br><span class="line">0804a00c R_386_JUMP_SLOT   setbuf</span><br><span class="line">0804a010 R_386_JUMP_SLOT   strcmp</span><br><span class="line">0804a014 R_386_JUMP_SLOT   printf</span><br><span class="line">0804a018 R_386_JUMP_SLOT   bzero</span><br><span class="line">0804a01c R_386_JUMP_SLOT   fread</span><br><span class="line">0804a020 R_386_JUMP_SLOT   strcpy</span><br><span class="line">0804a024 R_386_JUMP_SLOT   malloc</span><br><span class="line">0804a028 R_386_JUMP_SLOT   puts</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+leak出puts函数的动态加载地址。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0x804A028=134520872</span><br><span class="line">\x28\xa0\x04\x08%7$s</span><br><span class="line">%8$s\x28\xa0\x04\x08</span><br></pre></td></tr></table></figure></p>
+<h1 id="知识点">知识点</h1>
+<ul>
+<li><p>格式化漏洞的使用技术</p>
+<ol type="1">
+<li>%N$p：以16进制的格式输出位于printf第N个参数位置的值；</li>
+<li>%N$s：以printf第N个参数位置的值为地址，输出这个地址指向的字符串的内容；</li>
+<li>%N$n：以printf第N个参数位置的值为地址，将输出过的字符数量的值写入这个地址中，对于32位elf而言，%n是写入4个字节，%hn是写入2个字节，%hhn是写入一个字节；</li>
+<li>%Nc：输出N个字符，这个可以配合%N$n使用，达到任意地址任意值写入的目的。</li>
+</ol></li>
+<li><p>格式化串参数：</p>
+<p>转换格式符：d、i、o、u、x用于整数，e、f、g、a用于浮点数，c用于字符，特别留意下面两个：</p>
+<p>1、可用%s从目标进程读取内存数据；</p>
+<p>2、可用%n把输出字符串长度写入任意地址；</p>
+<p>3、可用宽度修饰符修改输出的字符的数量；</p>
+<p>4、可用%hn修饰符每次写入16位数值。</p></li>
+<li><p>格式化字符串参数的姿势 32位</p>
+<p>读</p>
+<p>'%{}<span class="math inline">\(x&#39;.format(index) //
+读4个字节  &#39;%{}\)</span>p'.format(index) // 同上面 '<span
+class="math inline">\({}\)</span>s'.format(index) 写</p>
+<p>'%{}<span class="math inline">\(n&#39;.format(index) //
+解引用，写入四个字节  &#39;%{}\)</span>hn'.format(index) //
+解引用，写入两个字节 '%{}<span
+class="math inline">\(hhn&#39;.format(index) //
+解引用，写入一个字节  &#39;%{}\)</span>lln'.format(index) //
+解引用，写入八个字节 64位</p>
+<p>读</p>
+<p>'%{}<span class="math inline">\(x&#39;.format(index, num) //
+读4个字节  &#39;%{}\)</span>lx'.format(index, num) // 读8个字节
+'%{}<span class="math inline">\(p&#39;.format(index) //
+读8个字节  &#39;\)</span>{}$s'.format(index) 写</p>
+<p>'%{}<span class="math inline">\(n&#39;.format(index) //
+解引用，写入四个字节  &#39;%{}\)</span>hn'.format(index) //
+解引用，写入两个字节 '%{}<span
+class="math inline">\(hhn&#39;.format(index) //
+解引用，写入一个字节  &#39;%{}\)</span>lln'.format(index) //
+解引用，写入八个字节 %1<span class="math inline">\(lx:
+RSI  %2\)</span>lx: RDX %3<span class="math inline">\(lx:
+RCX  %4\)</span>lx: R8 %5<span class="math inline">\(lx:
+R9  %6\)</span>lx: 栈上的第一个QWORD</p></li>
+<li><p>格式化字符串可以覆盖的地址</p>
+<p>1、保存的返回地址（栈溢出，用信息泄露的方法来确定返回地址的位置）；</p>
+<p>2、全局偏移表（GOT），动态重定位对函数；</p>
+<p>3、析构函数表（DTORS）；</p>
+<p>4、C函数库钩子，例如malloc_hook、realloc_hook和free_hook；</p>
+<p>5、atexit结构；</p>
+<p>6、所有其他的函数指针，例如C++ vtables、回调函数等；</p>
+<p>7、Windows里默认未处理的异常处理程序，它几乎总是在同一地址。</p></li>
+<li><p>0x00 输出利用0x100溢出</p></li>
+<li><p> 是目标地址的四个字节， 在 C 语言中, 告诉编译器将一个 16 进制数
+0x10 放于当前位置（占 1 字节）。如果去掉前缀 就相当于两个 ascii 字符 1
+和 0 了，这就不是我们所期望的结果了。</p></li>
+<li><p>注意,使用gdb调试时,每次看到的栈地址可能是不变的,这并不代表系统没有打开ASLR,gdb调试时会自动关闭ASLR</p></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+              <a href="/tags/%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2/" rel="tag"># 格式化字符串</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/08/06/crypto-docs/" rel="prev" title="密码学EXM?">
+                  <i class="fa fa-angle-left"></i> 密码学EXM?
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/08/07/Hexo%E7%9A%84%E9%85%8D%E7%BD%AE/" rel="next" title="Hexo的搭建">
+                  Hexo的搭建 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

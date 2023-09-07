@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本篇博客介绍在ubuntu 16.04中搭建git服务器的过程，操作平台是windows 10。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建git服务器">
+<meta property="og:url" content="http://juniorprincewang.github.io/2018/08/14/%E6%90%AD%E5%BB%BAgit%E6%9C%8D%E5%8A%A1%E5%99%A8/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="本篇博客介绍在ubuntu 16.04中搭建git服务器的过程，操作平台是windows 10。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-08-14T06:21:38.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.910Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="git">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2018/08/14/%E6%90%AD%E5%BB%BAgit%E6%9C%8D%E5%8A%A1%E5%99%A8/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2018/08/14/%E6%90%AD%E5%BB%BAgit%E6%9C%8D%E5%8A%A1%E5%99%A8/","path":"2018/08/14/搭建git服务器/","title":"搭建git服务器"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>搭建git服务器 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85gitosis%E7%AE%A1%E7%90%86%E7%94%A8%E6%88%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">安装Gitosis管理用户与项目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAgit%E7%AE%A1%E7%90%86%E5%91%98%E8%B4%A6%E6%88%B7"><span class="nav-number">2.</span> <span class="nav-text">创建Git管理员账户</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%A8git%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%96%B0%E5%BB%BA%E4%B8%80%E4%B8%AA%E9%A1%B9%E7%9B%AE"><span class="nav-number">3.</span> <span class="nav-text">在Git服务器新建一个项目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%A8%E6%9C%AC%E6%9C%BAclone%E9%A1%B9%E7%9B%AE"><span class="nav-number">4.</span> <span class="nav-text">在本机clone项目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2018/08/14/%E6%90%AD%E5%BB%BAgit%E6%9C%8D%E5%8A%A1%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="搭建git服务器 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          搭建git服务器
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-08-14 14:21:38" itemprop="dateCreated datePublished" datetime="2018-08-14T14:21:38+08:00">2018-08-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本篇博客介绍在ubuntu 16.04中搭建git服务器的过程，操作平台是windows
+10。 <span id="more"></span></p>
+<h1 id="安装gitosis管理用户与项目">安装Gitosis管理用户与项目</h1>
+<p>Gitosis是一套用来管理 <code>authorized_keys</code>
+文件和实现简单连接限制的脚本，对项目、用户以及项目的读写权限进行管理，安装命令如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/res0nat0r/gitosis.git &amp;&amp; cd gitosis &amp;&amp; python setup.py install</span><br></pre></td></tr></table></figure>
+<p>Gitosis默认使用的Git根目录是
+<code>/home/git/repositories</code>，其中 <code>git</code>
+是即将新建的用户。如果你想把仓库放在别的地方，就用软连接将它与
+<code>/home/git/repositories</code> 连接起来。</p>
+<h1 id="创建git管理员账户">创建Git管理员账户</h1>
+<p>新建一个用户作为Git服务器的管理员： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">useradd -m git</span><br><span class="line">passwd git</span><br></pre></td></tr></table></figure>
+用管理员公钥初始化Gitosis
+这个管理员公钥的意思是你本机的公钥，是用来管理这个Gitosis的（默认会有gitosis-admin的读写权限），你可以将你本机（常用机器）的ssh
+key拷贝到服务器上来，从而实现管理的目的。</p>
+<p>1.在本机生成公钥</p>
+<p>windows中的ssh配置路径为 <code>c:\Users\username\.ssh</code> ，这里
+<code>username</code> 为自己操作系统的用户名。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail@yourcompany.com” -f ~/.ssh/dacas-rsa</span><br></pre></td></tr></table></figure></p>
+<p>2.上传公钥至服务器并激活Gitosis
+将公钥拷贝到git用户下，因此先切换至git用户：</p>
+<p>su git
+之后用rz命令直接拷贝值服务即可。（Windows利用lrzsz拷贝文件至Linux）</p>
+<p>3.初始化Gitosis
+依然在git用户下，利用刚才上传的公钥初始化Gitosis：</p>
+<p>gitosis-init &lt; /home/git/id_rsa.pub</p>
+<blockquote>
+<p>Initialized empty Git repository in
+/home/git/repositories/gitosis-admin.git/ Reinitialized existing Git
+repository in /home/git/repositories/gitosis-admin.git/</p>
+</blockquote>
+<p>这里也可以采用SSH 免密码登录的操作： 创建
+<code>authorized_keys</code> 文件，如果已经存在这个文件, 跳过这条。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch ~/.ssh/authorized_keys </span><br></pre></td></tr></table></figure> 必须将 <code>~/.ssh/authorized_keys</code> 的权限改为600,
+该文件用于保存ssh客户端生成的公钥，可以修改服务器的ssh服务端配置文件
+<code>/etc/ssh/sshd_config</code> 来指定其他文件名。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod 600 ~/.ssh/authorized_keys</span><br></pre></td></tr></table></figure> 将
+<code>id_rsa.pub</code> 的内容追加到 <code>authorized_keys</code> 中,
+注意使用追加 <code>&gt;&gt;</code> ，不要用 <code>&gt;</code>
+，否则会清空原有的内容，使其他人无法使用原有的密钥登录。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /home/git/id_rsa.pub/id_rsa.pub  &gt;&gt; ~/.ssh/authorized_keys </span><br></pre></td></tr></table></figure></p>
+<h1 id="在git服务器新建一个项目">在Git服务器新建一个项目</h1>
+<p>完成上一步之后，你Git服务器已经装好了。相关信息总结如下：</p>
+<ul>
+<li>默认的仓库地址是在 <code>/home/git/repositories</code> 。</li>
+<li>Git管理用户是刚才创建的git。</li>
+<li>Gitosis管理用户权限是通过一个git项目实现的，那个项目地址在
+<code>/home/git/repositories/gitosis-admin.git</code>，默认是你刚才上传公钥的电脑可以clone此仓库。</li>
+</ul>
+<p>新建一个项目就是在默认的仓库地址下面新建一个空的git项目：
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /home/git/repositories</span><br><span class="line">git init --bare test.git</span><br></pre></td></tr></table></figure> 如此，便新建了一个test的项目。</p>
+<h1 id="在本机clone项目">在本机clone项目</h1>
+<p>为了方便操作，提前做一点简单配置。在
+<code>c:\users\username\.ssh\config</code> 中输入以下内容。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host 	dacasserver</span><br><span class="line">Hostname	159.226.94.159</span><br><span class="line">User			git</span><br><span class="line">IdentityFile	~/.ssh/dacas-rsa</span><br></pre></td></tr></table></figure></p>
+<p>现在可以试一下用初始化 Gitosis 的公钥的拥有者身份 SSH
+登录服务器，应该会看到类似下面这样： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ssh git@dacasserver</span><br><span class="line">PTY allocation request failed on channel 0</span><br><span class="line">ERROR:gitosis.serve.main:Need SSH_ORIGINAL_COMMAND in environment.</span><br><span class="line">  Connection to gitserver closed.</span><br></pre></td></tr></table></figure> 说明 Gitosis
+认出了该用户的身份，但由于没有运行任何 Git
+命令，所以它切断了连接。那么，现在运行一个实际的 Git 命令 — 克隆 Gitosis
+的控制仓库：</p>
+<p>在你本地计算机上 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone git@dacasserver:gitosis-admin.git</span><br></pre></td></tr></table></figure>
+其中，git是你刚才新建的Git管理员，后面跟着的是你的服务器地址。</p>
+<p>gitosis-admin的中包括一个keydir文件夹和一个gitosis.conf文件，前者是用来存放用户的ssh
+key的，后者是用来管理用户权限的，举个例子，我现在要给张三和李四的电脑读写test的权限：</p>
+<p>1.将张三电脑和李四电脑的ssh key拷贝至keydir文件夹下</p>
+<p>例如将张三的公钥文件保存为zhangsan.pub放在keydir下（这个文件名字与下面配置文件要一致）、李四的公钥文件保存为lisi.pub放在keydir下。</p>
+<p>2.在gitosis.conf中添加相关配置</p>
+<p>[group test] members = zhangsan lisi writable = test
+如此，我便新建了一个test的group，其中用户有zhangsan和lisi，他们拥有读写权限。</p>
+<p>此时，如果你想让王五只有读的权限，那么就将配置文件改成：</p>
+<p>[group test] members = zhangsan lisi writable = test [group
+test_read] members = wangwu readonly = test
+如此，wangwu只能clone或者pull，却不能push。</p>
+<p>3.将修改推送至服务器</p>
+<p>此时只是完成了本地的修改，要将修改推送到服务器才能生效（add、commit、push），之后test那个仓库的权限就会像刚才在配置文件设置的那样。</p>
+<h1 id="参考">参考</h1>
+<ol type="1">
+<li><a target="_blank" rel="noopener" href="https://my.oschina.net/stefanzhlg/blog/529403">git
+配置多个SSH-Key</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.jianshu.com/p/7a7b98d05fd8">配置多个SSH-Key</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000015020195">Linux
+Ubuntu搭建Git服务器</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://git-scm.com/book/zh/v1/%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E7%9A%84-Git-Gitosis">7
+服务器上的 Git - Gitosis</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.hi-linux.com/posts/14346.html">利用SSH的用户配置文件Config管理SSH会话</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/git/" rel="tag"># git</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/07/29/%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85%E6%8A%A5%E9%94%99-virtual-memory-exhausted-Cannot-allocate-memory/" rel="prev" title="编译安装报错 "virtual memory exhausted Cannot allocate memory"">
+                  <i class="fa fa-angle-left"></i> 编译安装报错 "virtual memory exhausted Cannot allocate memory"
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/08/21/%E8%A7%A3%E5%86%B3ubuntu%E5%8D%87%E7%BA%A7%E5%A4%B1%E8%B4%A5%E6%97%A0%E6%B3%95%E7%99%BB%E5%BD%95%E7%B3%BB%E7%BB%9F/" rel="next" title="解决ubuntu升级失败无法登录系统">
+                  解决ubuntu升级失败无法登录系统 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>

