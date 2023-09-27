@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Android-x86项目向Intel设备提供了 Android Board Support Package(BSP)，使用通用media来引导所有的intel 设备，即将引导顺序分成两个阶段。 第一阶段：启动一个最小限度的嵌入式Linux环境，以启用硬件设备。 第二阶段：通过 chroot 或者 switch_root 来切换到 Android system。 本文总结了Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="androidx86 bootup">
+<meta property="og:url" content="http://juniorprincewang.github.io/2023/09/08/androidx86-bootup/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="Android-x86项目向Intel设备提供了 Android Board Support Package(BSP)，使用通用media来引导所有的intel 设备，即将引导顺序分成两个阶段。 第一阶段：启动一个最小限度的嵌入式Linux环境，以启用硬件设备。 第二阶段：通过 chroot 或者 switch_root 来切换到 Android system。 本文总结了Android">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-09-08T01:48:19.000Z">
+<meta property="article:modified_time" content="2023-09-27T11:17:33.706Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="android">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2023/09/08/androidx86-bootup/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2023/09/08/androidx86-bootup/","path":"2023/09/08/androidx86-bootup/","title":"androidx86 bootup"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>androidx86 bootup | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#bootable-newinstaller"><span class="nav-number">1.</span> <span class="nav-text">bootable newinstaller</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#initrdinit"><span class="nav-number">2.</span> <span class="nav-text">initrd&#x2F;init</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E5%92%8Clog%E8%AE%BE%E7%BD%AE"><span class="nav-number">2.1.</span> <span class="nav-text">环境变量和LOG设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AEcontrolling-tty%E5%88%9D%E5%A7%8B%E5%8C%96-procsysdev%E7%AD%89%E7%9B%AE%E5%BD%95"><span class="nav-number">2.2.</span> <span class="nav-text">设置controlling
+tty，初始化
+&#x2F;proc、&#x2F;sys、&#x2F;dev等目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96boot_imageramdisk%E5%92%8C%E5%86%85%E6%A0%B8%E5%90%AF%E5%8A%A8%E5%8F%82%E6%95%B0"><span class="nav-number">2.3.</span> <span class="nav-text">获取BOOT_IMAGE、RAMDISK和内核启动参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%90%9C%E7%B4%A2%E5%90%AF%E5%8A%A8root%E7%9B%AE%E5%BD%95"><span class="nav-number">2.4.</span> <span class="nav-text">搜索启动ROOT目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#try_mountcheck_rootremount_rw-%E5%87%BD%E6%95%B0"><span class="nav-number">2.5.</span> <span class="nav-text">try_mount、check_root、remount_rw
+函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E6%A0%B9%E7%9B%AE%E5%BD%95%E7%AD%89%E7%9B%AE%E5%BD%95%E7%9A%84%E9%93%BE%E6%8E%A5%E5%8A%A0%E8%BD%BD%E6%A8%A1%E5%9D%97%E6%8C%82%E8%BD%BDdatasdcard%E7%AD%89%E5%88%86%E5%8C%BA"><span class="nav-number">2.6.</span> <span class="nav-text">创建&#x2F;根目录等目录的链接、加载模块、挂载data、sdcard等分区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE-android_root%E6%89%A7%E8%A1%8C-ramdisk.img-%E4%B8%AD%E7%9A%84-init"><span class="nav-number">2.7.</span> <span class="nav-text">设置
+ANDROID_ROOT执行 ramdisk.img 中的 init</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#linux%E5%91%BD%E4%BB%A4"><span class="nav-number">3.</span> <span class="nav-text">linux命令</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#busybox"><span class="nav-number">3.1.</span> <span class="nav-text">busybox</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bootablenewinstallerinitrdinit"><span class="nav-number">3.2.</span> <span class="nav-text">bootable&#x2F;newinstaller&#x2F;initrd&#x2F;init</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8E-%E6%88%96"><span class="nav-number">3.2.1.</span> <span class="nav-text">$? 与 &amp;&amp; 或
+||</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#chroot"><span class="nav-number">3.2.2.</span> <span class="nav-text">chroot</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#switch_root"><span class="nav-number">3.2.3.</span> <span class="nav-text">switch_root</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mount"><span class="nav-number">3.2.4.</span> <span class="nav-text">mount</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#loop-device"><span class="nav-number">3.2.4.1.</span> <span class="nav-text">loop device</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#losetup"><span class="nav-number">3.2.5.</span> <span class="nav-text">losetup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mountpoint"><span class="nav-number">3.2.6.</span> <span class="nav-text">mountpoint</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zcat"><span class="nav-number">3.2.7.</span> <span class="nav-text">zcat</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hash"><span class="nav-number">3.2.8.</span> <span class="nav-text">hash</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sleep"><span class="nav-number">3.2.9.</span> <span class="nav-text">sleep</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setsid"><span class="nav-number">3.2.10.</span> <span class="nav-text">setsid</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#env"><span class="nav-number">3.2.11.</span> <span class="nav-text">env</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#blkid"><span class="nav-number">3.2.12.</span> <span class="nav-text">blkid</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pv"><span class="nav-number">3.2.13.</span> <span class="nav-text">pv</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">33</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">99</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2023/09/08/androidx86-bootup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="androidx86 bootup | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          androidx86 bootup
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-09-08 09:48:19" itemprop="dateCreated datePublished" datetime="2023-09-08T09:48:19+08:00">2023-09-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-09-27 19:17:33" itemprop="dateModified" datetime="2023-09-27T19:17:33+08:00">2023-09-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/androidx86/" itemprop="url" rel="index"><span itemprop="name">androidx86</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>Android-x86项目向Intel设备提供了 Android Board Support
+Package(BSP)，使用通用media来引导所有的intel
+设备，即将引导顺序分成两个阶段。
+第一阶段：启动一个最小限度的嵌入式Linux环境，以启用硬件设备。
+第二阶段：通过 chroot 或者 switch_root 来切换到 Android system。</p>
+<p>本文总结了Android-x86-7.1 的启动第一阶段。</p>
+<span id="more"></span>
+<h1 id="bootable-newinstaller">bootable newinstaller</h1>
+<p>第一阶段Androidx86使用了特别的ramdisk
+<code>initrd.img</code>，源码位于：<code>$AOSP/bootable/newinstaller</code>，源码构成：</p>
+<ul>
+<li><code>boot</code>:
+对于安装媒介的bootloader。Androidx86的镜像可以分成不同的格式（ISO，UEFI等）</li>
+<li><code>editdisklbl</code>：用于编辑system image分区的host工具</li>
+<li><code>initrd</code>：第一阶段boot的ramdisk</li>
+<li><code>install</code>:Androidx86的 installer</li>
+<li><code>Android.mk</code>:Makefile文件</li>
+</ul>
+<p>通过命令 <code>make iso_img/usb_img/efi_img</code>来 build
+<code>newinstaller</code>，除了生成安装镜像外，还生成另外两个镜像：<code>initrd.img</code>
+和 <code>install.img</code> 。</p>
+<ul>
+<li>initrd.img：第一阶段boot up的ramdisk image</li>
+<li>install.img：包含了Androidx86的installer</li>
+</ul>
+<p>解压缩 img 命令可以通过<code>cpio</code>获得： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zcat ramdisk.img | cpio -id &gt; /dev/null</span><br></pre></td></tr></table></figure></p>
+<p>修改完后重新压缩回img <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . | cpio -o -H newc | gzip &gt; ../ramdisk.img</span><br></pre></td></tr></table></figure></p>
+<p>iso_img 生成的androidx86.iso 镜像解压缩后的目录：</p>
+<pre><code>├── initrd.img
+├── install.img
+├── isolinux
+│   ├── android-x86.png
+│   ├── boot.cat
+│   ├── isolinux.bin
+│   ├── isolinux.cfg
+│   ├── TRANS.TBL
+│   └── vesamenu.c32
+├── kernel
+├── ramdisk.img
+├── system.sfs
+└── TRANS.TBL</code></pre>
+<p>首先是安装Androidx86 通过镜像中的 isolinux 引导安装。
+ISOLINUX其实是一个简单的Linux系统，对应于源码路径为
+<em>bootable/newinstaller/boot/isolinux/</em>，包括引导文件
+isolinux.bin、配置文件
+<em>isolinux.cfg</em>、vesamenu启动界面文件和背景图片，boot.cat是创建生成文件。</p>
+<ul>
+<li>引导程序 <code>isolinux.bin</code>：
+这个文件是ISOLINUX的引导文件。相当于Linux系统中的grub程序。在系统启动时，先加载isolinux.bin来启动系统，isolinux.bin会根据配置文件isolinux.cfg选择不同的启动选项来启动系统。这个文件是一个二进制文件，在编译isolinux时可以得到。</li>
+<li>配置引导项文件 <code>isolinux.cfg</code>:
+用于isolinux.bin在引导时根据该配置文件的配置内容的不同，而选择不同的引导项来启动系统。
+根据 isolinux.cfg 中的label信息，共有8个启动选项。</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">label livem</span><br><span class="line">	menu label Live CD - ^Run OS_TITLE without installation</span><br><span class="line">	kernel /kernel</span><br><span class="line">	append initrd=/initrd.img CMDLINE quiet SRC= DATA=</span><br><span class="line"></span><br><span class="line">label debug</span><br><span class="line">	menu label Live CD - ^Debug mode</span><br><span class="line">	kernel /kernel</span><br><span class="line">	append initrd=/initrd.img CMDLINE DEBUG=2 SRC= DATA=</span><br><span class="line"></span><br><span class="line">label install</span><br><span class="line">	menu label ^Installation - Install OS_TITLE to harddisk</span><br><span class="line">	kernel /kernel</span><br><span class="line">	append initrd=/initrd.img CMDLINE INSTALL=1 DEBUG=</span><br><span class="line">	</span><br><span class="line">label nosetup</span><br><span class="line">	menu label Live CD - No ^Setup Wizard</span><br><span class="line">	kernel /kernel</span><br><span class="line">	append initrd=/initrd.img CMDLINE quiet SETUPWIZARD=0 SRC= DATA=</span><br><span class="line"></span><br><span class="line">label vesa</span><br><span class="line">	menu label Live CD ^VESA mode - No GPU hardware acceleration</span><br><span class="line">	kernel /kernel</span><br><span class="line">	append initrd=/initrd.img CMDLINE nomodeset vga=ask SRC= DATA=</span><br><span class="line"></span><br><span class="line">label auto_install</span><br><span class="line">	menu label Auto_^Installation - Auto Install to specified harddisk</span><br><span class="line">	kernel /kernel</span><br><span class="line">	append initrd=/initrd.img CMDLINE AUTO_INSTALL=0 DEBUG=</span><br><span class="line"></span><br><span class="line">label auto_update</span><br><span class="line">	menu label Auto_^Update - Auto update OS_TITLE</span><br><span class="line">	kernel /kernel</span><br><span class="line">	append initrd=/initrd.img CMDLINE AUTO_INSTALL=update DEBUG=</span><br></pre></td></tr></table></figure>
+<p>label为 <em>install</em> 的启动选项制定了 kernel
+路径以及内核参数append信息，initrd文件路径，
+变量CMDLINE、INSTALL=1、DEBUG=空。 <code>SRC</code> 与 <code>DATA</code>
+参数分别为后面的initrd启动引导传入 boot_image 路径和
+data分区路径，分别对应了 <code>$SRC</code> 与 <code>$DATA</code> 变量。
+ISOLINUX系统在使用isolinux.bin文件引导完成以后，就会调用一个内核来启动一个简单的Linux系统，这个简单的Linux系统就是由initrd.img完成的。</p>
+<pre><code>initrd/
+├── android
+├── bin
+│   ├── busybox
+│   ├── ld-linux.so.2
+│   └── lndir
+├── hd
+├── init
+├── initrd.img
+├── iso
+├── lib
+│   ├── ld-linux.so.2 -&gt; /bin/ld-linux.so.2
+│   ├── libcrypt.so.1
+│   ├── libc.so.6
+│   ├── libdl.so.2
+│   ├── libm.so.6
+│   ├── libntfs-3g.so.31
+│   ├── libpthread.so.0
+│   └── librt.so.1
+├── mnt
+├── proc
+├── sbin
+│   └── mount.ntfs-3g
+├── scripts
+│   ├── 00-ver
+│   ├── 0-auto-detect
+│   ├── 1-install
+│   ├── 2-mount
+│   ├── 3-tslib
+│   └── 4-dpi
+├── sfs
+├── sys
+└── tmp</code></pre>
+<p>系统第一阶段的启动通过 <code>initrd/init</code> shell脚本文件启动。
+在Linux系统启动时，加载完成内核以后，就开始调用该脚本了。建议将系统启动相关的内容放置在这里执行，比如外设挂载到指定分区，而将自己的脚本放置在可执行目录下［bin/sbin等］，在init脚本中调用该脚本。</p>
+<h1 id="initrdinit">initrd/init</h1>
+<p>将 init 脚本拆分分析：</p>
+<h2 id="环境变量和log设置">环境变量和LOG设置</h2>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/busybox sh</span></span><br><span class="line"></span><br><span class="line">PATH=/sbin:/bin:/system/bin:/system/xbin; <span class="built_in">export</span> PATH</span><br><span class="line"></span><br><span class="line"><span class="comment"># auto installation</span></span><br><span class="line">[ -n <span class="string">&quot;<span class="variable">$AUTO_INSTALL</span>&quot;</span> ] &amp;&amp; INSTALL=1</span><br><span class="line"></span><br><span class="line"><span class="comment"># configure debugging output</span></span><br><span class="line"><span class="keyword">if</span> [ -n <span class="string">&quot;<span class="variable">$DEBUG</span>&quot;</span> -o -n <span class="string">&quot;<span class="variable">$INSTALL</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">	LOG=/tmp/log</span><br><span class="line">	<span class="built_in">set</span> -x</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">	LOG=/dev/null</span><br><span class="line">	<span class="built_in">test</span> -e <span class="string">&quot;<span class="variable">$LOG</span>&quot;</span> || busybox <span class="built_in">mknod</span> <span class="variable">$LOG</span> c 1 3</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"><span class="built_in">exec</span> 2&gt;&gt; <span class="variable">$LOG</span></span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li>busybox 中的sh执行此脚本。<br />
+</li>
+<li>设置 <code>$PATH</code> 环境变量。<br />
+</li>
+<li>如果kernel参数传入的 <code>$AUTO_INSTALL</code> 有值就设置 变量
+<code>INSTALL</code>。<br />
+</li>
+<li>如果传入了 <code>$DEBUG</code> 有值或者 <code>$INSTALL</code>
+有值，设置日志路径变量 <code>$LOG</code> 为
+<code>/tmp/log</code>；否则设置 <code>$LOG</code>为
+<code>/dev/null</code>，不存在就创建。<br />
+</li>
+<li>将错误输出stderr 也追加输出到 <code>$LOG</code>中。</li>
+</ol>
+<h2 id="设置controlling-tty初始化-procsysdev等目录">设置controlling
+tty，初始化
+<code>/proc</code>、<code>/sys</code>、<code>/dev</code>等目录</h2>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># early boot</span></span><br><span class="line"><span class="keyword">if</span> <span class="built_in">test</span> x<span class="string">&quot;<span class="variable">$HAS_CTTY</span>&quot;</span> != x<span class="string">&quot;Yes&quot;</span>; <span class="keyword">then</span></span><br><span class="line">	<span class="comment"># initialise /proc and /sys</span></span><br><span class="line">	busybox mount -t proc proc /proc</span><br><span class="line">	busybox mount -t sysfs sys /sys</span><br><span class="line">	<span class="comment"># let busybox install all applets as symlinks</span></span><br><span class="line">	busybox --install -s</span><br><span class="line">	<span class="comment"># spawn shells on tty 2 and 3 if debug or installer</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">test</span> -n <span class="string">&quot;<span class="variable">$DEBUG</span>&quot;</span> || <span class="built_in">test</span> -n <span class="string">&quot;<span class="variable">$INSTALL</span>&quot;</span>; <span class="keyword">then</span></span><br><span class="line">		<span class="comment"># ensure they can open a controlling tty</span></span><br><span class="line">		<span class="built_in">mknod</span> /dev/tty c 5 0</span><br><span class="line">		<span class="comment"># create device nodes then spawn on them</span></span><br><span class="line">		<span class="built_in">mknod</span> /dev/tty2 c 4 2 &amp;&amp; openvt</span><br><span class="line">		<span class="built_in">mknod</span> /dev/tty3 c 4 3 &amp;&amp; openvt</span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">test</span> -z <span class="string">&quot;<span class="variable">$DEBUG</span>&quot;</span> || <span class="built_in">test</span> -n <span class="string">&quot;<span class="variable">$INSTALL</span>&quot;</span>; <span class="keyword">then</span></span><br><span class="line">		<span class="built_in">echo</span> 0 0 0 0 &gt; /proc/sys/kernel/printk</span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line">	<span class="comment"># initialise /dev (first time)</span></span><br><span class="line">	<span class="built_in">mkdir</span> -p /dev/block</span><br><span class="line">	<span class="built_in">echo</span> /sbin/mdev &gt; /proc/sys/kernel/hotplug</span><br><span class="line">	mdev -s</span><br><span class="line">	<span class="comment"># re-run this script with a controlling tty</span></span><br><span class="line">	<span class="built_in">exec</span> <span class="built_in">env</span> HAS_CTTY=Yes setsid cttyhack /bin/sh <span class="string">&quot;<span class="variable">$0</span>&quot;</span> <span class="string">&quot;<span class="variable">$@</span>&quot;</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+<p>后面环境初始化需要在可控的tty下进行，此段脚本用于设置controlling
+tty。</p>
+<ol type="1">
+<li>最开始是没有设置变量 <code>HAS_CTTY</code></li>
+<li>初始化 <code>/proc</code> 和 <code>/sys</code> 目录，这里使用
+busybox 中的 <code>mount</code> 命令</li>
+<li>让busybox将所有小程序作为符号链接安装</li>
+<li>如果debug 或者 installer，则在tty2 和 tty3 启动 shell</li>
+<li>如果不debug 或
+进行installer，将kernel的printk控制台日志等级设置为最高0，即只有最高错误才输出。</li>
+<li>首次初始化 <code>/dev</code>，
+<ol type="1">
+<li>创建目录 <code>/dev/block</code>，顺带创建 <code>/dev</code>
+目录。</li>
+<li>把/sbin/mdev写到/proc/sys/kernel/hotplug文件里。当有热插拔事件产生时，内核会调用/proc/sys/kernel/hotplug文件里指定的应用程序来处理热插拔事件。</li>
+<li><code>mdev -s</code>：系统启动时，通过执行<code>mdev -s</code> 扫描
+/sys/class和/sys/block，在目录中查找dev文件。例如：/sys/class/tty/tty0/dev，输出它的内容为
+<code>4:0</code>，即主设备号是4，次设备号是0，dev的上一级目录为设备名，这里是tty0。/sys/class/下的每个文件夹都代表
+着一个子系统。</li>
+</ol></li>
+<li>重新运行init脚本<code>$0</code>与附带参数<code>$@</code>，本次附带了环境变量
+<code>env HAS_CTTY=Yes</code></li>
+</ol>
+<p><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/phmatthaus/article/details/107180696">echo
+/sbin/mdev ＞ /proc/sys/kernel/hotplug 作用解析</a></p>
+<h2
+id="获取boot_imageramdisk和内核启动参数">获取<code>BOOT_IMAGE</code>、<code>RAMDISK</code>和内核启动参数</h2>
+<p>接下来脚本就在可控tty中执行了。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> -n Detecting Android-x86...</span><br><span class="line"></span><br><span class="line">[ -z <span class="string">&quot;<span class="variable">$SRC</span>&quot;</span> -a -n <span class="string">&quot;<span class="variable">$BOOT_IMAGE</span>&quot;</span> ] &amp;&amp; SRC=`<span class="built_in">dirname</span> <span class="variable">$BOOT_IMAGE</span>`</span><br><span class="line">[ -z <span class="string">&quot;<span class="variable">$RAMDISK</span>&quot;</span> ] &amp;&amp; RAMDISK=ramdisk.img || RAMDISK=<span class="variable">$&#123;RAMDISK##/dev/&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> `<span class="built_in">cat</span> /proc/cmdline`; <span class="keyword">do</span></span><br><span class="line">	<span class="keyword">case</span> <span class="variable">$c</span> <span class="keyword">in</span></span><br><span class="line">		iso-scan/filename=*)</span><br><span class="line">			SRC=iso</span><br><span class="line">			<span class="built_in">eval</span> `<span class="built_in">echo</span> <span class="variable">$c</span> | <span class="built_in">cut</span> -b1-3,18-`</span><br><span class="line">			;;</span><br><span class="line">		*)</span><br><span class="line">			;;</span><br><span class="line">	<span class="keyword">esac</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li>这串字符 <code>Detecting Android-x86...</code>
+在虚拟机启动窗口出现。</li>
+<li>如果 <code>$SRC</code> 传入为空并且设置了
+<code>$BOOT_IMAGE</code>，就将 <code>$SRC</code> 设置为
+<code>$BOOT_IMAGE</code> 所在目录。</li>
+<li>如果 <code>$RAMDISK</code> 未设置，则设置其为 ramdisk.img；否则从
+<code>$RAMDISK</code> 变量中删除 <code>/dev/</code>字符串。</li>
+<li><code>cat proc/cmdline</code> 查看
+内核启动参数。可以看出这里不存在此变量
+<code>iso-scan/filename</code></li>
+</ol>
+<p>从模拟器得出：</p>
+<blockquote>
+<p>quiet nomodeset root=/dev/ram0 androidboot.selinux=permissive
+buildvariant=userdebug SRC=/androidx86</p>
+</blockquote>
+<p>从 ubuntu 得到的kernel启动参数：</p>
+<blockquote>
+<p>BOOT_IMAGE=/boot/vmlinuz-5.15.0-50-generic
+root=UUID=xxxxxxxxxxxxxxxxxxxxxxx ro quiet splash</p>
+</blockquote>
+<h2 id="搜索启动root目录">搜索启动ROOT目录</h2>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mount -t tmpfs tmpfs /android</span><br><span class="line"><span class="built_in">cd</span> /android</span><br><span class="line"><span class="keyword">while</span> :; <span class="keyword">do</span></span><br><span class="line">	<span class="keyword">for</span> device <span class="keyword">in</span> <span class="variable">$&#123;ROOT:-/dev/[hmnsv][dmrv][0-9a-z]*&#125;</span>; <span class="keyword">do</span></span><br><span class="line">		check_root <span class="variable">$device</span> &amp;&amp; <span class="built_in">break</span> 2</span><br><span class="line">		mountpoint -q /mnt &amp;&amp; umount /mnt</span><br><span class="line">	<span class="keyword">done</span></span><br><span class="line">	<span class="built_in">sleep</span> 1</span><br><span class="line">	<span class="built_in">echo</span> -n .</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li>挂载 <code>tmpfs</code> 文件到 <code>/android</code> 目录，并进入
+<code>/android</code> 目录操作。</li>
+<li>从环境变量 <code>$ROOT</code>搜索当前的设备，如果没有定义
+<code>$ROOT</code>就搜索 <code>/dev/sda</code> 一类的设备。</li>
+<li>睡眠1秒，再输出 <code>.</code>。</li>
+</ol>
+<h2
+id="try_mountcheck_rootremount_rw-函数"><code>try_mount</code>、<code>check_root</code>、<code>remount_rw</code>
+函数</h2>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">try_mount</span></span>()</span><br><span class="line">&#123;</span><br><span class="line">	RW=<span class="variable">$1</span>; <span class="built_in">shift</span></span><br><span class="line">	<span class="keyword">if</span> [ <span class="string">&quot;<span class="variable">$&#123;ROOT#*:/&#125;</span>&quot;</span> != <span class="string">&quot;<span class="variable">$ROOT</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">		<span class="comment"># for NFS roots, use nolock to avoid dependency to portmapper</span></span><br><span class="line">		mount -o <span class="variable">$RW</span>,noatime,nolock <span class="variable">$@</span></span><br><span class="line">		<span class="built_in">return</span> $?</span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line">	<span class="keyword">case</span> $(blkid <span class="variable">$1</span>) <span class="keyword">in</span></span><br><span class="line">		*TYPE=*ntfs*)</span><br><span class="line">			mount.ntfs-3g -o rw,force <span class="variable">$@</span></span><br><span class="line">			;;</span><br><span class="line">		*TYPE=*)</span><br><span class="line">			mount -o <span class="variable">$RW</span>,noatime <span class="variable">$@</span></span><br><span class="line">			;;</span><br><span class="line">		*)</span><br><span class="line">			<span class="built_in">return</span> 1</span><br><span class="line">			;;</span><br><span class="line">	<span class="keyword">esac</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="title">check_root</span></span>()</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> [ <span class="string">&quot;`dirname <span class="variable">$1</span>`&quot;</span> = <span class="string">&quot;/dev&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">		[ -e <span class="variable">$1</span> ] || <span class="built_in">return</span> 1</span><br><span class="line">		blk=`<span class="built_in">basename</span> <span class="variable">$1</span>`</span><br><span class="line">		[ ! -e /dev/block/<span class="variable">$blk</span> ] &amp;&amp; <span class="built_in">ln</span> <span class="variable">$1</span> /dev/block</span><br><span class="line">		dev=/dev/block/<span class="variable">$blk</span></span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		dev=<span class="variable">$1</span></span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line">	try_mount ro <span class="variable">$dev</span> /mnt || <span class="built_in">return</span> 1</span><br><span class="line">	<span class="keyword">if</span> [ -n <span class="string">&quot;<span class="variable">$iso</span>&quot;</span> -a -e /mnt/<span class="variable">$iso</span> ]; <span class="keyword">then</span></span><br><span class="line">		mount --move /mnt /iso</span><br><span class="line">		<span class="built_in">mkdir</span> /mnt/iso</span><br><span class="line">		mount -o loop /iso/<span class="variable">$iso</span> /mnt/iso</span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line">	<span class="keyword">if</span> [ -e /mnt/<span class="variable">$SRC</span>/<span class="variable">$RAMDISK</span> ]; <span class="keyword">then</span></span><br><span class="line">		zcat /mnt/<span class="variable">$SRC</span>/<span class="variable">$RAMDISK</span> | cpio -<span class="built_in">id</span> &gt; /dev/null</span><br><span class="line">	<span class="keyword">elif</span> [ -b /dev/<span class="variable">$RAMDISK</span> ]; <span class="keyword">then</span></span><br><span class="line">		zcat /dev/<span class="variable">$RAMDISK</span> | cpio -<span class="built_in">id</span> &gt; /dev/null</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="built_in">return</span> 1</span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line">	<span class="keyword">if</span> [ -e /mnt/<span class="variable">$SRC</span>/system.sfs ]; <span class="keyword">then</span></span><br><span class="line">		mount -o loop,noatime /mnt/<span class="variable">$SRC</span>/system.sfs /sfs</span><br><span class="line">		mount -o loop,noatime /sfs/system.img system</span><br><span class="line">	<span class="keyword">elif</span> [ -e /mnt/<span class="variable">$SRC</span>/system.img ]; <span class="keyword">then</span></span><br><span class="line">		remount_rw</span><br><span class="line">		mount -o loop,noatime /mnt/<span class="variable">$SRC</span>/system.img system</span><br><span class="line">	<span class="keyword">elif</span> [ -s /mnt/<span class="variable">$SRC</span>/system/build.prop ]; <span class="keyword">then</span></span><br><span class="line">		remount_rw</span><br><span class="line">		mount --<span class="built_in">bind</span> /mnt/<span class="variable">$SRC</span>/system system</span><br><span class="line">	<span class="keyword">elif</span> [ -z <span class="string">&quot;<span class="variable">$SRC</span>&quot;</span> -a -s /mnt/build.prop ]; <span class="keyword">then</span></span><br><span class="line">		mount --<span class="built_in">bind</span> /mnt system</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="built_in">rm</span> -rf *</span><br><span class="line">		<span class="built_in">return</span> 1</span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line">	<span class="built_in">mkdir</span> -p mnt</span><br><span class="line">	<span class="built_in">echo</span> <span class="string">&quot; found at <span class="variable">$1</span>&quot;</span></span><br><span class="line">	<span class="built_in">rm</span> /sbin/mke2fs</span><br><span class="line">	<span class="built_in">hash</span> -r</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="title">remount_rw</span></span>()</span><br><span class="line">&#123;</span><br><span class="line">	<span class="comment"># &quot;foo&quot; as mount source is given to workaround a Busybox bug with NFS</span></span><br><span class="line">	<span class="comment"># - as it&#x27;s ignored anyways it shouldn&#x27;t harm for other filesystems.</span></span><br><span class="line">	mount -o remount,rw foo /mnt</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li><code>check_root</code> 传入的参数是 <code>$device</code> 设备，如果
+<code>$device</code> 是 <code>/dev</code>
+设备下面的，首先判断其存在，在判断是否存在
+<code>/dev/block/$blk</code>，没有则创建硬链接。<code>$dev</code>
+设置为此设备。</li>
+<li>将 <code>$dev</code> 载入 /mnt 目录。
+<ol type="1">
+<li><code>try_mount</code> 对<code>mount</code> 命令做了层包装，加入了
+<code>noatime</code>
+option。通过查询设备的TYPE类型，针对ntfs专门mount。</li>
+</ol></li>
+<li>如果设置了 <code>$iso</code> 变量，并且 <code>/mnt/$iso</code>
+存在，则将 /mnt mount到 /iso。再将 /iso/$iso mount 到 /mnt/iso 上。</li>
+<li>解压缩 <code>$RAMDISK</code> 镜像中的内容到当前目录。</li>
+<li>如果发现了system.sfs，则mount system.sfs 到 /sfs，再从目录/sfs
+中mount system.img 到 system。也就是说 system.sfs是对system.img
+的又一层压缩。如果直接发现
+system.img，则直接mount到system目录。剩下的判断逻辑是直接将build.prop所在目录重新bind到
+system。</li>
+<li>在当前目录创建 mnt 目录。</li>
+<li>输出 <code>found at $1</code>，这里在虚拟机启动窗口输出的是
+<em>found at /dev/sda1</em>。</li>
+<li>删除 <code>/sbin/mk2fs</code> ?</li>
+<li>清空命令表hash 缓存</li>
+</ol>
+<h2
+id="创建根目录等目录的链接加载模块挂载datasdcard等分区">创建<code>/</code>根目录等目录的链接、加载模块、挂载data、sdcard等分区</h2>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ln</span> -s mnt/<span class="variable">$SRC</span> /src</span><br><span class="line"><span class="built_in">ln</span> -s android/system /</span><br><span class="line"><span class="built_in">ln</span> -s ../system/lib/firmware ../system/lib/modules /lib</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ -n <span class="string">&quot;<span class="variable">$INSTALL</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">	zcat /src/install.img | ( <span class="built_in">cd</span> /; cpio -iud &gt; /dev/null )</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ -x system/bin/ln -a -n <span class="string">&quot;<span class="variable">$BUSYBOX</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">	<span class="built_in">mv</span> -f /bin /lib .</span><br><span class="line">	sed -i <span class="string">&#x27;s|\( PATH.*\)|\1:/bin|&#x27;</span> init.environ.rc</span><br><span class="line">	<span class="built_in">rm</span> /sbin/modprobe</span><br><span class="line">	busybox <span class="built_in">mv</span> /sbin/* sbin</span><br><span class="line">	<span class="built_in">rmdir</span> /sbin</span><br><span class="line">	<span class="built_in">ln</span> -s android/bin android/lib android/sbin /</span><br><span class="line">	<span class="built_in">hash</span> -r</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># load scripts</span></span><br><span class="line"><span class="keyword">for</span> s <span class="keyword">in</span> `<span class="built_in">ls</span> /scripts/* /src/scripts/*`; <span class="keyword">do</span></span><br><span class="line">	<span class="built_in">test</span> -e <span class="string">&quot;<span class="variable">$s</span>&quot;</span> &amp;&amp; <span class="built_in">source</span> <span class="variable">$s</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># A target should provide its detect_hardware function.</span></span><br><span class="line"><span class="comment"># On success, return 0 with the following values set.</span></span><br><span class="line"><span class="comment"># return 1 if it wants to use auto_detect</span></span><br><span class="line">[ <span class="string">&quot;<span class="variable">$AUTO</span>&quot;</span> != <span class="string">&quot;1&quot;</span> ] &amp;&amp; detect_hardware &amp;&amp; FOUND=1</span><br><span class="line"></span><br><span class="line">[ -n <span class="string">&quot;<span class="variable">$INSTALL</span>&quot;</span> ] &amp;&amp; do_install</span><br><span class="line"></span><br><span class="line">load_modules</span><br><span class="line">mount_data</span><br><span class="line">mount_sdcard</span><br><span class="line">setup_tslib</span><br><span class="line">setup_dpi</span><br><span class="line">post_detect</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这里省略debug逻辑代码。</p>
+<ol type="1">
+<li>在 <code>/src</code> 中为 <code>mnt/$src</code> 创建软链接，为
+<code>android/system</code> 在 根目录<code>/</code> 下创建软链接，为
+上级目录下的lib/firmware和 lib/modules 在 /lib 中创建软链接。</li>
+<li>如果是 <code>$INSTALL</code>，则将 install.img 解压缩到根目录
+<code>/</code>。</li>
+<li>如果 <code>/system/bin/ln</code> 存在且可执行，并且设置了
+<code>$BUSYBOX</code>，操作忽略。</li>
+<li>将 /scripts 和 /src/scripts 中的脚本读取并在当前shell执行。</li>
+<li>如果传入了 <code>$INSTALL</code> 变量，则执行
+do_install。只有安装模式才会调用，正常启动不会调用此函数。
+<code>do_scripts</code> 有两处定义，在 initrd/scripts/1-install 和
+install/scripts/1-install，由于解压缩后者会覆盖前者，因此会调用
+install镜像中的函数。</li>
+<li>接下来调用了若干函数来挂载分区，加载模块。函数定义在
+initrd/scripts的 0-auto-detect、2-mount、3-tslib、4-dpi。</li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> [ 0<span class="variable">$DEBUG</span> -gt 1 ]; <span class="keyword">then</span></span><br><span class="line">	<span class="built_in">echo</span> -e <span class="string">&quot;\nUse Alt-F1/F2/F3 to switch between virtual consoles&quot;</span></span><br><span class="line">	<span class="built_in">echo</span> -e <span class="string">&quot;Type &#x27;exit&#x27; to enter Android...\n&quot;</span></span><br><span class="line"></span><br><span class="line">	debug_shell debug-late</span><br><span class="line">	SETUPWIZARD=<span class="variable">$&#123;SETUPWIZARD:-0&#125;</span></span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">[ <span class="string">&quot;<span class="variable">$SETUPWIZARD</span>&quot;</span> = <span class="string">&quot;0&quot;</span> ] &amp;&amp; <span class="built_in">echo</span> <span class="string">&quot;ro.setupwizard.mode=DISABLED&quot;</span> &gt;&gt; default.prop</span><br><span class="line"></span><br><span class="line">[ -n <span class="string">&quot;<span class="variable">$DEBUG</span>&quot;</span> ] &amp;&amp; SWITCH=<span class="variable">$&#123;SWITCH:-chroot&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># We must disable mdev before switching to Android</span></span><br><span class="line"><span class="comment"># since it conflicts with Android&#x27;s init</span></span><br><span class="line"><span class="built_in">echo</span> &gt; /proc/sys/kernel/hotplug</span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> ANDROID_ROOT=/system</span><br><span class="line"></span><br><span class="line"><span class="built_in">exec</span> <span class="variable">$&#123;SWITCH:-switch_root&#125;</span> /android /init</span><br><span class="line"></span><br><span class="line"><span class="comment"># avoid kernel panic</span></span><br><span class="line"><span class="keyword">while</span> :; <span class="keyword">do</span></span><br><span class="line">	<span class="built_in">echo</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">&#x27;	Android-x86 console shell. Use only in emergencies.&#x27;</span></span><br><span class="line">	<span class="built_in">echo</span></span><br><span class="line">	debug_shell fatal-err</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<h2 id="设置-android_root执行-ramdisk.img-中的-init">设置
+<code>ANDROID_ROOT</code>执行 ramdisk.img 中的 init</h2>
+<ol type="1">
+<li>在启动Android前将 <code>mdev</code> 取消</li>
+<li>设置环境变量 <code>ANDROID_ROOT</code></li>
+<li>启动Android初始化程序，执行的是 ramdisk.img 中的 init
+二进制文件。</li>
+<li>到此，第一阶段的启动工作完成。</li>
+</ol>
+<h1 id="linux命令">linux命令</h1>
+<h2 id="busybox">busybox</h2>
+<pre><code>BusyBox v1.22.1  (2021-03-22 17:51 +0800) multi-call binary.
+BusyBox is copyrighted by many authors between 1998-2012.
+Licensed under GPLv2. See source distribution for detailed
+copyright notices. Merged for bionic by tpruvot@github
+
+Usage: busybox [function [arguments]...]
+   or: busybox --list[-full]
+   or: busybox --install [-s] [DIR]
+   or: function [arguments]...
+
+        BusyBox is a multi-call binary that combines many common Unix
+        utilities into a single executable.  Most people will create a
+        link to busybox for each function they wish to use and BusyBox
+        will act like whatever it was invoked as.
+
+Currently defined functions:
+        [, [[, adjtimex, arp, ash, awk, base64, basename, bbconfig, blkid,
+        blockdev, brctl, bunzip2, bzcat, bzip2, cal, cat, catv, chattr, chcon,
+        chgrp, chmod, chown, chroot, chvt, clear, cmp, comm, cp, cpio, crond,
+        crontab, cut, date, dc, dd, deallocvt, depmod, devmem, df, diff,
+        dirname, dmesg, dnsd, dos2unix, du, echo, ed, egrep, env, expand, expr,
+        false, fbset, fbsplash, fdisk, fgconsole, fgrep, find, findfs,
+        flash_lock, flash_unlock, flashcp, flock, fold, free, freeramdisk,
+        fstrim, fsync, ftpget, ftpput, fuser, getenforce, getopt, getsebool,
+        grep, groups, gunzip, gzip, halt, head, hexdump, hwclock, id, ifconfig,
+        inetd, insmod, install, ionice, iostat, ip, kill, killall, killall5,
+        less, ln, losetup, ls, lsattr, lsmod, lsof, lsusb, lzcat, lzma, lzop,
+        lzopcat, man, matchpathcon, md5sum, mesg, mkdir, mkdosfs, mke2fs,
+        mkfifo, mkfs.ext2, mkfs.vfat, mknod, mkswap, mktemp, modinfo, modprobe,
+        more, mount, mountpoint, mpstat, mv, nanddump, nandwrite, nbd-client,
+        nc, netstat, nice, nmeter, nohup, nslookup, ntpd, od, openvt, patch,
+        pgrep, pidof, ping, pipe_progress, pkill, pmap, poweroff, printenv,
+        printf, ps, pstree, pwd, pwdx, rdate, rdev, readlink, realpath, reboot,
+        renice, reset, resize, restorecon, rev, rm, rmdir, rmmod, route,
+        run-parts, runcon, rx, sed, selinuxenabled, seq, sestatus, setconsole,
+        setenforce, setfiles, setkeycodes, setsebool, setserial, setsid, sh,
+        sha1sum, sha256sum, sha3sum, sha512sum, sleep, smemcap, sort, split,
+        stat, strings, stty, sum, swapoff, swapon, switch_root, sync, sysctl,
+        tac, tail, tar, taskset, tee, telnet, telnetd, test, tftp, tftpd, time,
+        timeout, top, touch, tr, traceroute, true, ttysize, tune2fs, umount,
+        uname, uncompress, unexpand, uniq, unix2dos, unlzma, unlzop, unxz,
+        unzip, uptime, usleep, uudecode, uuencode, vi, watch, wc, wget, which,
+        whoami, xargs, xz, xzcat, yes, zcat</code></pre>
+<h2
+id="bootablenewinstallerinitrdinit"><code>bootable/newinstaller/initrd/init</code></h2>
+<h3 id="与-或"><code>$?</code> 与 <code>&amp;&amp;</code> 或
+<code>||</code></h3>
+<p><code>$?</code> (命令回传值)</p>
+<p><code>cmd1 &amp;&amp; cmd2</code>:</p>
+<pre><code>1. 若 cmd1 运行完毕且正确运行($?=0)，则开始运行 cmd2。
+2. 若 cmd1 运行完毕且为错误 ($?≠0)，则 cmd2 不运行。</code></pre>
+<p><code>cmd1 || cmd2</code></p>
+<pre><code>1. 若 cmd1 运行完毕且正确运行($?=0)，则 cmd2 不运行。
+2. 若 cmd1 运行完毕且为错误 ($?≠0)，则开始运行 cmd2。</code></pre>
+<p>例子：<code>ls /tmp/vbirding &amp;&amp; echo "exist" || echo "not exist"</code></p>
+<h3 id="chroot"><code>chroot</code></h3>
+<p>chroot - run command or interactive shell with special root
+directory，切换新的目录为跟目录
+<code>/</code>，也可以继续在新目录执行命令。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chroot [OPTION] NEWROOT [COMMAND [ARG]...]</span><br></pre></td></tr></table></figure></p>
+<h3 id="switch_root"><code>switch_root</code></h3>
+<p>switch_root - switch to another filesystem as the root of the mount
+tree</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">switch_root newroot init [arg...]</span><br></pre></td></tr></table></figure>
+<p>其中 <code>newroot</code> 是实际的根文件系统的挂载目录，执行
+<code>switch_root</code> 命令前需要挂载到系统中；<code>init</code>
+是实际根文件系统的init程序的路径，一般是 <code>/sbin/init</code>.</p>
+<h3 id="mount"><code>mount</code></h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount [-t 文件系统类型] [-L Label名] [-o 额外选项]  [-n]  装置文件名  挂载点目录 </span><br></pre></td></tr></table></figure>
+<ul>
+<li><p><code>-t</code> ：与 mkfs
+的选项非常类似的，可以加上文件系统种类来指定欲挂载的类型。 常见的 Linux
+支持类型有：ext2, ext3, vfat, reiserfs, iso9660(光盘格式), nfs, cifs,
+smbfs(此三种为网络文件系统类型),tmpfs</p></li>
+<li><p><code>-n</code> ：在默认的情况下，系统会将实际挂载的情况实时写入
+/etc/mtab 中，以利其他程序
+的运行。但在某些情况下(例如单人维护模式)为了避免问题，会刻意不写入。
+此时就得要使用这个 -n 的选项了。</p></li>
+<li><p><code>-L</code> ：系统除了利用装置文件名 (例如 /dev/hdc6)
+之外，还可以利用文件系统的标头名称
+(Label)来进行挂载。最好为你的文件系统取一个独一无二的名称吧！</p></li>
+<li><p><code>-o</code>
+：后面可以接一些挂载时额外加上的参数！比方说账号、密码、读写权限等：
+<code>ro</code>, <code>rw</code>: 挂载文件系统成为只读(ro) 或可擦写(rw)
+<code>async</code>, <code>sync</code>: 此文件系统是否使用同步写入 (sync)
+或异步 (async) 的内存机制，请参考文件系统运行方式。默认为 async。
+<code>auto</code>, <code>noauto</code>: 允许此 partition 被以 mount -a
+自动挂载(auto) <code>atime</code>, <code>noatime</code>：更新 inode
+access times <code>dev</code>, <code>nodev</code>: 是否允许此 partition
+上，可创建装置文件？ dev 为可允许 <code>suid</code>,
+<code>nosuid</code>: 是否允许此 partition 含有 suid/sgid 的文件格式？
+<code>exec</code>, <code>noexec</code>: 是否允许此 partition
+上拥有可运行 binary 文件？ <code>user</code>, <code>nouser</code>:
+是否允许此 partition 让任何使用者运行 mount ？一般来说， mount 仅有 root
+可以进行，但下达 user 参数，则可让 一般 user 也能够对此 partition 进行
+mount 。 <code>defaults</code>: 默认值为：rw, suid, dev, exec, auto,
+nouser, and async <code>remount</code>:
+重新挂载，这在系统出错，或重新升级参数时，很有用！</p></li>
+<li><p><code>--move</code>一个挂载点到另一个挂载点：<code>mount --move ./bind/ /mnt</code></p></li>
+<li><p><code>--bind</code> 将源目录绑定到目的目录。</p></li>
+</ul>
+<h4 id="loop-device">loop device</h4>
+<p>在类 UNIX 系统里，loop
+设备是一种伪设备(pseudo-device)，或者也可以说是仿真设备。它能使我们像<strong>块设备</strong>一样访问一个文件。
+loop block devices:
+<code>/dev/loop[0..N]</code>，<code>N</code>具体个数和内核配置有关，一般为8个。loop
+control device： <code>/dev/loop-cotrol</code>。 在使用之前，一个 loop
+设备必须要和一个文件进行连接。这里的文件格式为CD 或 DVD 的 ISO
+光盘镜像文件或者是软盘(硬盘)的 <code>*.img</code>镜像文件。通过这种 loop
+mount (回环mount)的方式，这些镜像文件就可以被 mount
+到当前文件系统的一个目录下。</p>
+<p>需要用到loop device的最常见的场景是mount一个ISO文件:</p>
+<ol type="1">
+<li><p>创建空的磁盘镜像文件，这里创建一个1.44M的软盘：
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">dd</span> <span class="keyword">if</span>=/dev/zero of=floppy.img bs=512 count=2880</span><br></pre></td></tr></table></figure></p></li>
+<li><p>使用 losetup将磁盘镜像文件虚拟成快设备： <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">losetup /dev/loop1 floppy.img</span><br></pre></td></tr></table></figure></p></li>
+<li><p>挂载块设备： <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/loop0 /tmp</span><br></pre></td></tr></table></figure>
+经过上面的三步之后，我们就可以通过/tmp目录，像访问真实快设备一样来访问磁盘镜像文件floppy.img。</p></li>
+</ol>
+<p>卸载loop设备： <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">umount /tmp</span><br><span class="line">losetup -d /dev/loop1</span><br></pre></td></tr></table></figure></p>
+<p>loop
+device另一种常用的用法是虚拟一个硬盘，比如我想尝试下btrfs这个文件系统，但系统中目前的所有分区都已经用了，里面都是有用的数据，不想格式化他们。</p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000006878392">Linux mount
+（第一部分）</a></p>
+<h3 id="losetup"><code>losetup</code></h3>
+<p><code>losetup</code>: set up and control loop devices。</p>
+<p>losetup命令
+用来设置循环设备。循环设备可把文件虚拟成块设备，籍此来模拟整个文件系统，让用户得以将其视为硬盘驱动器，光驱或软驱等设备，并挂入当作目录来使用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">Get info:</span><br><span class="line"></span><br><span class="line">     losetup loopdev</span><br><span class="line"></span><br><span class="line">     losetup -l [-a]</span><br><span class="line"></span><br><span class="line">     losetup -j file [-o offset]</span><br><span class="line"></span><br><span class="line">Delete loop:</span><br><span class="line"></span><br><span class="line">     losetup -d loopdev...</span><br><span class="line"></span><br><span class="line">Delete all used loop devices:</span><br><span class="line"></span><br><span class="line">     losetup -D</span><br><span class="line"></span><br><span class="line">Print name of first unused loop device:</span><br><span class="line"></span><br><span class="line">     losetup -f</span><br><span class="line"></span><br><span class="line">Set up a loop device:</span><br><span class="line"></span><br><span class="line">     losetup [-o offset] [--sizelimit size]</span><br><span class="line">             [-Pr] [--show] -f|loopdev file</span><br><span class="line"></span><br><span class="line">Resize loop device:</span><br><span class="line"></span><br><span class="line">     losetup -c loopdev</span><br></pre></td></tr></table></figure>
+<pre><code>-a 显示所有循环设备的状态。
+-d 卸除设备。
+-e &lt;加密选项&gt; 启动加密编码 。
+-f 寻找第一个未使用的循环设备。
+-o &lt;偏移量&gt;设置数据偏移量，单位是字节。</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">x86_64:/ # losetup /dev/block/loop0</span><br><span class="line">/dev/block/loop0: [0801]:868358 (/system/etc/houdini7_y.sfs)</span><br><span class="line">x86_64:/ # losetup /dev/block/loop1</span><br><span class="line">/dev/block/loop1: [0801]:934493 (/data/arm/houdini7_z.sfs)</span><br></pre></td></tr></table></figure>
+<h3 id="mountpoint"><code>mountpoint</code></h3>
+<p>查看目录是否为挂载点。</p>
+<ul>
+<li><code>-q</code> 不打印任何信息</li>
+<li><code>-d</code> 打印文件系统的主设备号和次设备号</li>
+<li><code>-x</code> 打印块数设备的主设备号和次设备号</li>
+</ul>
+<h3 id="zcat"><code>zcat</code></h3>
+<p><code>gzip</code>、<code>gunzip</code>、<code>zcat</code>
+用于压缩、解压缩文件 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gzip [ -acdfhlLnNrtvV19 ] [-S suffix] [ name ...  ]</span><br><span class="line">gunzip [ -acfhlLnNrtvV ] [-S suffix] [ name ...  ]</span><br><span class="line">zcat [ -fhLV ] [ name ...  ]</span><br></pre></td></tr></table></figure></p>
+<p>zcat 用于查看压缩文件的内容，而无需对其进行解压缩。</p>
+<h3 id="hash"><code>hash</code></h3>
+<p>linux系统下会有一个hash表，每个SHLL独立，当你新开一个SHELL的时候，这个hash表为空，每当你执行过一条命令时，hash表会记录下这条命令的路径，就相当于缓存一样。第一次执行命令shell解释器默认的会从
+<code>$PATH</code>
+路径下寻找该命令的路径，当你第二次使用该命令时，shell解释器首先会查看hash表，没有该命令才会去PATH路径下寻找。</p>
+<p><code>hash -r</code>　　//清除hash表，清除的是全部的</p>
+<h3 id="sleep"><code>sleep</code></h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sleep NUMBER[SUFFIX]</span><br></pre></td></tr></table></figure>
+<p><code>SUFFIX</code> 包括 秒 <code>s</code> (default)
+，分钟<code>m</code>，小时<code>h</code>，天<code>d</code>。</p>
+<h3 id="setsid"><code>setsid</code></h3>
+<p><code>setsid</code> 是重新创建一个session，子进程从父进程继承了
+S、进程组ID和打开的终端。子进程如果要脱离父进程，不受父进程控制，可以用此
+<code>setsid</code> 命令。 使用 ： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setsid ping www.baidu.com</span><br></pre></td></tr></table></figure></p>
+<h3 id="env"><code>env</code></h3>
+<p>env : run a program in a modified environment</p>
+<p>语法： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env [OPTION]... [-] [NAME=VALUE]... [COMMAND [ARG]...]</span><br></pre></td></tr></table></figure></p>
+<h3 id="blkid"><code>blkid</code></h3>
+<p><code>blkid</code>
+对设备上采用的文件系统类型进行查询。blkid主要用来对系统的块设备（包括交换分区）所使用的文件系统类型、LABEL、UUID等信息进行查询。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">x86_64:/ # blkid</span><br><span class="line">/dev/block/loop0: TYPE=&quot;squashfs&quot;</span><br><span class="line">/dev/block/loop1: TYPE=&quot;squashfs&quot;</span><br><span class="line">/dev/block/sda1: LABEL=&quot;Android-x86&quot; UUID=&quot;033e8fc7-4cfe-9454-bc59-df7329ca862d&quot; TYPE=&quot;ext4&quot;</span><br></pre></td></tr></table></figure>
+<p>UUID是一个标帜系统中的存储设备的字符串，其目的是帮助使用者唯一的确定系统中的所有存储设备，不管它们是什么类型。它可以标识DVD驱动器，USB存储设备以及你系统中的硬盘设备等。
+UUID是真正唯一标识符，设备名称并非总是不变。</p>
+<p><code>cat /proc/partitions</code> 查询设备分区和分区大小(KiB)。</p>
+<h3 id="pv"><code>pv</code></h3>
+<p>pv命令 Pipe Viewer 的简称，由Andrew Wood
+开发。意思是通过管道显示数据处理进度的信息。这些信息包括已经耗费的时间，完成的百分比(通过进度条显示)，当前的速度，全部传输的数据，以及估计剩余的时间。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># Debian 系的操作系统，如 Ubuntu</span><br><span class="line">sudo apt-get install pv</span><br><span class="line"></span><br><span class="line"># RedHat系的则这样：</span><br><span class="line">yum install pv</span><br></pre></td></tr></table></figure>
+<h1 id="参考">参考</h1>
+<ul>
+<li>自 《Android System Programming》 一书的 《Debugging the Boot Up
+Process Using a Customized ramdisk》一章的《The Android-x86 start up
+process》一节。</li>
+<li><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/renshuguo123723/article/details/121293263">android-x86
+install安装流程注解</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/jjxxjnzy/archive/2013/10/14/3368068.html">Android
+x86镜像分析</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jjxxjnzy/p/3369949.html">Android
+x86 镜像分析之二</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jjxxjnzy/p/3370125.html">Android
+x86 镜像分析之三</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jjxxjnzy/p/3374120.html">Android
+x86 镜像分析之四</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://github.com/BlissRoms-x86/bootable_newinstaller">r11-x86分支的持续更新的
+bootable_newinstaller</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/dbergloev/android-initrd">Android x86
+Initrd 脚本的变量分析</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/android/" rel="tag"># android</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/04/20/pixelstreaming/" rel="prev" title="UE5的PixelStreaming分析">
+                  <i class="fa fa-angle-left"></i> UE5的PixelStreaming分析
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/09/27/vulkan-querypool/" rel="next" title="Vulkan中GPU执行时间">
+                  Vulkan中GPU执行时间 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>
