@@ -27,7 +27,7 @@
 <meta property="og:description" content="Linux 下文件查找主要使用 find 命令，而根据文件内容查找主要使用 grep 命令。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2018-05-14T08:52:15.000Z">
-<meta property="article:modified_time" content="2022-01-09T11:09:07.895Z">
+<meta property="article:modified_time" content="2023-10-11T03:55:26.797Z">
 <meta property="article:author" content="Max">
 <meta property="article:tag" content="find">
 <meta property="article:tag" content="grep">
@@ -129,18 +129,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-count">97</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">33</span>
+        <span class="site-state-item-count">34</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">99</span>
+        <span class="site-state-item-count">102</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -211,7 +211,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-01-09 19:09:07" itemprop="dateModified" datetime="2022-01-09T19:09:07+08:00">2022-01-09</time>
+      <time title="修改时间：2023-10-11 11:55:26" itemprop="dateModified" datetime="2023-10-11T11:55:26+08:00">2023-10-11</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -252,48 +252,54 @@ href="/2017/08/13/linux操作/#find">linux操作</a>中详细介绍了。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep [OPTIONS] PATTERN [FILE...]</span><br></pre></td></tr></table></figure>
 <p>或者使用 <code>正则表达式</code>： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep [OPTIONS] [-e PATTERN]...  [-f FILE]...  [FILE...]</span><br></pre></td></tr></table></figure></p>
 <h2 id="选项-1">选项</h2>
-<blockquote>
-<p>-a 不要忽略二进制数据。 -A <显示列数>
-除了显示符合范本样式的那一行之外，并显示该行之后的内容。 -b
-在显示符合范本样式的那一行之外，并显示该行之前的内容。 -c
-计算符合范本样式的列数。 -C <显示列数>或-<显示列数>
-除了显示符合范本样式的那一列之外，并显示该列之前后的内容。 -d <进行动作>
-当指定要查找的是目录而非文件时，必须使用这项参数，否则grep命令将回报信息并停止动作。
-<code>-e &lt;范本样式&gt; 指定字符串作为查找文件内容的范本样式。</code>
+<pre><code>-a 不要忽略二进制数据。
+-A &lt;显示列数&gt; 除了显示符合范本样式的那一行之外，并显示该行之后的内容。
+-b 在显示符合范本样式的那一行之外，并显示该行之前的内容。
+-c 计算符合范本样式的列数。
+-C &lt;显示列数&gt;或-&lt;显示列数&gt;  除了显示符合范本样式的那一列之外，并显示该列之前后的内容。
+-d &lt;进行动作&gt; 当指定要查找的是目录而非文件时，必须使用这项参数，否则grep命令将回报信息并停止动作。
+-e &lt;范本样式&gt; 指定字符串作为查找文件内容的范本样式。
 -E 将范本样式为延伸的普通表示法来使用，意味着使用能使用扩展正则表达式。
--f <范本文件>
-指定范本文件，其内容有一个或多个范本样式，让grep查找符合范本条件的文件内容，格式为每一列的范本样式。
--F 将范本样式视为固定字符串的列表。 -G
-将范本样式视为普通的表示法来使用。
-<code>-h 在显示符合范本样式的那一列之前，不标示该列所属的文件名称。</code>
+-f &lt;范本文件&gt; 指定范本文件，其内容有一个或多个范本样式，让grep查找符合范本条件的文件内容，格式为每一列的范本样式。
+-F 将范本样式视为固定字符串的列表。
+-G 将范本样式视为普通的表示法来使用。
+`-h 在显示符合范本样式的那一列之前，不标示该列所属的文件名称。`
 -H 在显示符合范本样式的那一列之前，标示该列的文件名称。
-<code>-i 忽略字符大小写的差别。</code> -l
-列出文件内容符合指定的范本样式的文件名称。 -L
-列出文件内容不符合指定的范本样式的文件名称。
-<code>-n 在显示符合范本样式的那一列之前，标示出该列的编号。</code> -q
-不显示任何信息。 -R/-r 此参数的效果和指定“-d recurse”参数相同。
-<code>-s 不显示错误信息。</code> <code>-v 反转查找。</code>
-<code>-w 只显示全字符合的列。</code> -x 只显示全列符合的列。 -y
-此参数效果跟 "-i" 相同。 -o 只输出文件中匹配到的部分。</p>
-</blockquote>
+-i 忽略字符大小写的差别。
+-l 列出文件内容符合指定的范本样式的文件名称。
+-L 列出文件内容不符合指定的范本样式的文件名称。
+-n 在显示符合范本样式的那一列之前，标示出该列的编号。
+-q 不显示任何信息。
+-R/-r 此参数的效果和指定“-d recurse”参数相同。
+-s 不显示错误信息。
+-v 反转查找。
+-w 只显示全字符合的列。
+-x 只显示全列符合的列。
+-y 此参数效果跟 &quot;-i&quot; 相同。
+-o 只输出文件中匹配到的部分。</code></pre>
 <p>pattern正则表达式主要参数：</p>
-<blockquote>
-<p>： 忽略正则表达式中特殊字符的原有含义。 ^： 匹配正则表达式的开始行。
-$: 匹配正则表达式的结束行。 &lt;： 从匹配正则表达 式的行开始。 \&gt;：
-到匹配正则表达式的行结束。 [ ]： 单个字符，如[A]即A符合要求 。 [ - ]：
-范围，如[A-Z]，即A、B、C一直到Z都符合要求 。 <strong>.</strong> :
-所有的单个字符。 * : 有字符，长度可以为0。</p>
-</blockquote>
+<pre><code>\： 忽略正则表达式中特殊字符的原有含义。
+^： 匹配正则表达式的开始行。
+$:  匹配正则表达式的结束行。
+\&lt;： 从匹配正则表达 式的行开始。
+\\&gt;： 到匹配正则表达式的行结束。
+[ ]： 单个字符，如[A]即A符合要求 。
+[ - ]： 范围，如[A-Z]，即A、B、C一直到Z都符合要求 。
+**.** : 所有的单个字符。
+\*  : 有字符，长度可以为0。</code></pre>
 <h2 id="例子-1">例子</h2>
 <p>显示/usr/src目录下的文件(不含子目录)包含magic的行 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep magic /usr/src　　</span><br></pre></td></tr></table></figure>
 显示/usr/src目录下的文件(包含子目录)包含magic的行 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -r magic /usr/src　　</span><br></pre></td></tr></table></figure></p>
 <p>只匹配整个单词，而不是字符串的一部分(如匹配 'magic'，而不是 'magical'
 )， <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -w pattern files </span><br></pre></td></tr></table></figure></p>
+<p>只搜索 header 和 source 文件: <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -inr --include \*.h --include \*.cpp ./Source</span><br></pre></td></tr></table></figure></p>
 <h1 id="参考">参考</h1>
 <p>[1] <a
 target="_blank" rel="noopener" href="https://www.cnblogs.com/xudong-bupt/archive/2013/03/23/2976793.html">linux下的find文件查找命令与grep文件内容查找命令</a>
 [2] <a target="_blank" rel="noopener" href="http://man.linuxde.net/grep">grep命令</a> [3] <a
-target="_blank" rel="noopener" href="http://man.linuxde.net/find">find命令</a></p>
+target="_blank" rel="noopener" href="http://man.linuxde.net/find">find命令</a> [4] <a
+target="_blank" rel="noopener" href="https://stackoverflow.com/a/12517022">How can I grep recursively,
+but only in files with certain extensions?</a></p>
 
     </div>
 

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"juniorprincewang.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Androidx86 中若要支持Native层的ARM指令，需要 libhoudini.so 作为NativeBridge 层将 ARM 指令转换成 x86指令。 本文总结32位&#x2F;64位 libhoudini 的安装。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="androidx86中libhoudini安装">
+<meta property="og:url" content="http://juniorprincewang.github.io/2023/12/11/androidx86-libhoudini/index.html">
+<meta property="og:site_name" content="TO DO">
+<meta property="og:description" content="Androidx86 中若要支持Native层的ARM指令，需要 libhoudini.so 作为NativeBridge 层将 ARM 指令转换成 x86指令。 本文总结32位&#x2F;64位 libhoudini 的安装。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-12-11T12:11:38.000Z">
+<meta property="article:modified_time" content="2023-12-11T12:11:38.296Z">
+<meta property="article:author" content="Max">
+<meta property="article:tag" content="android">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://juniorprincewang.github.io/2023/12/11/androidx86-libhoudini/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://juniorprincewang.github.io/2023/12/11/androidx86-libhoudini/","path":"2023/12/11/androidx86-libhoudini/","title":"androidx86中libhoudini安装"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>androidx86中libhoudini安装 | TO DO</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/custom_css_source.css">
+<!-- hexo injector head_end end --><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">TO DO</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">吾尝终日而思矣，不如须臾之所学也。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#pre-android-7.1"><span class="nav-number">1.</span> <span class="nav-text">Pre Android 7.1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#after-androidx86-9"><span class="nav-number">2.</span> <span class="nav-text">After Androidx86 9</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Max</p>
+  <div class="site-description" itemprop="description">文章本天成，妙手偶得之。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">97</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">102</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/juniorprincewang" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;juniorprincewang" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:maxzywang@163.com" title="E-Mail → mailto:maxzywang@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://juniorprincewang.github.io/2023/12/11/androidx86-libhoudini/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Max">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TO DO">
+      <meta itemprop="description" content="文章本天成，妙手偶得之。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="androidx86中libhoudini安装 | TO DO">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          androidx86中libhoudini安装
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-12-11 20:11:38" itemprop="dateCreated datePublished" datetime="2023-12-11T20:11:38+08:00">2023-12-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/androidx86/" itemprop="url" rel="index"><span itemprop="name">androidx86</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>Androidx86 中若要支持Native层的ARM指令，需要 libhoudini.so
+作为NativeBridge 层将 ARM 指令转换成 x86指令。 本文总结32位/64位
+libhoudini 的安装。</p>
+<span id="more"></span>
+<h1 id="pre-android-7.1">Pre Android 7.1</h1>
+<p>Androidx86 直到Android7.1提供的 libhoudini.so 都分成 3 种：</p>
+<pre><code>houdini_7_x = (x86 arm translation)
+houdini_7_y = (x86_64 arm translation)
+houdini_7_z = (x86_64 arm64 translation)</code></pre>
+<p>libhoudini
+文件分xyz三种，x是用32位x86指令集模拟arm32，y是用64位x86_64指令集模拟arm32，z是用64位x86_64指令集模拟arm64，但是
+Androidx86 从8开始就没有z包。 因此，只能运行Androidx86
+7.1才能跑arm64包。</p>
+<p>x86_64 镜像的Androidx86 启用方法：</p>
+<ul>
+<li>设置手机
+<code>Settings&gt;Apps Compatibility&gt;Enable Native Bridge</code> 。
+<ul>
+<li>打开这个选项的效果只是将系统属性
+<code>persist.sys.nativebridge</code>
+的值从false（0）改成了true（1）</li>
+</ul></li>
+<li>Go to the Android console (Alt-F1 or install a terminal
+emulator)</li>
+<li>Login as super user / root</li>
+<li>运行脚本 <code>/system/bin/enable_nativebridge</code></li>
+</ul>
+<p>这么做可能会有问题，连接服务器failed wget不停循环。
+需要下载的houdini.sfs 的链接访问过慢或失效，需要对url做些修改。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> [ -z <span class="string">&quot;<span class="variable">$1</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">    <span class="keyword">if</span> [ <span class="string">&quot;`uname -m`&quot;</span> = <span class="string">&quot;x86_64&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">        v=7_y</span><br><span class="line">        url=http://goo.gl/SBU3is</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        v=7_x</span><br><span class="line">        url=http://goo.gl/0IJs40</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">	v=7_z</span><br><span class="line">	url=http://goo.gl/FDrxVN</span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+<p><code>/system/bin/enable_nativebridge</code> 脚本可以传一个参数
+"64"，当不传参数时， <code>$1</code> 为空。 脚本的工作包括：</p>
+<ol type="1">
+<li>下载32位或64位版本的houdini.sfs，并将其挂载到
+<code>/system/lib$1/arm$1</code> 中，最终在 <code>/system/lib$1/</code>
+中创建 libhoudini.so 。</li>
+<li>往目录 <em>/proc/sys/fs/binfmt_misc</em>
+下的名为“register”的文件中写入了两串字符串，从而告诉Linux内核，所有使用ARM指令集的可执行和动态库ELF文件都用houdini程序打开，而所有ARM64指令集的可执行和动态库ELF文件都用houdini64程序打开（关于<code>binfmt_misc</code>的详细解释，可以参考<a
+target="_blank" rel="noopener" href="https://blog.csdn.net/roland_sun/article/details/50062295">《Linux下如何指定某一类型程序用特定程序打开（通过binfmt_misc）》）</a>。</li>
+</ol>
+<p>脚本先下载 <code>7_y</code> 版本，在下载 <code>7_z</code>
+版本。<br />
+脚本日志输出在 logcat 中，以 <em>houdini</em> 为 tag，最终输出</p>
+<pre><code>houdini enabled
+houdini64 enabled</code></pre>
+<h1 id="after-androidx86-9">After Androidx86 9</h1>
+<p>Androidx86 官方不支持 ARM64 转x86_64 指令，其他项目提供了方法：</p>
+<ul>
+<li>android9 从 ChromeOS recovery images 中提取出来 libhoudini <a
+target="_blank" rel="noopener" href="https://github.com/supremegamers/android_vendor_google_chromeos-x86">android_vendor_google_chromeos-x86</a>。</li>
+<li>Android-r11 从 Microsoft WSA 11 image 中提取出来的两个 Version (x86)
+= 11.0.1b_y.38765.m 与 Version (x86_64) = 11.0.1b_z.38765.m <a
+target="_blank" rel="noopener" href="https://github.com/supremegamers/vendor_intel_proprietary_houdini">Intel's
+libhoudini for intel/AMD x86 CPU, pulled from Microsoft's WSA 11
+image</a></li>
+</ul>
+<p>对Androidx86 源码修改以支持libhoudini 的方法： <a
+target="_blank" rel="noopener" href="https://github.com/supremegamers/android_vendor_google_chromeos-x86">android_vendor_google_chromeos-x86</a>
+的 houdini 库对 Androidx86 p9 的补丁可以参考将 wsa11 houdini 替换 <a
+target="_blank" rel="noopener" href="https://github.com/supremegamers/device_generic_common/commit/e4f3b23aa2042a27607e31d15367978e0fae29a2?diff=split">Prepare
+for a new houdini repo to copy files</a></p>
+<p>修改 <code>device/generic/common</code> 目录下的</p>
+<ul>
+<li><code>BoardConfig.mk</code></li>
+</ul>
+<p>添加 sepolicy 与 board/native_bridge_arm_on_x86.mk <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BOARD_SEPOLICY_DIRS += vendor/google/chromeos-x86/sepolicy</span><br><span class="line"></span><br><span class="line">-include vendor/google/chromeos-x86/board/native_bridge_arm_on_x86.mk</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>device.mk</code></li>
+</ul>
+<p>添加 <code>target/houdini.mk</code> 与
+<code>target/native_bridge_arm_on_x86.mk</code>。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ifneq (&quot;$(wildcard vendor/google/chromeos-x86/*)&quot;,&quot;&quot;)</span><br><span class="line">    $(call inherit-product-if-exists, vendor/google/chromeos-x86/target/houdini.mk)</span><br><span class="line">    $(call inherit-product-if-exists, vendor/google/chromeos-x86/target/native_bridge_arm_on_x86.mk)</span><br><span class="line">    PRODUCT_SYSTEM_DEFAULT_PROPERTIES += persist.sys.nativebridge=1</span><br><span class="line">endif</span><br></pre></td></tr></table></figure></p>
+<p>修改 nativebridge ：</p>
+<ul>
+<li><code>nativebridge/Android.mk</code></li>
+</ul>
+<p>如果使用 <code>vendor/google/chromeos-x86</code>，则不设置
+<code>LOCAL_POST_INSTALL_CMD</code>。 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"> LOCAL_SHARED_LIBRARIES := libcutils libdl liblog</span><br><span class="line"> LOCAL_C_INCLUDES := system/core/libnativebridge/include</span><br><span class="line"> LOCAL_MULTILIB := both</span><br><span class="line">-LOCAL_POST_INSTALL_CMD := $(hide) \</span><br><span class="line">-    rm -rf $(TARGET_OUT)/*/&#123;arm*,*houdini*&#125; &#123;$(TARGET_OUT),$(PRODUCT_OUT)&#125;/vendor/&#123;*/arm*,*/*houdini*&#125;; \</span><br><span class="line">-    mkdir -p $(TARGET_OUT)/&#123;lib/arm,$(if $(filter true,$(TARGET_IS_64_BIT)),lib64/arm64)&#125;; \</span><br><span class="line">-    touch $(TARGET_OUT)/lib/libhoudini.so $(if $(filter true,$(TARGET_IS_64_BIT)),$(TARGET_OUT)/lib64/libhoudini.so)</span><br><span class="line">+ifneq (&quot;$(wildcard vendor/google/chromeos-x86/*)&quot;,&quot;&quot;)</span><br><span class="line">+    include $(BUILD_SHARED_LIBRARY)</span><br><span class="line">+else</span><br><span class="line">+    LOCAL_POST_INSTALL_CMD := $(hide) \</span><br><span class="line">+        rm -rf $(TARGET_OUT)/*/&#123;arm*,*houdini*&#125; &#123;$(TARGET_OUT),$(PRODUCT_OUT)&#125;/vendor/&#123;*/arm*,*/*houdini*&#125;; \</span><br><span class="line">+        mkdir -p $(TARGET_OUT)/&#123;lib/arm,$(if $(filter true,$(TARGET_IS_64_BIT)),lib64/arm64)&#125;; \</span><br><span class="line">+        touch $(TARGET_OUT)/lib/libhoudini.so $(if $(filter true,$(TARGET_IS_64_BIT)),$(TARGET_OUT)/lib64/libhoudini.so)</span><br><span class="line"> </span><br><span class="line">-include $(BUILD_SHARED_LIBRARY)</span><br><span class="line">+    include $(BUILD_SHARED_LIBRARY)</span><br><span class="line">+endif</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>nativebridge/nativebridge.mk</code></li>
+</ul>
+<p>修改 <code>PRODUCT_PROPERTY_OVERRIDES</code> 属性
+<code>ro.dalvik.vm.native.bridge=libhoudini.so</code> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-ifneq ($(HOUDINI_PREINSTALL),intel)</span><br><span class="line">+ifneq (&quot;$(wildcard vendor/google/chromeos-x86/*)&quot;,&quot;&quot;)</span><br><span class="line">+PRODUCT_PROPERTY_OVERRIDES := ro.dalvik.vm.native.bridge=libhoudini.so</span><br><span class="line">+else ifneq ($(HOUDINI_PREINSTALL),intel)</span><br><span class="line"> PRODUCT_DEFAULT_PROPERTY_OVERRIDES := ro.dalvik.vm.native.bridge=libnb.so</span><br><span class="line"> </span><br><span class="line"> PRODUCT_PACKAGES := libnb</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>init.x86.rc</code></li>
+</ul>
+<p>启动服务中注释掉 nativebridge 相关命令。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">+#service nativebridge /system/bin/enable_nativebridge</span><br><span class="line">+    #class main</span><br><span class="line">+    #disabled</span><br><span class="line">+    #oneshot</span><br><span class="line">+    #seclabel u:r:zygote:s0</span><br><span class="line"></span><br><span class="line">-on property:persist.sys.nativebridge=1</span><br><span class="line">-    start nativebridge</span><br><span class="line">+#on property:persist.sys.nativebridge=1</span><br><span class="line">+    #start nativebridge</span><br><span class="line"> </span><br><span class="line">-on property:persist.sys.nativebridge=0</span><br><span class="line">-    stop nativebridge</span><br><span class="line">+#on property:persist.sys.nativebridge=0</span><br><span class="line">+    #stop nativebridge</span><br></pre></td></tr></table></figure>
+<p>为使android property 支持 arm64 指令，满足以下查询：</p>
+<pre><code>ro.product.cpu.abi=x86_64
+ro.product.cpu.abilist=x86_64,x86,armeabi-v7a,armeabi
+ro.product.cpu.abilist32=x86,armeabi-v7a,armeabi
+ro.product.cpu.abilist64=x86_64</code></pre>
+<p>需要重新覆盖写 ABI list，修改
+<code>vendor/google/chromeos-x86/board/native_bridge_arm_on_x86.mk</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ifeq ($(TARGET_ARCH),x86_64)</span><br><span class="line">    # TARGET_2ND_CPU_ABI2 := armeabi-v7a</span><br><span class="line">    TARGET_CPU_ABI_LIST_64_BIT := $(TARGET_CPU_ABI) $(TARGET_CPU_ABI2) $(NATIVE_BRIDGE_ABI_LIST_64_BIT)</span><br><span class="line">    TARGET_CPU_ABI_LIST_32_BIT := $(TARGET_2ND_CPU_ABI) $(TARGET_2ND_CPU_ABI2) $(NATIVE_BRIDGE_ABI_LIST_32_BIT)</span><br><span class="line">    TARGET_CPU_ABI_LIST := $(TARGET_CPU_ABI) $(TARGET_CPU_ABI2) $(TARGET_2ND_CPU_ABI) $(TARGET_2ND_CPU_ABI2) $(NATIVE_BRIDGE_ABI_LIST_32_BIT) $(NATIVE_BRIDGE_ABI_LIST_64_BIT)</span><br><span class="line">else</span><br><span class="line">    TARGET_CPU_ABI2 := armeabi-v7a</span><br><span class="line">    TARGET_CPU_ABI_LIST_32_BIT := $(TARGET_CPU_ABI) $(NATIVE_BRIDGE_ABI_LIST_32_BIT)</span><br><span class="line">endif</span><br></pre></td></tr></table></figure>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/49634762/how-to-install-libhoudini-on-a-custom-android-x86-rig">How
+to install libhoudini on a custom Android x86 rig</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://utzcoz.github.io/2020/03/15/Integrate-Houdini-to-emulator.html">blog:
+Integrate Houdini to emulator</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://groups.google.com/g/android-x86/c/_sSDez_JppQ/m/WVGy44QkBwAJ">failed
+to download android-8.1-r1 houdini</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/165988357">SurfaceGo
+Android系统折腾笔记</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://blog.csdn.net/Roland_Sun/article/details/49735601">如何打开Android
+X86对houdini的支持</a><br />
+</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Rprop/libhoudini">the default ARM
+translation layer for x86</a><br />
+</li>
+<li><a
+target="_blank" rel="noopener" href="https://www.jianshu.com/p/73198c3bfbb1">Android-X86集成houdini(Arm兼容工具)</a><br />
+</li>
+<li><a target="_blank" rel="noopener" href="https://melty.land/blog/android-x86">VirtualBox Android x86
+踩坑记录</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/SGNight/Arm-NativeBridge">How to
+manually install Arm Native Bridge in android x86,手动安装Arm
+NB</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/android/" rel="tag"># android</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/11/27/awesome-series/" rel="prev" title="精选系列">
+                  <i class="fa fa-angle-left"></i> 精选系列
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Max</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+</body>
+</html>
